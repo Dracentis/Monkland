@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>Resources\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>Resources\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="GoKit">
+      <HintPath>Resources\GoKit.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Security">
+      <HintPath>Resources\Mono.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod">
+      <HintPath>Resources\MonoMod.exe</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>Resources\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Resources\UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+</Project>
