@@ -73,6 +73,7 @@ namespace Monkland.SteamManagement {
             ResetManagers();
             lobbyID = new CSteamID( 0 );
             isInGame = false;
+            //Debug.LogError("Not In Game!");
         }
 
         public void OnGameExit() {
@@ -114,7 +115,7 @@ namespace Monkland.SteamManagement {
 
         public void LobbyCreated(LobbyCreated_t result) {
             SteamMatchmaking.JoinLobby( (CSteamID)result.m_ulSteamIDLobby );
-            MultiplayerChat.chatStrings.Add( "Created Lobby!" );
+            MultiplayerChat.AddChat( "Created Lobby!" );
 
             SteamMatchmaking.SetLobbyData( (CSteamID)result.m_ulSteamIDLobby, MANAGER_ID, SteamUser.GetSteamID().ToString() );
         }
@@ -122,7 +123,7 @@ namespace Monkland.SteamManagement {
             try {
                 EChatMemberStateChange change = (EChatMemberStateChange)update.m_rgfChatMemberStateChange;
                 if( change == EChatMemberStateChange.k_EChatMemberStateChangeEntered ) {
-                    MultiplayerChat.chatStrings.Add( string.Format( "User {0} joined the game!", SteamFriends.GetFriendPersonaName( new CSteamID( update.m_ulSteamIDUserChanged ) ) ) );
+                    MultiplayerChat.AddChat( string.Format( "User {0} joined the game!", SteamFriends.GetFriendPersonaName( new CSteamID( update.m_ulSteamIDUserChanged ) ) ) );
                     if (!connectedPlayers.Contains(update.m_ulSteamIDUserChanged))
                     {
                         PlayerJoinedManagers(update.m_ulSteamIDUserChanged);
@@ -135,7 +136,7 @@ namespace Monkland.SteamManagement {
                     
                 }
                 else if( change == EChatMemberStateChange.k_EChatMemberStateChangeLeft || change == EChatMemberStateChange.k_EChatMemberStateChangeKicked || change == EChatMemberStateChange.k_EChatMemberStateChangeDisconnected ) {
-                    MultiplayerChat.chatStrings.Add( string.Format( "User {0} left the game!", SteamFriends.GetFriendPersonaName( new CSteamID( update.m_ulSteamIDUserChanged ) ) ) );
+                    MultiplayerChat.AddChat( string.Format( "User {0} left the game!", SteamFriends.GetFriendPersonaName( new CSteamID( update.m_ulSteamIDUserChanged ) ) ) );
                     PlayerLeftManagers(update.m_ulSteamIDUserChanged); 
                     connectedPlayers.Remove(update.m_ulSteamIDUserChanged);
                     MultiplayerPlayerList.RemovePlayerLabel( update.m_ulSteamIDUserChanged );
@@ -178,7 +179,7 @@ namespace Monkland.SteamManagement {
 
             lobbyID = (CSteamID)enterLobby.m_ulSteamIDLobby;
             int playerCount = SteamMatchmaking.GetNumLobbyMembers( lobbyID );
-            MultiplayerChat.chatStrings.Add( "Entered Lobby!" );
+            MultiplayerChat.AddChat( "Entered Lobby!" );
 
 
             //Send packets to all players, to establish P2P connections with them
@@ -207,14 +208,14 @@ namespace Monkland.SteamManagement {
             }
 
 
-            MultiplayerChat.chatStrings.Add( "This game's manager is " + SteamFriends.GetFriendPersonaName( (CSteamID)NetworkGameManager.managerID ) );
+            MultiplayerChat.AddChat( "This game's manager is " + SteamFriends.GetFriendPersonaName( (CSteamID)NetworkGameManager.managerID ) );
             isInGame = true;
+            //Debug.LogError("In Game!");
         }
 
         public void P2PRequest(P2PSessionRequest_t request) {
             if( connectedPlayers.Contains( request.m_steamIDRemote.m_SteamID ) )
                 SteamNetworking.AcceptP2PSessionWithUser( request.m_steamIDRemote );
-            P2PEstablishedManagers(request.m_steamIDRemote.m_SteamID);
         }
         public void P2PConnectionFail(P2PSessionConnectFail_t failResult) {
             Debug.LogError( "P2P Error:" + ( (EP2PSessionError)failResult.m_eP2PSessionError ) );
@@ -859,11 +860,6 @@ namespace Monkland.SteamManagement {
                 nm.PlayerLeft(steamID);
         }
         
-        public void P2PEstablishedManagers(ulong steamID)
-        {
-            foreach (NetworkManager nm in netManagersList)
-                nm.P2PEstablished(steamID);
-        }
 
         #endregion
 

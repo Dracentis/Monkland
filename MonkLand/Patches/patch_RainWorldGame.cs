@@ -8,6 +8,7 @@ using UnityEngine;
 using Monkland.SteamManagement;
 using Steamworks;
 using Monkland.UI;
+using Menu;
 
 namespace Monkland.Patches
 {
@@ -20,7 +21,25 @@ namespace Monkland.Patches
         public patch_RainWorldGame(ProcessManager manager) : base( manager ) {
         }
 
-        [MonoModIgnore]
+		[MonoModIgnore]
+		private bool oDown;
+
+		[MonoModIgnore]
+		private bool hDown;
+
+		[MonoModIgnore]
+		private bool lastRestartButton;
+
+		[MonoModIgnore]
+		private bool lastPauseButton;
+
+		[MonoModIgnore]
+		private int updateAbstractRoom;
+
+		[MonoModIgnore]
+		private int updateShortCut;
+
+		[MonoModIgnore]
         public extern void OriginalConstructor(ProcessManager manager);
         [MonoModConstructor, MonoModOriginalName( "OriginalConstructor" )]
         public void ctor_RainWorldGame(ProcessManager manager) {
@@ -84,10 +103,17 @@ namespace Monkland.Patches
             if( mainGame == null )
                 mainGame = this;
 
+			if (!lastPauseButton)
+				lastPauseButton = MonklandSteamManager.isInGame;
+
             orig_Update();
 
-            try {
-                MonklandSteamManager.monklandUI.Update( this );
+			//New Code:
+			try {
+                if (MonklandSteamManager.monklandUI != null)
+                {
+                    MonklandSteamManager.monklandUI.Update(this);
+                }
             } catch( System.Exception e ) {
                 Debug.LogError( e );
             }
@@ -95,11 +121,25 @@ namespace Monkland.Patches
 
         }
 
+        public extern float orig_get_TimeSpeedFac();
+
+        public override float TimeSpeedFac
+        {
+            get
+            {
+                if (this.pauseMenu != null && !MonklandSteamManager.isInGame)
+                {
+                    return 0f;
+                }
+                return (float)this.framesPerSecond / 40f;
+            }
+        }
+
         [MonoModIgnore]
         public extern void OriginalShutdown();
         [MonoModOriginalName( "OriginalShutdown" )]
         public void ShutDownProcess() {
-            //mainGame = null;
+            mainGame = null;
             //MonklandSteamManager.instance.OnGameExit();
             OriginalShutdown();
         }

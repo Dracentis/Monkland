@@ -14,6 +14,7 @@ namespace Monkland {
         public RoundedRect backgroundRect;
 
         public static List<string> chatStrings = new List<string>();
+        public static List<string> newMessages = new List<string>();
         public List<MenuLabel> chatMessages = new List<MenuLabel>();
         private HashSet<string> chatHash = new HashSet<string>();
 
@@ -36,16 +37,50 @@ namespace Monkland {
         }
 
         public void ClearMessages() {
-
-            foreach( MenuLabel ml in chatMessages )
-                this.subObjects.Remove( ml );
+            foreach (MenuLabel ml in chatMessages)
+            {
+                ml.RemoveSprites();
+                this.subObjects.Remove(ml);
+            }
             chatStrings.Clear();
             chatMessages.Clear();
             chatHash.Clear();
         }
 
+        public static void AddChat(string message)
+        {
+            newMessages.Add(message);
+        }
+
+        public void NewChat(string message)
+        {
+            if (chatStrings.Contains(message))
+            {
+                RemoveMessage(message);
+            }
+            chatStrings.Add(message);
+        }
+
+        public void RemoveMessage(string message)
+        {
+            if (chatStrings.Contains(message))
+            {
+                chatHash.Remove(message);
+                this.subObjects.Remove(chatMessages[chatStrings.IndexOf(message)]);
+                chatMessages[chatStrings.IndexOf(message)].RemoveSprites();
+                chatMessages.RemoveAt(chatStrings.IndexOf(message));
+                chatStrings.Remove(message);
+            }
+        }
+
         public override void Update() {
             base.Update();
+
+            foreach(string ms in newMessages) 
+            { 
+                NewChat(ms);
+            }
+            newMessages.Clear();
 
             foreach( string s in chatStrings ) {
                 if( chatHash.Contains( s ) )

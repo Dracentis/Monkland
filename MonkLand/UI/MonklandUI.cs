@@ -29,7 +29,7 @@ namespace Monkland.UI {
 
             uiContainer = new FContainer();
 
-            statusLabel = new FLabel( "font", "STATUSLABEL" );
+            statusLabel = new FLabel( "font", "Monkland 0.0.1" );
             statusLabel.alignment = FLabelAlignment.Left;
             statusLabel.SetPosition( 50, Futile.screen.height - 50 );
             uiContainer.AddChild( statusLabel );
@@ -86,6 +86,7 @@ namespace Monkland.UI {
             if (statusLabel != null)
             {
                 statusLabel.text = message;
+                statusLabel.Redraw(false, false);
             }
         }
 
@@ -109,6 +110,7 @@ namespace Monkland.UI {
 
 
         public void ClearSprites() {
+            statusLabel.RemoveFromContainer();
             displayMessages.Clear();
             uiContainer.RemoveAllChildren();
             uiContainer.RemoveFromContainer();

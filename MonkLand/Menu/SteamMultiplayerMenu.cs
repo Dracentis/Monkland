@@ -136,7 +136,7 @@ namespace Monkland {
             this.pages[0].Container.AddChild(this.slugcat);
             
             //Back button
-            this.backButton = new SimpleButton(this, this.pages[0], base.Translate("BACK"), "EXIT", new Vector2(100f, 50f), new Vector2(110f, 30f));
+            this.backButton = new SimpleButton(this, this.pages[0], base.Translate("BACK"), "EXIT", new Vector2( 100f, 50f ), new Vector2(110f, 30f));
             this.pages[0].subObjects.Add(this.backButton);
 
             //Back button
@@ -144,11 +144,11 @@ namespace Monkland {
             this.pages[0].subObjects.Add( this.backButton );
 
             //Start Game button
-            this.startGameButton = new SimpleButton( this, this.pages[0], "Start Game", "STARTGAME", new Vector2( -100000, 50f ), new Vector2( 110f, 30f ) );
+            this.startGameButton = new SimpleButton( this, this.pages[0], "Start Game", "STARTGAME", new Vector2( 1060, 50f ), new Vector2( 110f, 30f ) );
             this.pages[0].subObjects.Add( this.startGameButton );
 
             //Ready Up button
-            this.readyUpButton = new SimpleButton( this, this.pages[0], "Ready UP", "READYUP", new Vector2( 220, 50f ), new Vector2( 110f, 30f ) );
+            this.readyUpButton = new SimpleButton( this, this.pages[0], "Ready UP", "READYUP", new Vector2( 940, 50f ), new Vector2( 110f, 30f ) );
             this.pages[0].subObjects.Add( this.readyUpButton );
 
             //Multiplayer Chat
@@ -158,6 +158,32 @@ namespace Monkland {
             //Invite menu
             playerList = new MultiplayerPlayerList( this, this.pages[0], new Vector2( 100, 125 ), new Vector2( 200, 600 ), new Vector2( 180, 180 ) );
             this.pages[0].subObjects.Add( this.playerList );
+
+            //Controller Combatability
+            this.bodyRed.nextSelectable[1] = this.readyUpButton;
+            this.bodyRed.nextSelectable[3] = this.bodyGreen;
+            this.bodyGreen.nextSelectable[1] = this.bodyRed;
+            this.bodyGreen.nextSelectable[3] = this.bodyBlue;
+            this.bodyBlue.nextSelectable[1] = this.bodyGreen;
+            this.bodyBlue.nextSelectable[3] = this.eyesRed;
+            this.eyesRed.nextSelectable[1] = this.bodyBlue;
+            this.eyesRed.nextSelectable[3] = this.eyesGreen;
+            this.eyesGreen.nextSelectable[1] = this.eyesRed;
+            this.eyesGreen.nextSelectable[3] = this.eyesBlue;
+            this.eyesBlue.nextSelectable[1] = this.eyesGreen;
+            this.eyesBlue.nextSelectable[3] = this.readyUpButton;
+            this.readyUpButton.nextSelectable[0] = this.backButton;
+            this.readyUpButton.nextSelectable[1] = this.eyesBlue;
+            this.readyUpButton.nextSelectable[2] = this.startGameButton;
+            this.readyUpButton.nextSelectable[3] = this.bodyRed;
+            this.startGameButton.nextSelectable[0] = this.readyUpButton;
+            this.startGameButton.nextSelectable[1] = this.eyesBlue;
+            this.startGameButton.nextSelectable[2] = this.backButton;
+            this.startGameButton.nextSelectable[3] = this.bodyRed;
+            this.backButton.nextSelectable[0] = this.startGameButton;
+            this.backButton.nextSelectable[2] = this.readyUpButton;
+            this.backButton.nextSelectable[1] = this.bodyRed;
+            this.backButton.nextSelectable[3] = this.eyesBlue;
 
             //Some Nice Music :)
             if (manager.musicPlayer != null)
@@ -243,13 +269,14 @@ namespace Monkland {
                 eyes.color = MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)];
             }
             if ( NetworkGameManager.managerID == NetworkGameManager.playerID ) {
-                startGameButton.pos = new Vector2( 340, 50f );
+                //startGameButton.pos = new Vector2( 1060, 50f );
+                startGameButton.buttonBehav.greyedOut = false;
             }
             else
             {
-                startGameButton.pos = new Vector2(-100000, 50f);
+                //startGameButton.pos = new Vector2(-100000, 50f);
+                startGameButton.buttonBehav.greyedOut = true;
             }
-
             base.Update();
         }
 

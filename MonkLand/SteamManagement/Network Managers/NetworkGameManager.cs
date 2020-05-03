@@ -25,13 +25,31 @@ namespace Monkland.SteamManagement {
         public HashSet<ulong> readiedPlayers = new HashSet<ulong>();
         public List<Color> playerColors = new List<Color>();// List of player body colors
         public List<Color> playerEyeColors = new List<Color>();// List of player eye colors
+        public int joinDelay = -1;
 
         public bool isReady = false;
 
+        public override void Update()
+        {
+            if (joinDelay > 0)
+            {
+                joinDelay -= 1;
+            }else if (joinDelay == 0)
+            {
+                SendColor(0);
+                SendColor(1);
+                SendColor(2);
+                SendColor(3);
+                SendColor(4);
+                SendColor(5);
+                SendReady();
+                joinDelay = -1;
+            }
+        }
 
         private void ReadyChat(CSteamID sentPlayer)
         {
-            MultiplayerChat.chatStrings.Add(string.Format("User {0} is now: " + (readiedPlayers.Contains(sentPlayer.m_SteamID) ? "Ready!" : "Not Ready."), SteamFriends.GetFriendPersonaName(sentPlayer)));
+            MultiplayerChat.AddChat(string.Format("User {0} is now: " + (readiedPlayers.Contains(sentPlayer.m_SteamID) ? "Ready!" : "Not Ready."), SteamFriends.GetFriendPersonaName(sentPlayer)));
             //MultiplayerChat.chatStrings.Add(string.Format("User {0} changed their color to: " + playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r + ", " + playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g + ", " + playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].b, SteamFriends.GetFriendPersonaName(sentPlayer)));
         }
 
@@ -51,6 +69,7 @@ namespace Monkland.SteamManagement {
         {
             playerColors.Add(new Color(1f, 1f, 1f));
             playerEyeColors.Add(new Color(0, 0, 0));
+            joinDelay = 100;
         }
 
         public override void PlayerLeft(ulong steamID) 
@@ -58,17 +77,6 @@ namespace Monkland.SteamManagement {
             playerColors.RemoveAt(MonklandSteamManager.connectedPlayers.IndexOf(steamID));
             playerEyeColors.RemoveAt(MonklandSteamManager.connectedPlayers.IndexOf(steamID));
             readiedPlayers.Remove(steamID);
-        }
-
-        public override void P2PEstablished(ulong steamID)
-        {
-            SendColor(0);
-            SendColor(1);
-            SendColor(2);
-            SendColor(3);
-            SendColor(4);
-            SendColor(5);
-            SendReady();
         }
 
         #region Packet Handler

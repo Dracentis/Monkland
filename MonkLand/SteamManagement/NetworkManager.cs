@@ -19,8 +19,6 @@ namespace Monkland.SteamManagement {
         public virtual void PlayerJoined(ulong steamID) { }
 
         public virtual void PlayerLeft(ulong steamID) { }
-        
-        public virtual void P2PEstablished(ulong steamID) { }
 
     }
 }

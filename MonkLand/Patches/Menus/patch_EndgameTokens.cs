@@ -43,6 +43,7 @@ namespace Monkland.Patches.Menus
             Action<Menu.Menu, Menu.MenuObject, Vector2> funct = (Action<Menu.Menu, Menu.MenuObject, Vector2>)Activator.CreateInstance(typeof(Action<Menu.Menu, Menu.MenuObject, Vector2>), this, ptr);
             funct(menu, owner, pos);//Menu.PositionedMenuObject constructor
 
+			//Original Code:
 			this.tokens = new List<EndgameTokens.Token>();
 			bool flag = false;
 			this.addPassageButtonWhenTokenBecomesVisible = false;
@@ -68,8 +69,8 @@ namespace Monkland.Patches.Menus
 					this.forceShowTokenAdd = true;
 				}
 			}
-
-			if (menu is SleepAndDeathScreen)
+			// New Code:
+			if (menu is SleepAndDeathScreen) //To avoid calling menu as SleepAndDeathScreen when menu is MultiplayerSleepAndDeathScreen
 			{
 				if ((menu as SleepAndDeathScreen).winState != null)
 				{
