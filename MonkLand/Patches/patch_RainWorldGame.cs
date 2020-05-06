@@ -44,8 +44,9 @@ namespace Monkland.Patches
         [MonoModConstructor, MonoModOriginalName( "OriginalConstructor" )]
         public void ctor_RainWorldGame(ProcessManager manager) {
             OriginalConstructor( manager );
-            
-            MonklandSteamManager.monklandUI = new UI.MonklandUI( Futile.stage );
+
+            if (MonklandSteamManager.isInGame)
+                MonklandSteamManager.monklandUI = new UI.MonklandUI( Futile.stage );
             /*
             AbstractRoom thisRoom = this.world.GetAbstractRoom( this.overWorld.FIRSTROOM );
 
@@ -68,10 +69,10 @@ namespace Monkland.Patches
                 }
 
                 session.Players.Clear();
-
+                */
                 if( mainGame == null )
                     mainGame = this;
-
+                /*
                 ulong playerID = MonklandSteamManager.instance.allChannels[0].SendForcewaitPacket( 0, (CSteamID)NetworkGameManager.managerID );
 
                 Debug.Log( "Player Count is " + session.Players.Count );
@@ -110,7 +111,7 @@ namespace Monkland.Patches
 
 			//New Code:
 			try {
-                if (MonklandSteamManager.monklandUI != null)
+                if (MonklandSteamManager.isInGame && MonklandSteamManager.monklandUI != null)
                 {
                     MonklandSteamManager.monklandUI.Update(this);
                 }
@@ -121,26 +122,17 @@ namespace Monkland.Patches
 
         }
 
-        public extern float orig_get_TimeSpeedFac();
-
-        public override float TimeSpeedFac
-        {
-            get
-            {
-                if (this.pauseMenu != null && !MonklandSteamManager.isInGame)
-                {
-                    return 0f;
-                }
-                return (float)this.framesPerSecond / 40f;
-            }
-        }
-
         [MonoModIgnore]
         public extern void OriginalShutdown();
         [MonoModOriginalName( "OriginalShutdown" )]
         public void ShutDownProcess() {
-            mainGame = null;
-            //MonklandSteamManager.instance.OnGameExit();
+            if (MonklandSteamManager.isInGame)
+            {
+                MonklandSteamManager.monklandUI.ClearSprites();
+                MonklandSteamManager.monklandUI = null;
+                MonklandSteamManager.WorldManager.GameEnd();
+                mainGame = null;
+            }
             OriginalShutdown();
         }
     }

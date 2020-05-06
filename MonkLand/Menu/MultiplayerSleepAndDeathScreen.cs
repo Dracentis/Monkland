@@ -36,7 +36,7 @@ namespace Menu
 			this.pages[0].subObjects.Add(this.exitButton);
 
 			//Player menu
-			playerList = new MultiplayerPlayerList(this, this.pages[0], new Vector2(900, 85), new Vector2(200, 400), new Vector2(180, 180));
+			playerList = new MultiplayerPlayerList(this, this.pages[0], new Vector2(manager.rainWorld.options.ScreenSize.x - 250f, manager.rainWorld.options.ScreenSize.y - 450f), new Vector2(200, 400), new Vector2(180, 180));
 			this.pages[0].subObjects.Add(this.playerList);
 
 			this.mySoundLoopID = ((!this.IsSleepScreen) ? SoundID.MENU_Death_Screen_LOOP : SoundID.MENU_Sleep_Screen_LOOP);
@@ -47,7 +47,7 @@ namespace Menu
 		{
 			get
 			{
-				return !NetworkGameManager.isManager || MonklandSteamManager.connectedPlayers.Count != MonklandSteamManager.GameManager.readiedPlayers.Count;
+				return !NetworkGameManager.isManager || MonklandSteamManager.WorldManager.ingamePlayers.Count > 0 || gameStarting;
 			}
 		}
 
@@ -55,9 +55,11 @@ namespace Menu
 		{
 			get
 			{
-				return false;
+				return gameStarting;
 			}
 		}
+
+		public bool gameStarting = false;
 
 		public bool AllowFoodMeterTick
 		{
@@ -234,7 +236,8 @@ namespace Menu
 				if (NetworkGameManager.isManager)
 				{
 					base.PlaySound(SoundID.MENU_Switch_Page_In);
-					MonklandSteamManager.GameManager.SendPlayersToGame();
+					gameStarting = true;
+					MonklandSteamManager.GameManager.QueueStart();
 				}
 			}
 		}

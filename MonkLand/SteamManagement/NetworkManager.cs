@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Monkland;
 using Monkland.Patches;
+using UnityEngine;
 using Monkland.UI;
 
 namespace Monkland.SteamManagement {
@@ -19,6 +20,11 @@ namespace Monkland.SteamManagement {
         public virtual void PlayerJoined(ulong steamID) { }
 
         public virtual void PlayerLeft(ulong steamID) { }
+
+        public void Log(string message)
+        {
+            Debug.Log(message);
+        }
 
     }
 }

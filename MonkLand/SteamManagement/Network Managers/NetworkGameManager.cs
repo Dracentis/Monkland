@@ -13,12 +13,11 @@ namespace Monkland.SteamManagement {
     class NetworkGameManager : NetworkManager {
 
         public static ulong playerID;
-        public static int PlayerIndex;
-        public static ulong managerID;
 
+        public static ulong managerID;
         public static bool isManager { get { return playerID == managerID; } }
 
-        public int DEFAULT_CHANNEL = 0;
+        public const int CHANNEL = 0;
 
         public byte UtilityHandler = 0;
 
@@ -26,6 +25,8 @@ namespace Monkland.SteamManagement {
         public List<Color> playerColors = new List<Color>();// List of player body colors
         public List<Color> playerEyeColors = new List<Color>();// List of player eye colors
         public int joinDelay = -1;
+
+        public int startDelay = -1;
 
         public bool isReady = false;
 
@@ -45,6 +46,24 @@ namespace Monkland.SteamManagement {
                 SendReady();
                 joinDelay = -1;
             }
+
+            if (startDelay > 0)
+            {
+                startDelay -= 1;
+            }else if (startDelay == 0)
+            {
+                SendPlayersToGame();
+                startDelay = -1;
+            }
+        }
+
+        public void QueueStart()
+        {
+            if (!isManager)
+                return;
+
+            MonklandSteamManager.WorldManager.PrepareNextCycle();
+            startDelay = 100;
         }
 
         private void ReadyChat(CSteamID sentPlayer)
@@ -82,7 +101,7 @@ namespace Monkland.SteamManagement {
         #region Packet Handler
 
         public override void RegisterHandlers() {
-            UtilityHandler = MonklandSteamManager.instance.RegisterHandler(DEFAULT_CHANNEL, HandleUtilPackets);
+            UtilityHandler = MonklandSteamManager.instance.RegisterHandler(CHANNEL, HandleUtilPackets);
         }
 
         public void HandleUtilPackets(BinaryReader br, CSteamID sentPlayer) {
@@ -127,7 +146,7 @@ namespace Monkland.SteamManagement {
                 return;
 
             readiedPlayers.Clear();
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(DEFAULT_CHANNEL, UtilityHandler);
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
@@ -141,7 +160,7 @@ namespace Monkland.SteamManagement {
         {
             isReady = true;
 
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(DEFAULT_CHANNEL, UtilityHandler);
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
@@ -156,7 +175,7 @@ namespace Monkland.SteamManagement {
 
         public void SendReady()
         {
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(DEFAULT_CHANNEL, UtilityHandler);
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
@@ -173,7 +192,7 @@ namespace Monkland.SteamManagement {
         {
             isReady = !isReady;
 
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(DEFAULT_CHANNEL, UtilityHandler);
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
@@ -188,7 +207,7 @@ namespace Monkland.SteamManagement {
 
         public void SendColor(int colorID)
         {
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(DEFAULT_CHANNEL, UtilityHandler);
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
@@ -222,7 +241,7 @@ namespace Monkland.SteamManagement {
                 writer.Write((byte)0); //Write default color
             }
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-            MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
+            MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliableWithBuffering);
         }
 
         #endregion

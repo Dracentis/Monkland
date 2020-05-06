@@ -18,6 +18,14 @@ namespace Monkland.SteamManagement {
         public static CSteamID lobbyID;
         public static SteamMultiplayerMenu menu;
 
+        public static bool DEBUG = true;
+
+        public static void Log(object message)
+        {
+            if (DEBUG)
+                Debug.Log(message);
+        }
+
         public const ulong appID = 312520;
 
         public static List<ulong> connectedPlayers = new List<ulong>(); // List of all players
@@ -59,7 +67,7 @@ namespace Monkland.SteamManagement {
         }
 
         public void CreateLobby() {
-            SteamMatchmaking.CreateLobby( ELobbyType.k_ELobbyTypeFriendsOnly, 4 );
+            SteamMatchmaking.CreateLobby( ELobbyType.k_ELobbyTypeFriendsOnly, 10 );
         }
 
         public void LeaveLobby() {
@@ -73,7 +81,7 @@ namespace Monkland.SteamManagement {
             ResetManagers();
             lobbyID = new CSteamID( 0 );
             isInGame = false;
-            //Debug.LogError("Not In Game!");
+            Log("Left lobby!");
         }
 
         public void OnGameExit() {
@@ -187,6 +195,8 @@ namespace Monkland.SteamManagement {
                 for( int i = 0; i < playerCount; i++ ) {
                     CSteamID lobbyMember = SteamMatchmaking.GetLobbyMemberByIndex( lobbyID, i );
                     SteamNetworking.SendP2PPacket( lobbyMember, new byte[] { 255 }, 1, EP2PSend.k_EP2PSendReliable, 0 );
+                    SteamNetworking.SendP2PPacket(lobbyMember, new byte[] { 255 }, 1, EP2PSend.k_EP2PSendReliable, 1);
+                    SteamNetworking.SendP2PPacket(lobbyMember, new byte[] { 255 }, 1, EP2PSend.k_EP2PSendReliable, 2);
                     if (!connectedPlayers.Contains(lobbyMember.m_SteamID))
                     {
                         connectedPlayers.Add(lobbyMember.m_SteamID);
@@ -210,7 +220,7 @@ namespace Monkland.SteamManagement {
 
             MultiplayerChat.AddChat( "This game's manager is " + SteamFriends.GetFriendPersonaName( (CSteamID)NetworkGameManager.managerID ) );
             isInGame = true;
-            //Debug.LogError("In Game!");
+            Log("Entered Lobby! \nThis game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
         }
 
         public void P2PRequest(P2PSessionRequest_t request) {
@@ -335,7 +345,7 @@ namespace Monkland.SteamManagement {
 
                         if( isPriorityBased ) {
                             if( !priorityQueues.ContainsKey( newPacket.priority ) ) {
-                                Debug.Log( "Creating queue for priority " + newPacket.priority );
+                                Log( "Creating queue for priority " + newPacket.priority );
                                 priorityQueues[newPacket.priority] = new Queue<DataPacket>();
                             }
                             priorityQueues[newPacket.priority].Enqueue( newPacket );
@@ -445,6 +455,13 @@ namespace Monkland.SteamManagement {
                         RecieveForcewaitReply( br, packet.sentPlayer );
                         return true;
                     } else {
+                        if (DEBUG)
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < packet.data.Length; i++)
+                                sb.Append(packet.data[i] + "|");
+                            Log("Received packet from player " + SteamFriends.GetFriendPersonaName(packet.sentPlayer) + " with data " + sb.ToString() + " in channel " + this.channelName);
+                        }
                         handlers[packet.handlerID]( br, packet.sentPlayer );
                     }
                     return false;
@@ -472,12 +489,14 @@ namespace Monkland.SteamManagement {
             }
             public void SendPacket(DataPacket packet, CSteamID user, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay) {
 
-                /*
-                StringBuilder sb = new StringBuilder();
-                for( int i = 0; i < packet.data.Length; i++ )
-                    sb.Append( packet.data[i] + "|" );
-                Debug.Log( "Sending packet to player " + SteamFriends.GetFriendPersonaName( user ) + " with data " + sb.ToString() );
-                Debug.Log( Environment.StackTrace );*/
+                if (DEBUG)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < packet.data.Length; i++)
+                        sb.Append(packet.data[i] + "|");
+                    Log("Sending packet to player " + SteamFriends.GetFriendPersonaName(user) + " with data " + sb.ToString() + " in channel " + channelName);
+                    //Log(Environment.StackTrace);
+                }
 
                 if( user.m_SteamID == NetworkGameManager.playerID ) {
                     //Process packet immediately if we sent it to ourself.
@@ -619,7 +638,7 @@ namespace Monkland.SteamManagement {
                     "Default Channel", //Channel name
                     0, //Channel Index
                     this, //Monkland Steam Manager
-                    50, //Packets per update
+                    40, //Packets per update
                     200 //Max packets
                 ) {
                     requireGameState = false
@@ -627,23 +646,25 @@ namespace Monkland.SteamManagement {
             );
             allChannels.Add(
                 new PacketChannel(
-                    "Game Management", //Channel name
+                    "World", //Channel name
                     1, //Channel Index
                     this, //Monkland Steam Manager
-                    100, //Packets per update
-                    300, //Max packets
-                    true
-                )
+                    40, //Packets per update
+                    200 //Max packets
+                ) {
+                    requireGameState = false
+                }
             );
             allChannels.Add(
                 new PacketChannel(
-                    "Entity Updates", //Channel name
+                    "Entity", //Channel name
                     2, //Channel Index
                     this, //Monkland Steam Manager
-                    100, //Packets per update
-                    600, //Max packets
-                    true
-                )
+                    120, //Packets per update
+                    600 //Max packets
+                ) {
+                    requireGameState = false
+                }
             );
 
         }
@@ -815,8 +836,8 @@ namespace Monkland.SteamManagement {
         #region NetworkManagers
 
         public static NetworkGameManager GameManager;
-        //public static NetworkRoomManager RoomManager;
-        //public static NetworkObjectManager ObjectManager;
+        public static NetworkWorldManager WorldManager;
+        //public static NetworkEntityManager EntityManager;
 
         public static Dictionary<string, NetworkManager> netManagers = new Dictionary<string, NetworkManager>();
         private static List<NetworkManager> netManagersList = new List<NetworkManager>();
@@ -824,12 +845,12 @@ namespace Monkland.SteamManagement {
 
         public void RegisterDefaultNetworkManagers() {
             GameManager = new NetworkGameManager();
-            //RoomManager = new NetworkRoomManager();
-            //ObjectManager = new NetworkObjectManager();
+            WorldManager = new NetworkWorldManager();
+            //EntityManager = new NetworkEntityManager();
 
             RegisterNetworkManager( "Game", GameManager );
-            //RegisterNetworkManager( "Room", RoomManager );
-            //RegisterNetworkManager( "Object", ObjectManager );
+            RegisterNetworkManager( "World", WorldManager );
+            //RegisterNetworkManager( "Entity", EntityManager );
         }
 
         public int RegisterNetworkManager(string name, NetworkManager manager) {

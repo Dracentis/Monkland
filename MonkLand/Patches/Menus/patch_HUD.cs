@@ -36,6 +36,11 @@ namespace Monkland.Patches.Menus
 			//}
 			this.foodMeter.pos = new Vector2(sleepAndDeathScreen.FoodMeterXPos((sleepAndDeathScreen.ID != ProcessManager.ProcessID.SleepScreen) ? 1f : 0f), 0f);
 			this.foodMeter.lastPos = this.foodMeter.pos;
+
+			this.AddPart(new RainMeter(this, this.fContainers[1]));
+			this.rainMeter.pos = new Vector2(this.rainWorld.options.ScreenSize.x - 335f, this.rainWorld.options.ScreenSize.y - 70f);
+			this.rainMeter.lastPos = this.rainMeter.pos;
+			this.rainMeter.fade = 1f;
 		}
 	}
 }

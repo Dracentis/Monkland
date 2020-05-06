@@ -36,6 +36,7 @@ namespace Monkland {
         private FSprite blackFadeSprite;
         private float blackFade;
         private float lastBlackFade;
+        private bool gameStarting = false;
 
         public SteamMultiplayerMenu(ProcessManager manager, bool shouldCreateLobby = false) : base( manager, ProcessManager.ProcessID.MainMenu ) {
 
@@ -60,6 +61,7 @@ namespace Monkland {
             this.pages[0].Container.AddChild( this.darkSprite );
             this.blackFadeSprite = new FSprite( "Futile_White", true );
             this.blackFadeSprite.scaleX = 87.5f;
+            this.gameStarting = false;
             this.blackFadeSprite.scaleY = 50f;
             this.blackFadeSprite.x = manager.rainWorld.screenSize.x / 2f;
             this.blackFadeSprite.y = manager.rainWorld.screenSize.y / 2f;
@@ -270,12 +272,16 @@ namespace Monkland {
             }
             if ( NetworkGameManager.managerID == NetworkGameManager.playerID ) {
                 //startGameButton.pos = new Vector2( 1060, 50f );
-                startGameButton.buttonBehav.greyedOut = false;
+                startGameButton.buttonBehav.greyedOut = gameStarting;
+                readyUpButton.buttonBehav.greyedOut = gameStarting;
+                backButton.buttonBehav.greyedOut = gameStarting;
             }
             else
             {
                 //startGameButton.pos = new Vector2(-100000, 50f);
                 startGameButton.buttonBehav.greyedOut = true;
+                readyUpButton.buttonBehav.greyedOut = gameStarting;
+                backButton.buttonBehav.greyedOut = gameStarting;
             }
             base.Update();
         }
@@ -324,7 +330,8 @@ namespace Monkland {
                     bodyLabel.text = "";
                     eyesLabel.text = "";
                     base.PlaySound(SoundID.MENU_Switch_Page_In);
-                    MonklandSteamManager.GameManager.SendPlayersToGame();
+                    gameStarting = true;
+                    MonklandSteamManager.GameManager.QueueStart();
                 }
             }
         }

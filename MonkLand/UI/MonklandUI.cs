@@ -29,7 +29,7 @@ namespace Monkland.UI {
 
             uiContainer = new FContainer();
 
-            statusLabel = new FLabel( "font", "Monkland 0.0.1" );
+            statusLabel = new FLabel( "font", "Monkland 0.0.3" );
             statusLabel.alignment = FLabelAlignment.Left;
             statusLabel.SetPosition( 50, Futile.screen.height - 50 );
             uiContainer.AddChild( statusLabel );
