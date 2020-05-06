@@ -140,6 +140,10 @@ namespace Menu
 
 		public override void Update()
 		{
+			if (MonklandSteamManager.isInGame)
+			{
+				MonklandSteamManager.WorldManager.TickCycle();
+			}
 			if (this.starvedWarningCounter >= 0)
 			{
 				this.starvedWarningCounter++;

@@ -111,9 +111,11 @@ namespace Monkland.Patches
 
 			//New Code:
 			try {
-                if (MonklandSteamManager.isInGame && MonklandSteamManager.monklandUI != null)
+                if (MonklandSteamManager.isInGame)
                 {
-                    MonklandSteamManager.monklandUI.Update(this);
+                    if (MonklandSteamManager.monklandUI != null)
+                        MonklandSteamManager.monklandUI.Update(this);
+                    MonklandSteamManager.WorldManager.TickCycle();
                 }
             } catch( System.Exception e ) {
                 Debug.LogError( e );

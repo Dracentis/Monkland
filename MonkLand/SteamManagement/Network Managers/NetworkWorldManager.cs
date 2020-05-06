@@ -33,6 +33,7 @@ namespace Monkland.SteamManagement
         public int cycleLength = 36000;
         public int timer = 0;
         public int joinDelay = -1;
+        public int syncDelay = 1000;
 
         public const int WORLD_CHANNEL = 1;
 
@@ -46,12 +47,25 @@ namespace Monkland.SteamManagement
             }
         }
 
+        public void TickCycle()
+        {
+            this.timer++;
+            if (isManager)
+            {
+                if (syncDelay > 0)
+                {
+                    syncDelay = 0;
+                }
+                else
+                {
+                    SyncCycle();
+                    syncDelay = 1000;
+                }
+            }
+        }
+
         public override void Update()
         {
-            if (MonklandSteamManager.isInGame)
-            {
-                this.timer++;
-            }
             if (joinDelay > 0)
             {
                 joinDelay -= 1;
@@ -129,6 +143,7 @@ namespace Monkland.SteamManagement
             this.cycleLength = (int)(minutes * 40f * 60f);
             this.timer = 0;
             SyncCycle();
+            syncDelay = 1000;
         }
 
         public void GameStart()
@@ -154,6 +169,7 @@ namespace Monkland.SteamManagement
                 {
                     if (pl != playerID)
                         SyncCycle((CSteamID)pl);
+                    syncDelay = 1000;
                 }
             }
             MonklandSteamManager.Log("GameStart Packet: " + ingamePlayers + "\n" + ingamePlayers.Count + " players ingame.");
