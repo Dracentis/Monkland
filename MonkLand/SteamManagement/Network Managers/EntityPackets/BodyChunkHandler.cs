@@ -6,7 +6,7 @@ namespace Monkland.SteamManagement
 {
     static class BodyChunkHandler
     {
-        public static BodyChunk Read(ref BodyChunk bodyChunk ,ref BinaryReader reader)
+        public static BodyChunk Read(BodyChunk bodyChunk ,ref BinaryReader reader)
         {
             (bodyChunk as Patches.patch_BodyChunk).Sync(IntVector2Handler.Read(ref reader));
             bodyChunk.lastContactPoint = IntVector2Handler.Read(ref reader);

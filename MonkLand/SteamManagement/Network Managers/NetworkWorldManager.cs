@@ -194,7 +194,7 @@ namespace Monkland.SteamManagement
                     }
                 }
             }
-            MonklandSteamManager.Log("Room Packet: Player shares "+ commonRooms.Count + "rooms with other players.");
+            MonklandSteamManager.Log("Room Packet: Player shares "+ commonRooms.Count + " rooms with other players.");
         }
 
         public void TickCycle()
