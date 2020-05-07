@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="SteamManagement\Network Managers\EntityPackets\" />
   </ItemGroup>
 
 </Project>

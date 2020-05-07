@@ -61,17 +61,11 @@ namespace Monkland.SteamManagement
             byte messageType = br.ReadByte();
             switch (messageType)// up to 256 message types
             {
-                case 0:// World Loaded or Exited
-                    Read(br, sentPlayer);
+                case (byte)PacketType.IntVector2:
+                    IntVector2 intVector2 = IntVector2Handler.Read(ref br);
                     return;
-                case 1:// Rain Sync
-                    Read(br, sentPlayer);
-                    return;
-                case 2:// Realize Room
-                    Read(br, sentPlayer);
-                    return;
-                case 3:// Abstractize Room
-                    Read(br, sentPlayer);
+                case (byte)PacketType.Vector2:
+                    Vector2 vector2 = Vector2Handler.Read(ref br);
                     return;
             }
         }
@@ -80,28 +74,41 @@ namespace Monkland.SteamManagement
 
         #region Outgoing Packets
 
-        public void Send()
+        public void Send(patch_PhysicalObject physicalObject, List<ulong> targets)
         {
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
-            //Write message type
-            writer.Write(Convert.ToByte(2));
-            writer.Write(1.0f);
+            if (physicalObject is patch_PhysicalObject)
+            {
+                writer.Write((byte)PacketType.PhyscialObject);
+            }else if (physicalObject is Creature)
+            {
+                writer.Write((byte)PacketType.Creature);
+            }
+            else
+            {
+                return;
+            }
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-            //MonklandSteamManager.instance.SendPacket(packet, (CSteamID)managerID), EP2PSend.k_EP2PSendReliable);
-            MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
+            foreach (ulong target in targets)
+            {
+                MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+            }
         }
 
-        #endregion
-
-        #region Incoming Packets
-
-        public void Read(BinaryReader reader, CSteamID sent)
+        public enum PacketType
         {
-            ulong from = sent.m_SteamID;
-            reader.ReadBoolean();
+            IntVector2,
+            Vector2,
+            WorldCoordinate,
+            AbstractPhysicalObject,
+            PhyscialObject,
+            BodyChunk,
+            AbstractCreature,
+            Creature,
+            Grasp,
         }
 
         #endregion

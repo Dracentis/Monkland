@@ -400,7 +400,7 @@ namespace Monkland.SteamManagement
                 if (roomDict.ContainsKey(sent.m_SteamID))
                     roomDict.Remove(sent.m_SteamID);
             }
-            MonklandSteamManager.Log("Ingame Packet: " + ingamePlayers+"\n"+ ingamePlayers.Count +" players ingame.");
+            MonklandSteamManager.Log("Ingame Packet: " + ingamePlayers.Count +" players ingame.");
         }
 
         public void ReadDeactivateRoom(BinaryReader reader, CSteamID sent)

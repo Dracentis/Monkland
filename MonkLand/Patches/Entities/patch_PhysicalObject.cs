@@ -20,5 +20,5 @@ namespace Monkland.Patches
         {
             OriginalConstructor(abstractPhysicalObject);
         }
-	}
+    }
 }

@@ -837,7 +837,7 @@ namespace Monkland.SteamManagement {
 
         public static NetworkGameManager GameManager;
         public static NetworkWorldManager WorldManager;
-        //public static NetworkEntityManager EntityManager;
+        public static NetworkEntityManager EntityManager;
 
         public static Dictionary<string, NetworkManager> netManagers = new Dictionary<string, NetworkManager>();
         private static List<NetworkManager> netManagersList = new List<NetworkManager>();
@@ -846,11 +846,11 @@ namespace Monkland.SteamManagement {
         public void RegisterDefaultNetworkManagers() {
             GameManager = new NetworkGameManager();
             WorldManager = new NetworkWorldManager();
-            //EntityManager = new NetworkEntityManager();
+            EntityManager = new NetworkEntityManager();
 
             RegisterNetworkManager( "Game", GameManager );
             RegisterNetworkManager( "World", WorldManager );
-            //RegisterNetworkManager( "Entity", EntityManager );
+            RegisterNetworkManager( "Entity", EntityManager );
         }
 
         public int RegisterNetworkManager(string name, NetworkManager manager) {
