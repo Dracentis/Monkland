@@ -28,6 +28,9 @@ namespace Monkland.SteamManagement
         
         public HashSet<ulong> ingamePlayers = new HashSet<ulong>();
 
+        public Dictionary<ulong, List<string>> roomDict = new Dictionary<ulong, List<string>>();
+        public Dictionary<string, List<ulong>> commonRooms = new Dictionary<string, List<ulong>>();
+
         public bool gameRunning = false;
 
         public int cycleLength = 36000;
@@ -44,23 +47,6 @@ namespace Monkland.SteamManagement
             get
             {
                 return (float)(this.cycleLength - this.timer) / (float)this.cycleLength;
-            }
-        }
-
-        public void TickCycle()
-        {
-            this.timer++;
-            if (isManager)
-            {
-                if (syncDelay > 0)
-                {
-                    syncDelay = 0;
-                }
-                else
-                {
-                    SyncCycle();
-                    syncDelay = 1000;
-                }
             }
         }
 
@@ -89,22 +75,146 @@ namespace Monkland.SteamManagement
             this.cycleLength = 36000;
             this.timer = 0;
             ingamePlayers.Clear();
+            commonRooms.Clear();
+            roomDict.Clear();
             this.gameRunning = false;
             this.joinDelay = -1;
         }
 
         public override void PlayerJoined(ulong steamID)
         {
+            if (!roomDict.ContainsKey(steamID))
+                roomDict.Add(steamID, new List<string>());
             joinDelay = 80;
         }
 
         public override void PlayerLeft(ulong steamID)
         {
+            if (roomDict.ContainsKey(playerID))
+                roomDict.Remove(steamID);
             if (ingamePlayers.Contains(playerID))
                 ingamePlayers.Remove(playerID);
         }
 
+
+        #region Logistics
         
+        public string GetRegionName(string roomName)
+        {
+            roomName = roomName.Substring(0, 2);
+            string text = "";
+            switch (roomName)
+            {
+                case "CC":
+                    text = "Chimney Canopy";
+                    break;
+                case "DS":
+                    text = "Drainage System";
+                    break;
+                case "HI":
+                    text = "Industrial Complex";
+                    break;
+                case "GW":
+                    text = "Garbage Wastes";
+                    break;
+                case "SI":
+                    text = "Sky Islands";
+                    break;
+                case "SU":
+                    text = "Outskirts";
+                    break;
+                case "SH":
+                    text = "Shaded Citadel";
+                    break;
+                case "IS":
+                    text = "Intake System";
+                    break;
+                case "SL":
+                    text = "Shoreline";
+                    break;
+                case "LF":
+                    text = "Farm Arrays";
+                    break;
+                case "UW":
+                    text = "The Exterior";
+                    break;
+                case "SB":
+                    text = "Subterranean";
+                    break;
+                case "SS":
+                    text = "Five Pebbles";
+                    break;
+                case "RW":
+                    text = "Side House";
+                    break;
+                case "AB":
+                    text = "Arid Barrens";
+                    break;
+                case "TR":
+                    text = "The Root";
+                    break;
+                case "BL":
+                    text = "Badlands";
+                    break;
+                case "AR":
+                    text = "Aether Ridge";
+                    break;
+                case "LM":
+                    text = "Looks To the Moon";
+                    break;
+                case "MW":
+                    text = "The Fragmented Exterior";
+                    break;
+                case "FS":
+                    text = "Forest Sanctuary";
+                    break;
+            }
+            return text;
+        }
+
+        public void CheckForCommonRooms()
+        {
+            commonRooms.Clear();
+            foreach (ulong player in roomDict.Keys)
+            {
+                if (player != playerID)
+                {
+                    foreach (string otherRoom in roomDict[player])
+                    {
+                        foreach (string myRoom in roomDict[playerID])
+                        {
+                            if (myRoom.Equals(otherRoom))
+                            {
+                                if (!commonRooms.ContainsKey(myRoom))
+                                    commonRooms.Add(myRoom, new List<ulong>());
+                                if (!commonRooms[myRoom].Contains(player))
+                                    commonRooms[myRoom].Add(player);
+                                }
+                        }
+                    }
+                }
+            }
+            MonklandSteamManager.Log("Room Packet: Player shares "+ commonRooms.Count + "rooms with other players.");
+        }
+
+        public void TickCycle()
+        {
+            this.timer++;
+            if (isManager)
+            {
+                if (syncDelay > 0)
+                {
+                    syncDelay--;
+                }
+                else
+                {
+                    SyncCycle();
+                    syncDelay = 1000;
+                }
+            }
+        }
+
+        #endregion
 
         #region Packet Handler
 
@@ -125,10 +235,10 @@ namespace Monkland.SteamManagement
                     ReadRainPacket(br, sentPlayer);
                     return;
                 case 2:// Realize Room
-                    //Read(br, sentPlayer);
+                    ReadActivateRoom(br, sentPlayer);
                     return;
                 case 3:// Abstractize Room
-                    //Read(br, sentPlayer);
+                    ReadDeactivateRoom(br, sentPlayer);
                     return;
             }
         }
@@ -136,6 +246,45 @@ namespace Monkland.SteamManagement
         #endregion
 
         #region Outgoing Packets
+
+        public void ActivateRoom(string roomName)
+        {
+            if (!roomDict.ContainsKey(playerID))
+                roomDict.Add(playerID, new List<string>());
+            if (!roomDict[playerID].Contains(roomName))
+                roomDict[playerID].Add(roomName);
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
+            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
+            //Write message type
+            writer.Write(Convert.ToByte(2));
+            writer.Write(roomName);
+
+
+            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+            //MonklandSteamManager.instance.SendPacket(packet, (CSteamID)managerID), EP2PSend.k_EP2PSendReliable);
+            MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
+            CheckForCommonRooms();
+        }
+        public void DeactivateRoom(string roomName)
+        {
+            if (!roomDict.ContainsKey(playerID))
+                roomDict.Add(playerID, new List<string>());
+            if (roomDict[playerID].Contains(roomName))
+                roomDict[playerID].Remove(roomName);
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
+            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
+            //Write message type
+            writer.Write(Convert.ToByte(3));
+            writer.Write(roomName);
+
+
+            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+            //MonklandSteamManager.instance.SendPacket(packet, (CSteamID)managerID), EP2PSend.k_EP2PSendReliable);
+            MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
+            CheckForCommonRooms();
+        }
 
         public void PrepareNextCycle()
         {
@@ -151,6 +300,8 @@ namespace Monkland.SteamManagement
             this.timer = 0;
             if (!ingamePlayers.Contains(playerID))
                 ingamePlayers.Add(playerID);
+            if (!roomDict.ContainsKey(playerID))
+                roomDict.Add(playerID, new List<string>());
             gameRunning = true;
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -175,11 +326,12 @@ namespace Monkland.SteamManagement
             MonklandSteamManager.Log("GameStart Packet: " + ingamePlayers + "\n" + ingamePlayers.Count + " players ingame.");
         }
 
-
         public void GameEnd()
         {
             if (ingamePlayers.Contains(playerID))
                 ingamePlayers.Remove(playerID);
+            if (roomDict.ContainsKey(playerID))
+                roomDict.Remove(playerID);
             gameRunning = false;
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -209,7 +361,7 @@ namespace Monkland.SteamManagement
             //MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
         }
 
-        public void SyncCycle()// Syncs rain values for an individual player called by manager after each player loads the game
+        public void SyncCycle()// Syncs rain values for all players called by manager before game loads
         {
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -234,6 +386,8 @@ namespace Monkland.SteamManagement
             {
                 if (!ingamePlayers.Contains(sent.m_SteamID))
                     ingamePlayers.Add(sent.m_SteamID);
+                if (!roomDict.ContainsKey(sent.m_SteamID))
+                    roomDict.Add(sent.m_SteamID, new List<string>());
                 if (isManager && gameRunning)
                 {
                     SyncCycle(sent);
@@ -243,9 +397,36 @@ namespace Monkland.SteamManagement
             {
                 if (ingamePlayers.Contains(sent.m_SteamID))
                     ingamePlayers.Remove(sent.m_SteamID);
+                if (roomDict.ContainsKey(sent.m_SteamID))
+                    roomDict.Remove(sent.m_SteamID);
             }
             MonklandSteamManager.Log("Ingame Packet: " + ingamePlayers+"\n"+ ingamePlayers.Count +" players ingame.");
         }
+
+        public void ReadDeactivateRoom(BinaryReader reader, CSteamID sent)
+        {
+            if (sent.m_SteamID == playerID)
+                return;
+            string roomName = reader.ReadString();
+            if (!roomDict.ContainsKey(sent.m_SteamID))
+                roomDict.Add(sent.m_SteamID, new List<string>());
+            if (roomDict[sent.m_SteamID].Contains(roomName))
+                roomDict[sent.m_SteamID].Remove(roomName);
+            CheckForCommonRooms();
+        }
+
+        public void ReadActivateRoom(BinaryReader reader, CSteamID sent)
+        {
+            if (sent.m_SteamID == playerID)
+                return;
+            string roomName = reader.ReadString();
+            if (!roomDict.ContainsKey(sent.m_SteamID))
+                roomDict.Add(sent.m_SteamID, new List<string>());
+            if (!roomDict[sent.m_SteamID].Contains(roomName))
+                roomDict[sent.m_SteamID].Add(roomName);
+            CheckForCommonRooms();
+        }
+
         public void ReadRainPacket(BinaryReader reader, CSteamID sent)
         {
             this.cycleLength = reader.ReadInt32();

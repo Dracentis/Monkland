@@ -28,7 +28,7 @@ namespace Monkland.Patches.Menus
 		private bool pingAchivements;
 
 		[MonoModIgnore]
-        public extern void OriginalConstructor(Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, KarmaLadder ladder);
+		public extern void OriginalConstructor(Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, KarmaLadder ladder);
         [MonoModConstructor, MonoModOriginalName( "OriginalConstructor" )]
         public void ctor_EndgameTokens(Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, KarmaLadder ladder)
         {
