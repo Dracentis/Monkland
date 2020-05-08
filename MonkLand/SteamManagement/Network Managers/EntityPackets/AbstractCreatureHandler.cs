@@ -16,7 +16,7 @@ namespace Monkland.SteamManagement
             creature.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
             (creature as AbstractPhysicalObject as Patches.patch_AbstractPhysicalObject).dist = reader.ReadInt32();
             creature.destroyOnAbstraction = true;
-            creature.abstractAI = AbstractCreatureAIHandler.Read(creature.abstractAI, ref reader);
+            //creature.abstractAI = AbstractCreatureAIHandler.Read(creature.abstractAI, ref reader);
             //Additional personality and relationship traits should be synced here!
             creature.remainInDenCounter = reader.ReadInt32();
             creature.spawnDen = WorldCoordinateHandler.Read(ref reader);
@@ -32,7 +32,7 @@ namespace Monkland.SteamManagement
             writer.Write(creature.timeSpentHere);
             writer.Write((byte)creature.type);
             writer.Write((creature as AbstractPhysicalObject as Patches.patch_AbstractPhysicalObject).dist);
-            AbstractCreatureAIHandler.Write(creature.abstractAI, ref writer);
+            //AbstractCreatureAIHandler.Write(creature.abstractAI, ref writer);
             //Additional personality and relationship traits should be synced here!
             writer.Write(creature.remainInDenCounter);
             WorldCoordinateHandler.Write(creature.spawnDen, ref writer);

@@ -47,7 +47,15 @@ namespace Monkland.SteamManagement
             PhysicalObjectHandler.Write(creature, ref writer);
             writer.Write(creature.blind);
             writer.Write(creature.dead);
-            IntVector2Handler.Write((IntVector2)creature.enteringShortCut, ref writer);
+            if (creature.enteringShortCut == null)
+            {
+                writer.Write(0);
+                writer.Write(0);
+            }
+            else
+            {
+                IntVector2Handler.Write((IntVector2)creature.enteringShortCut, ref writer);
+            }
             WorldCoordinateHandler.Write(creature.lastCoord, ref writer);
             writer.Write(creature.leechedOut);
             writer.Write(creature.newToRoomInvinsibility);

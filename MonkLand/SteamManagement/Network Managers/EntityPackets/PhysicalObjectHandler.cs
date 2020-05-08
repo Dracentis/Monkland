@@ -12,15 +12,15 @@ namespace Monkland.SteamManagement
         public static PhysicalObject Read(PhysicalObject physicalObject, ref BinaryReader reader)
         {
             physicalObject.abstractPhysicalObject = AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            int numberOfAppendages = reader.ReadInt32();
-            if (physicalObject.appendages.Count < numberOfAppendages)
-            {
-                physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            }
-            for (int a = 0; a < numberOfAppendages; a++)
-            {
-                physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            }
+            //int numberOfAppendages = reader.ReadInt32();
+            //if (physicalObject.appendages.Count < numberOfAppendages)
+            //{
+            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
+            //}
+            //for (int a = 0; a < numberOfAppendages; a++)
+            //{
+            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
+            //}
             int numberOFConnections = reader.ReadInt32();
             if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
             {
@@ -37,15 +37,15 @@ namespace Monkland.SteamManagement
         public static Creature Read(Creature physicalObject, ref BinaryReader reader)
         {
             physicalObject.abstractPhysicalObject = AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            int numberOfAppendages = reader.ReadInt32();
-            if (physicalObject.appendages.Count < numberOfAppendages)
-            {
-                physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            }
-            for (int a = 0; a < numberOfAppendages; a++)
-            {
-                physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            }
+            //int numberOfAppendages = reader.ReadInt32();
+            //if (physicalObject.appendages.Count < numberOfAppendages)
+            //{
+            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
+            //}
+            //for (int a = 0; a < numberOfAppendages; a++)
+            //{
+            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
+            //}
             int numberOFConnections = reader.ReadInt32();
             if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
             {
@@ -62,15 +62,15 @@ namespace Monkland.SteamManagement
         public static Player Read(Player physicalObject, ref BinaryReader reader)
         {
             physicalObject.abstractPhysicalObject = AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            int numberOfAppendages = reader.ReadInt32();
-            if (physicalObject.appendages.Count < numberOfAppendages)
-            {
-                physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            }
-            for (int a = 0; a < numberOfAppendages; a++)
-            {
-                physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            }
+            //int numberOfAppendages = reader.ReadInt32();
+            //if (physicalObject.appendages.Count < numberOfAppendages)
+            //{
+            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
+            //}
+            //for (int a = 0; a < numberOfAppendages; a++)
+            //{
+            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
+            //}
             int numberOFConnections = reader.ReadInt32();
             if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
             {
@@ -88,11 +88,11 @@ namespace Monkland.SteamManagement
         public static void Write(PhysicalObject physicalObject, ref BinaryWriter writer)
         {
             AbstractPhysicalObjectHandler.Write(physicalObject.abstractPhysicalObject, ref writer);
-            writer.Write(physicalObject.appendages.Count);
-            foreach (PhysicalObject.Appendage app in physicalObject.appendages)
-            {
-                AppendageHandler.Write(app, ref writer);
-            }
+            //writer.Write(physicalObject.appendages.Count);
+            //foreach (PhysicalObject.Appendage app in physicalObject.appendages)
+            //{
+            //    AppendageHandler.Write(app, ref writer);
+            //}
             writer.Write(physicalObject.bodyChunkConnections.Length);
             foreach (PhysicalObject.BodyChunkConnection con in physicalObject.bodyChunkConnections)
             {
