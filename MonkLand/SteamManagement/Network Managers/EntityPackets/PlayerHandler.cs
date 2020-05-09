@@ -44,6 +44,7 @@ namespace Monkland.SteamManagement
         public static void Write(Player player, ref BinaryWriter writer)
         {
             CreatureHandler.Write(player, ref writer);
+            writer.Write(player.aerobicLevel);
             writer.Write(player.airInLungs);
             writer.Write(player.allowRoll);
             writer.Write((int)player.animation);

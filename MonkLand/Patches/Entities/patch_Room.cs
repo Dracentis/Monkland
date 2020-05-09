@@ -15,6 +15,8 @@ namespace Monkland.Patches
         {
         }
 
+        //public int playerSyncDelay = 5;
+
         public extern void orig_Update();
 
         public void Update()
@@ -24,8 +26,13 @@ namespace Monkland.Patches
             {
                 if (MonklandSteamManager.WorldManager.commonRooms.ContainsKey(this.abstractRoom.name) && this.game.Players[0].realizedObject != null && this.game.Players[0].Room.name == this.abstractRoom.name)
                 {
+                    //playerSyncDelay = 5;
                     MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
                 }
+                //else if (playerSyncDelay > 0)
+                //{
+                //    playerSyncDelay--;
+                //}
             }
         }
     }
