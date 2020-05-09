@@ -209,6 +209,11 @@ namespace Monkland.SteamManagement
                 else
                 {
                     SyncCycle();
+                    if (patch_RainWorldGame.mainGame != null && patch_RainWorldGame.mainGame.overWorld != null && patch_RainWorldGame.mainGame.overWorld.activeWorld != null)
+                    {
+                        patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
+                        patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
+                    }
                     syncDelay = 1000;
                 }
             }
@@ -292,6 +297,11 @@ namespace Monkland.SteamManagement
             this.cycleLength = (int)(minutes * 40f * 60f);
             this.timer = 0;
             SyncCycle();
+            if (patch_RainWorldGame.mainGame != null && patch_RainWorldGame.mainGame.overWorld != null && patch_RainWorldGame.mainGame.overWorld.activeWorld != null)
+            {
+                patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
+                patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
+            }
             syncDelay = 1000;
         }
 
