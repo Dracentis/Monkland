@@ -13,9 +13,9 @@ namespace Monkland.SteamManagement
         {
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
             creature = PhysicalObjectHandler.Read(creature, ref reader);
-            creature.blind = reader.ReadInt32();
+            //creature.blind = reader.ReadInt32();
             (creature as Patches.patch_Creature).Sync(reader.ReadBoolean());
-            creature.enteringShortCut = IntVector2Handler.Read(ref reader);
+            creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();
             creature.newToRoomInvinsibility = reader.ReadInt32();
@@ -29,9 +29,9 @@ namespace Monkland.SteamManagement
         {
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
             creature = PhysicalObjectHandler.Read(creature, ref reader);
-            creature.blind = reader.ReadInt32();
+            //creature.blind = reader.ReadInt32();
             (creature as Patches.patch_Player).Sync(reader.ReadBoolean());
-            creature.enteringShortCut = IntVector2Handler.Read(ref reader);
+            creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();
             creature.newToRoomInvinsibility = reader.ReadInt32();
@@ -47,15 +47,7 @@ namespace Monkland.SteamManagement
             PhysicalObjectHandler.Write(creature, ref writer);
             writer.Write(creature.blind);
             writer.Write(creature.dead);
-            if (creature.enteringShortCut == null)
-            {
-                writer.Write(0);
-                writer.Write(0);
-            }
-            else
-            {
-                IntVector2Handler.Write((IntVector2)creature.enteringShortCut, ref writer);
-            }
+            IntVector2NHandler.Write(creature.enteringShortCut, ref writer);
             WorldCoordinateHandler.Write(creature.lastCoord, ref writer);
             writer.Write(creature.leechedOut);
             writer.Write(creature.newToRoomInvinsibility);

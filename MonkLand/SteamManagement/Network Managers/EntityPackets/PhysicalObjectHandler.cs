@@ -71,6 +71,17 @@ namespace Monkland.SteamManagement
             //{
             //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
             //}
+            int numberOfChunks = reader.ReadInt32();
+            BodyChunk[] chunks = physicalObject.bodyChunks;
+            if (physicalObject.bodyChunks.Length < numberOfChunks)
+            {
+                chunks = new BodyChunk[numberOfChunks];
+            }
+            for (int a = 0; a < numberOfChunks; a++)
+            {
+                chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader);
+            }
+            (physicalObject as PhysicalObject as Patches.patch_PhysicalObject).Sync(chunks);
             int numberOFConnections = reader.ReadInt32();
             if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
             {
@@ -93,6 +104,11 @@ namespace Monkland.SteamManagement
             //{
             //    AppendageHandler.Write(app, ref writer);
             //}
+            writer.Write(physicalObject.bodyChunks.Length);
+            foreach (BodyChunk chunk in physicalObject.bodyChunks)
+            {
+                BodyChunkHandler.Write(chunk, ref writer);
+            }
             writer.Write(physicalObject.bodyChunkConnections.Length);
             foreach (PhysicalObject.BodyChunkConnection con in physicalObject.bodyChunkConnections)
             {

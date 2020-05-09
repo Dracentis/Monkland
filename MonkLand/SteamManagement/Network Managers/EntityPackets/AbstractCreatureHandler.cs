@@ -13,7 +13,7 @@ namespace Monkland.SteamManagement
             creature.pos = WorldCoordinateHandler.Read(ref reader);
             creature.InDen = reader.ReadBoolean();
             creature.timeSpentHere = reader.ReadInt32();
-            creature.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+            //creature.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
             (creature as AbstractPhysicalObject as Patches.patch_AbstractPhysicalObject).dist = reader.ReadInt32();
             creature.destroyOnAbstraction = true;
             //creature.abstractAI = AbstractCreatureAIHandler.Read(creature.abstractAI, ref reader);
@@ -30,7 +30,7 @@ namespace Monkland.SteamManagement
             WorldCoordinateHandler.Write(creature.pos, ref writer);
             writer.Write(creature.InDen);
             writer.Write(creature.timeSpentHere);
-            writer.Write((byte)creature.type);
+            //writer.Write((byte)creature.type);
             writer.Write((creature as AbstractPhysicalObject as Patches.patch_AbstractPhysicalObject).dist);
             //AbstractCreatureAIHandler.Write(creature.abstractAI, ref writer);
             //Additional personality and relationship traits should be synced here!

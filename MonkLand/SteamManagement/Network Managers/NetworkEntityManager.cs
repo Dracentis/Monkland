@@ -150,7 +150,7 @@ namespace Monkland.SteamManagement
             }
             startPos.room = abstractRoom.index;
             startPos.abstractNode = -1;
-            AbstractCreature abstractCreature = new AbstractCreature(patch_RainWorldGame.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, startPos, new EntityID(-1, dist));
+            AbstractCreature abstractCreature = new AbstractCreature(patch_RainWorldGame.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, startPos, new EntityID(-1, 1));
             abstractCreature.state = new PlayerState(abstractCreature, 1, 0, false);
             ((abstractCreature as AbstractPhysicalObject) as patch_AbstractPhysicalObject).dist = dist;
             ((abstractCreature as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner = sentPlayer.m_SteamID;

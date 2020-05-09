@@ -18,6 +18,13 @@ namespace Monkland.Patches
         public int dist = 0;
         public ulong owner = 0;
 
+        public bool networkObject
+        {
+            get{
+                return (MonklandSteamManager.isInGame && owner != NetworkGameManager.playerID);
+            }
+        }
+
         [MonoModIgnore]
         public extern void OriginalConstructor(World world, AbstractObjectType type, PhysicalObject realizedObject, WorldCoordinate pos, EntityID ID);
         [MonoModConstructor, MonoModOriginalName("OriginalConstructor")]

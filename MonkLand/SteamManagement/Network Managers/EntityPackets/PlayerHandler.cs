@@ -21,9 +21,12 @@ namespace Monkland.SteamManagement
             player.consistentDownDiagonal = reader.ReadInt32();
             bool corridorDrop = reader.ReadBoolean();
             int corridorTurnCounter = reader.ReadInt32();
-            IntVector2? corridorTurnDir = IntVector2Handler.Read(ref reader);
+            IntVector2? corridorTurnDir = IntVector2NHandler.Read(ref reader);
             int crawlTurnDelay = reader.ReadInt32();
             (player as Patches.patch_Player).Sync(corridorDrop, corridorTurnCounter, corridorTurnDir, crawlTurnDelay);
+            player.drown = reader.ReadSingle();
+            player.exhausted = reader.ReadBoolean();
+            player.glowing = reader.ReadBoolean();
             player.leftFoot = reader.ReadBoolean();
             player.longBellySlide = reader.ReadBoolean();
             player.lungsExhausted = reader.ReadBoolean();
@@ -48,6 +51,9 @@ namespace Monkland.SteamManagement
             writer.Write(player.circuitSwimResistance);
             writer.Write(player.consistentDownDiagonal);
             (player as Patches.patch_Player).Write(ref writer);
+            writer.Write(player.drown);
+            writer.Write(player.exhausted);
+            writer.Write(player.glowing);
             writer.Write(player.leftFoot);
             writer.Write(player.longBellySlide);
             writer.Write(player.lungsExhausted);

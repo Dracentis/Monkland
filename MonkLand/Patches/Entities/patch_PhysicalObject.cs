@@ -20,5 +20,10 @@ namespace Monkland.Patches
         {
             OriginalConstructor(abstractPhysicalObject);
         }
+
+        public void Sync(BodyChunk[] bodyChunks)
+        {
+            this.bodyChunks = bodyChunks;
+        }
     }
 }
