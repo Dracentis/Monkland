@@ -181,15 +181,18 @@ namespace Monkland.SteamManagement
                 {
                     foreach (string otherRoom in roomDict[player])
                     {
-                        foreach (string myRoom in roomDict[playerID])
+                        if (roomDict.ContainsKey(playerID))
                         {
-                            if (myRoom.Equals(otherRoom))
+                            foreach (string myRoom in roomDict[playerID])
                             {
-                                if (!commonRooms.ContainsKey(myRoom))
-                                    commonRooms.Add(myRoom, new List<ulong>());
-                                if (!commonRooms[myRoom].Contains(player))
-                                    commonRooms[myRoom].Add(player);
+                                if (myRoom.Equals(otherRoom))
+                                {
+                                    if (!commonRooms.ContainsKey(myRoom))
+                                        commonRooms.Add(myRoom, new List<ulong>());
+                                    if (!commonRooms[myRoom].Contains(player))
+                                        commonRooms[myRoom].Add(player);
                                 }
+                            }
                         }
                     }
                 }
