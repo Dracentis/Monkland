@@ -455,7 +455,7 @@ namespace Monkland.SteamManagement {
                         RecieveForcewaitReply( br, packet.sentPlayer );
                         return true;
                     } else {
-                        if (DEBUG)
+                        if (DEBUG && this.channelIndex != 2)
                         {
                             StringBuilder sb = new StringBuilder();
                             for (int i = 0; i < packet.data.Length; i++)
@@ -494,7 +494,8 @@ namespace Monkland.SteamManagement {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < packet.data.Length; i++)
                         sb.Append(packet.data[i] + "|");
-                    Log("Sending packet to player " + SteamFriends.GetFriendPersonaName(user) + " with data " + sb.ToString() + " in channel " + channelName);
+                    if (this.channelIndex != 2)
+                        Log("Sending packet to player " + SteamFriends.GetFriendPersonaName(user) + " with data " + sb.ToString() + " in channel " + channelName);
                     //Log(Environment.StackTrace);
                 }
 

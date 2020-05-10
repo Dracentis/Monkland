@@ -87,7 +87,7 @@ namespace Monkland.SteamManagement {
         public override void PlayerJoined(ulong steamID)
         {
             playerColors.Add(new Color(1f, 1f, 1f));
-            playerEyeColors.Add(new Color(0, 0, 0));
+            playerEyeColors.Add(new Color(0.004f, 0.004f, 0.004f));
             joinDelay = 100;
         }
 

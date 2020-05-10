@@ -164,42 +164,15 @@ namespace Monkland.Patches
             }
         }
 
+        public extern void orig_Die();
+
         public override void Die()
         {
             if ((this.abstractPhysicalObject as Patches.patch_AbstractPhysicalObject).networkObject)
             {
                 return;
             }
-            if (this.spearOnBack != null && this.spearOnBack.spear != null)
-            {
-                this.spearOnBack.DropSpear();
-            }
-            Room room = this.room;
-            if (room == null)
-            {
-                room = base.abstractCreature.world.GetAbstractRoom(base.abstractCreature.pos).realizedRoom;
-            }
-            if (room != null)
-            {
-                if (room.game.setupValues.invincibility)
-                {
-                    return;
-                }
-                if (!base.dead)
-                {
-                    room.game.GameOver(null);
-                    room.PlaySound(SoundID.UI_Slugcat_Die, base.mainBodyChunk);
-                }
-                if (this.PlaceKarmaFlower && room.game.session is StoryGameSession)
-                {
-                    (room.game.session as StoryGameSession).PlaceKarmaFlowerOnDeathSpot();
-                }
-            }
-            else if (!base.dead && !base.abstractCreature.world.game.setupValues.invincibility)
-            {
-                base.abstractCreature.world.game.GameOver(null);
-            }
-            base.Die();
+            orig_Die();
         }
 
         public extern void orig_Update(bool eu);

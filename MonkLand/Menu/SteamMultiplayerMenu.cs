@@ -200,6 +200,10 @@ namespace Monkland {
 
         public override void SliderSetValue(Slider slider, float f)
         {
+            if (f < 0.004f)
+            {
+                f = 0.004f;
+            }
             if (MonklandSteamManager.connectedPlayers.Count > 0)
             {
                 switch (slider.ID)
