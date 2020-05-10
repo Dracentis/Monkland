@@ -177,7 +177,7 @@ namespace Monkland.SteamManagement
             commonRooms.Clear();
             foreach (ulong player in roomDict.Keys)
             {
-                if (player != playerID)
+                if (player != playerID && roomDict.ContainsKey(player))
                 {
                     foreach (string otherRoom in roomDict[player])
                     {
