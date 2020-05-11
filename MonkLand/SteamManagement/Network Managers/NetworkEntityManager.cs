@@ -144,7 +144,6 @@ namespace Monkland.SteamManagement
             {
                 if (((cr as AbstractPhysicalObject) as patch_AbstractPhysicalObject).dist == dist && cr.realizedCreature != null)
                 {
-                    cr.pos.room = abstractRoom.index;
                     cr.realizedCreature = PlayerHandler.Read((cr.realizedCreature as Player), ref br);// Read Player
                     cr.pos.room = abstractRoom.index;
                     return;
@@ -158,9 +157,7 @@ namespace Monkland.SteamManagement
             ((abstractCreature as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner = sentPlayer.m_SteamID;
             abstractCreature.pos.room = abstractRoom.index;
             patch_RainWorldGame.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
-            abstractCreature.pos.room = abstractRoom.index;
             abstractCreature.RealizeInRoom();
-            abstractCreature.pos.room = abstractRoom.index;
             abstractCreature.realizedCreature = PlayerHandler.Read((abstractCreature.realizedCreature as Player), ref br);// Read Player
             abstractCreature.pos.room = abstractRoom.index;
         }

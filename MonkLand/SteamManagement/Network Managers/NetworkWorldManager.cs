@@ -28,18 +28,18 @@ namespace Monkland.SteamManagement
         
         public HashSet<ulong> ingamePlayers = new HashSet<ulong>();
 
-        public Dictionary<ulong, List<string>> roomDict = new Dictionary<ulong, List<string>>();
+        public Dictionary<ulong, List<string>> roomDict = new Dictionary<ulong, List<string>>(); //dictionary for each player in the game and a list of there currently loaded rooms
         public Dictionary<string, List<ulong>> commonRooms = new Dictionary<string, List<ulong>>();
 
-        public bool gameRunning = false;
+        public bool gameRunning = false;//is my game running
 
-        public int cycleLength = 36000;
-        public int timer = 0;
-        public int joinDelay = -1;
-        public int syncDelay = 1000;
+        public int cycleLength = 36000;// cyclelength to sync ingame cycle length with other players
+        public int timer = 0;//Timer to sync ingame time with other players
+        public int joinDelay = -1;//Delay to establish P2P connection before 
+        public int syncDelay = 1000;//Cycle periodic sync
+        //public int roomVerify = 1000;
 
         public const int WORLD_CHANNEL = 1;
-
         public byte WorldHandler = 0;
 
         public float AmountLeft
@@ -76,7 +76,8 @@ namespace Monkland.SteamManagement
             this.timer = 0;
             ingamePlayers.Clear();
             commonRooms.Clear();
-            roomDict.Clear();
+            roomDict.Clear(); 
+            roomDict.Add(playerID, new List<string>());
             this.gameRunning = false;
             this.joinDelay = -1;
         }
@@ -185,10 +186,12 @@ namespace Monkland.SteamManagement
                         {
                             foreach (string myRoom in roomDict[playerID])
                             {
-                                if (myRoom.Equals(otherRoom))
+                                if (myRoom.Equals(otherRoom) && myRoom != null && myRoom != "" && !myRoom.Equals(""))
                                 {
                                     if (!commonRooms.ContainsKey(myRoom))
+                                    {
                                         commonRooms.Add(myRoom, new List<ulong>());
+                                    }
                                     if (!commonRooms[myRoom].Contains(player))
                                         commonRooms[myRoom].Add(player);
                                 }
@@ -197,7 +200,15 @@ namespace Monkland.SteamManagement
                     }
                 }
             }
-            MonklandSteamManager.Log("Room Packet: Player shares "+ commonRooms.Count + " rooms with other players.");
+            if (MonklandSteamManager.DEBUG)
+            {
+                string roomlist = "";
+                foreach (string room in commonRooms.Keys)
+                {
+                    roomlist = roomlist + ", " + room;
+                }
+                MonklandSteamManager.Log("Room Packet: Player shares " + roomlist + " rooms with other players.");
+            }
         }
 
         public void TickCycle()
@@ -276,6 +287,8 @@ namespace Monkland.SteamManagement
         }
         public void DeactivateRoom(string roomName)
         {
+            if (roomName == null || roomName.Equals("") || roomName == "")
+                return;
             if (!roomDict.ContainsKey(playerID))
                 roomDict.Add(playerID, new List<string>());
             if (roomDict[playerID].Contains(roomName))
@@ -336,15 +349,15 @@ namespace Monkland.SteamManagement
                     syncDelay = 1000;
                 }
             }
-            MonklandSteamManager.Log("GameStart Packet: " + ingamePlayers + "\n" + ingamePlayers.Count + " players ingame.");
+            MonklandSteamManager.Log("GameStart Packet: " + ingamePlayers.ToString() + "\n" + ingamePlayers.Count + " players ingame.");
         }
 
         public void GameEnd()
         {
             if (ingamePlayers.Contains(playerID))
                 ingamePlayers.Remove(playerID);
-            if (roomDict.ContainsKey(playerID))
-                roomDict.Remove(playerID);
+            roomDict.Clear();
+            roomDict.Add(playerID, new List<string>());
             gameRunning = false;
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -356,7 +369,7 @@ namespace Monkland.SteamManagement
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             //MonklandSteamManager.instance.SendPacket(packet, (CSteamID)managerID), EP2PSend.k_EP2PSendReliable);
             MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
-            MonklandSteamManager.Log("GameEnd Packet: " + ingamePlayers + "\n" + ingamePlayers.Count + " players ingame.");
+            MonklandSteamManager.Log("GameEnd Packet: " + ingamePlayers.ToString() + "\n" + ingamePlayers.Count + " players ingame.");
         }
 
         public void SyncCycle(CSteamID target)// Syncs rain values for an individual player called by manager after each player loads the game
@@ -425,6 +438,7 @@ namespace Monkland.SteamManagement
                 roomDict.Add(sent.m_SteamID, new List<string>());
             if (roomDict[sent.m_SteamID].Contains(roomName))
                 roomDict[sent.m_SteamID].Remove(roomName);
+            MonklandSteamManager.Log("Incoming deactivate: " + roomName);
             CheckForCommonRooms();
         }
 
@@ -437,6 +451,7 @@ namespace Monkland.SteamManagement
                 roomDict.Add(sent.m_SteamID, new List<string>());
             if (!roomDict[sent.m_SteamID].Contains(roomName))
                 roomDict[sent.m_SteamID].Add(roomName);
+            MonklandSteamManager.Log("Incoming activate: " + roomName);
             CheckForCommonRooms();
         }
 
