@@ -187,7 +187,7 @@ namespace Monkland.Patches
                 }
                 else
                 {
-                    this.aerobicLevel = Mathf.Max(1f - this.airInLungs, this.aerobicLevel - (1f) / ((1100f) * (1f + 3f * Mathf.InverseLerp(0.9f, 1f, this.aerobicLevel))));
+                    this.aerobicLevel = Mathf.Max(1f - this.airInLungs, this.aerobicLevel - ((!this.slugcatStats.malnourished) ? 1f : 1.2f) / (((this.input[0].x != 0 || this.input[0].y != 0) ? 1100f : 400f) * (1f + 3f * Mathf.InverseLerp(0.9f, 1f, this.aerobicLevel))));
                 }
                 if (this.cantBeGrabbedCounter > 0)
                 {
@@ -201,31 +201,10 @@ namespace Monkland.Patches
                 {
                     this.noGrabCounter = Math.Max(this.noGrabCounter, 2);
                     this.shootUpCounter--;
-                    if (base.mainBodyChunk.pos.y < base.mainBodyChunk.lastPos.y)
+                    if (!this.input[0].jmp || this.input[0].y < 1 || base.mainBodyChunk.pos.y < base.mainBodyChunk.lastPos.y)
                     {
                         this.shootUpCounter = 0;
                     }
-                }
-                if (this.dangerGrasp == null)
-                {
-                    this.dangerGraspTime = 0;
-                }
-                else if (this.dangerGrasp.discontinued)
-                {
-                    this.dangerGrasp = null;
-                    this.dangerGraspTime = 0;
-                }
-                else
-                {
-                    this.dangerGraspTime++;
-                    if (this.dangerGraspTime == 30)
-                    {
-                        this.LoseAllGrasps();
-                    }
-                }
-                if (this.dontEatExternalFoodSourceCounter > 0)
-                {
-                    this.dontEatExternalFoodSourceCounter--;
                 }
 
                 if (this.bodyMode == Player.BodyModeIndex.ZeroG)
@@ -236,7 +215,7 @@ namespace Monkland.Patches
                 }
                 else
                 {
-                    if ((!this.standing || this.bodyMode == Player.BodyModeIndex.Crawl || this.bodyMode == Player.BodyModeIndex.CorridorClimb || this.bodyMode == Player.BodyModeIndex.ClimbIntoShortCut || (this.animation == Player.AnimationIndex.HangFromBeam) || (this.animation == Player.AnimationIndex.ClimbOnBeam)) && this.bodyMode != Player.BodyModeIndex.Default)
+                    if ((!this.standing || this.bodyMode == Player.BodyModeIndex.Crawl || this.bodyMode == Player.BodyModeIndex.CorridorClimb || this.bodyMode == Player.BodyModeIndex.ClimbIntoShortCut || (this.animation == Player.AnimationIndex.HangFromBeam && this.input[0].x == 0) || (this.animation == Player.AnimationIndex.ClimbOnBeam && this.input[0].y == 0)) && this.bodyMode != Player.BodyModeIndex.Default)
                     {
                         this.privSneak = Mathf.Min(this.privSneak + 0.1f, 1f);
                     }
@@ -268,7 +247,7 @@ namespace Monkland.Patches
                 {
                     soundID = SoundID.Slugcat_Roll_LOOP;
                 }
-                else if (this.animation == Player.AnimationIndex.ClimbOnBeam)
+                else if (this.animation == Player.AnimationIndex.ClimbOnBeam && this.input[0].y < 0)
                 {
                     soundID = SoundID.Slugcat_Slide_Down_Vertical_Beam_LOOP;
                 }
@@ -377,29 +356,23 @@ namespace Monkland.Patches
                 {
                     this.timeSinceInCorridorMode++;
                 }
-                if (this.allowRoll > 0)
-                {
-                    this.allowRoll--;
-                }
-                if (this.room.GetTile(base.bodyChunks[1].pos + new Vector2(0f, -20f)).Terrain == Room.Tile.TerrainType.Air && (!base.IsTileSolid(1, -1, -1) || !base.IsTileSolid(1, 1, -1)))
-                {
-                    this.allowRoll = 15;
-                }
+
+
                 if (base.stun == 12)
                 {
                     this.room.PlaySound(SoundID.UI_Slugcat_Exit_Stun, base.mainBodyChunk);
                 }
-                if (this.wantToJump > 0)
+                bool flag = this.input[0].jmp && !this.input[1].jmp;
+                if (flag)
                 {
-                    this.wantToJump--;
-                }
-                if (this.bodyMode == Player.BodyModeIndex.WallClimb)
-                {
-                    this.wallSlideCounter++;
-                }
-                else
-                {
-                    this.wallSlideCounter = 0;
+                    if (base.grasps[0] != null && base.grasps[0].grabbed is TubeWorm)
+                    {
+                        flag = (base.grasps[0].grabbed as TubeWorm).JumpButton(this);
+                    }
+                    else if (base.grasps[1] != null && base.grasps[1].grabbed is TubeWorm)
+                    {
+                        flag = (base.grasps[1].grabbed as TubeWorm).JumpButton(this);
+                    }
                 }
                 if (this.canWallJump > 0)
                 {
@@ -461,6 +434,15 @@ namespace Monkland.Patches
                 {
                     this.jumpStun++;
                 }
+
+                if (this.input[0].downDiagonal != 0 && this.input[0].downDiagonal == this.input[1].downDiagonal)
+                {
+                    this.consistentDownDiagonal++;
+                }
+                else
+                {
+                    this.consistentDownDiagonal = 0;
+                }
                 if (base.dead)
                 {
                     this.animation = Player.AnimationIndex.Dead;
@@ -471,6 +453,19 @@ namespace Monkland.Patches
                     this.animation = Player.AnimationIndex.None;
                     this.bodyMode = Player.BodyModeIndex.Stunned;
                 }
+                if (this.bodyMode != Player.BodyModeIndex.Swimming)
+                {
+                    if (base.bodyChunks[0].ContactPoint.x != 0 && this.input[0].x == base.bodyChunks[0].ContactPoint.x && base.bodyChunks[0].vel.y < 0f && this.bodyMode != Player.BodyModeIndex.CorridorClimb)
+                    {
+                        BodyChunk bodyChunk3 = base.bodyChunks[0];
+                        bodyChunk3.vel.y = bodyChunk3.vel.y * Mathf.Clamp(1f - this.surfaceFriction * ((base.bodyChunks[0].pos.y <= base.bodyChunks[1].pos.y) ? 0.5f : 2f), 0f, 1f);
+                    }
+                    if (base.bodyChunks[1].ContactPoint.x != 0 && this.input[0].x == base.bodyChunks[1].ContactPoint.x && base.bodyChunks[1].vel.y < 0f && this.bodyMode != Player.BodyModeIndex.CorridorClimb)
+                    {
+                        BodyChunk bodyChunk4 = base.bodyChunks[1];
+                        bodyChunk4.vel.y = bodyChunk4.vel.y * Mathf.Clamp(1f - this.surfaceFriction * ((base.bodyChunks[0].pos.y <= base.bodyChunks[1].pos.y) ? 0.5f : 2f), 0f, 1f);
+                    }
+                }
 
                 //Created Delegate to call base Update(eu)
                 RuntimeMethodHandle handle = typeof(Creature).GetMethod("Update").MethodHandle;
@@ -479,11 +474,70 @@ namespace Monkland.Patches
                 Action<bool> funct = (Action<bool>)Activator.CreateInstance(typeof(Action<bool>), this, ptr);
                 funct(eu);//Creature.Update(eu)
 
-                base.GoThroughFloors = false;
                 if (base.stun < 1 && !base.dead && this.enteringShortCut == null && !base.inShortcut)
                 {
                     this.MovementUpdate(eu);
                 }
+
+                bool flag2 = false;
+                if (this.input[0].jmp && !this.input[1].jmp && !this.lastWiggleJump)
+                {
+                    this.wiggle += 0.025f;
+                    this.lastWiggleJump = true;
+                }
+                IntVector2 intVector = this.wiggleDirectionCounters;
+                if (this.input[0].x != 0 && this.input[0].x != this.input[1].x && this.input[0].x != this.lastWiggleDir.x)
+                {
+                    flag2 = true;
+                    if (intVector.y > 0)
+                    {
+                        this.wiggle += 0.0333333351f;
+                        this.wiggleDirectionCounters.y = this.wiggleDirectionCounters.y - 1;
+                    }
+                    this.lastWiggleDir.x = this.input[0].x;
+                    this.lastWiggleJump = false;
+                    if (this.wiggleDirectionCounters.x < 5)
+                    {
+                        this.wiggleDirectionCounters.x = this.wiggleDirectionCounters.x + 1;
+                    }
+                }
+                if (this.input[0].y != 0 && this.input[0].y != this.input[1].y && this.input[0].y != this.lastWiggleDir.y)
+                {
+                    flag2 = true;
+                    if (intVector.x > 0)
+                    {
+                        this.wiggle += 0.0333333351f;
+                        this.wiggleDirectionCounters.x = this.wiggleDirectionCounters.x - 1;
+                    }
+                    this.lastWiggleDir.y = this.input[0].y;
+                    this.lastWiggleJump = false;
+                    if (this.wiggleDirectionCounters.y < 5)
+                    {
+                        this.wiggleDirectionCounters.y = this.wiggleDirectionCounters.y + 1;
+                    }
+                }
+                if (flag2)
+                {
+                    this.noWiggleCounter = 0;
+                }
+                else
+                {
+                    this.noWiggleCounter++;
+                }
+                this.wiggle -= Custom.LerpMap((float)this.noWiggleCounter, 5f, 35f, 0f, 0.0333333351f);
+                if (this.noWiggleCounter > 20)
+                {
+                    if (this.wiggleDirectionCounters.x > 0)
+                    {
+                        this.wiggleDirectionCounters.x = this.wiggleDirectionCounters.x - 1;
+                    }
+                    if (this.wiggleDirectionCounters.y > 0)
+                    {
+                        this.wiggleDirectionCounters.y = this.wiggleDirectionCounters.y - 1;
+                    }
+                }
+                this.wiggle = Mathf.Clamp(this.wiggle, 0f, 1f);
+
                 if (networkLife > 0)
                 {
                     networkLife--;

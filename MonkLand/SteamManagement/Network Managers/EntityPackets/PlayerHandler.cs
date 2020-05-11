@@ -38,6 +38,7 @@ namespace Monkland.SteamManagement
             player.standing = reader.ReadBoolean();
             player.swallowAndRegurgitateCounter = reader.ReadInt32();
             player.swimCycle = reader.ReadSingle();
+            player = InputHandler.Read(player, ref reader);
             return player;
         }
 
@@ -66,6 +67,7 @@ namespace Monkland.SteamManagement
             writer.Write(player.standing);
             writer.Write(player.swallowAndRegurgitateCounter);
             writer.Write(player.swimCycle);
+            InputHandler.Write(player, ref writer);
         }
     }
 }
