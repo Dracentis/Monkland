@@ -139,6 +139,7 @@ namespace Monkland.Patches {
         }
 
         public extern void orig_Singal(MenuObject sender, string message);
+        
         public void Singal(MenuObject sender, string message) {
 
             if (message == "COOP")

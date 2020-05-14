@@ -54,6 +54,33 @@ namespace Monkland.Patches
             }
         }
 
+        private float rainMeterXPositionOnSleepScreen
+        {
+            get
+            {
+                return this.hud.rainWorld.options.ScreenSize.x - 100f;
+            }
+        }
+
+        private float rainMeterYPositionOnSleepScreen
+        {
+            get
+            {
+                return this.hud.rainWorld.options.ScreenSize.y - 100f;
+            }
+        }
+
+        [MonoModIgnore]
+        private bool halfTimeShown;
+
+        [MonoModIgnore]
+        private float plop;
+
+        [MonoModIgnore]
+        private float lastPlop;
+
+        [MonoModIgnore]
+        private float fRain;
         
         public override void Update()
         {
@@ -166,6 +193,20 @@ namespace Monkland.Patches
             get
             {
                 return this.halfTimeBlink > 0 || this.hud.showKarmaFoodRain || this.hud.owner.RevealMap || (this.hud.owner.GetOwnerType() == HUD.HUD.OwnerType.DeathScreen) || (this.hud.owner.GetOwnerType() == HUD.HUD.OwnerType.SleepScreen);
+            }
+        }
+
+        public Vector2 DrawPos(float timeStacker)
+        {
+            return Vector2.Lerp(this.lastPos, this.pos, timeStacker);
+        }
+
+        public override void Draw(float timeStacker)
+        {
+            float num = Mathf.Pow(Mathf.Lerp(this.lastFade, this.fade, timeStacker), 1.5f);
+            for (int i = 0; i < this.circles.Length; i++)
+            {
+                this.circles[i].Draw(timeStacker);
             }
         }
 

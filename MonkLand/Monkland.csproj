@@ -14,17 +14,11 @@
     <Reference Include="GoKit">
       <HintPath>Resources\GoKit.dll</HintPath>
     </Reference>
-    <Reference Include="HOOKS-Assembly-CSharp">
-      <HintPath>Resources\HOOKS-Assembly-CSharp.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Security">
       <HintPath>Resources\Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod">
       <HintPath>Resources\MonoMod.exe</HintPath>
-    </Reference>
-    <Reference Include="Partiality">
-      <HintPath>Resources\Partiality.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>Resources\UnityEngine.dll</HintPath>
