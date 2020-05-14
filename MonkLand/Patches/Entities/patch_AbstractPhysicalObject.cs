@@ -20,7 +20,8 @@ namespace Monkland.Patches
 
         public bool networkObject
         {
-            get{
+            get
+            {
                 return (MonklandSteamManager.isInGame && owner != NetworkGameManager.playerID);
             }
         }

@@ -22,12 +22,6 @@ namespace Monkland.Patches.Menus
         }
 
 		[MonoModIgnore]
-		private bool addPassageButtonWhenTokenBecomesVisible;
-
-		[MonoModIgnore]
-		private bool pingAchivements;
-
-		[MonoModIgnore]
 		public extern void OriginalConstructor(Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, KarmaLadder ladder);
         [MonoModConstructor, MonoModOriginalName( "OriginalConstructor" )]
         public void ctor_EndgameTokens(Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, KarmaLadder ladder)
@@ -157,12 +151,6 @@ namespace Monkland.Patches.Menus
 				}
 			}
 		}
-
-		[MonoModIgnore]
-		private float blackFade;
-
-		[MonoModIgnore]
-		private float lastBlackFade;
 
 	}
 }

@@ -17,16 +17,6 @@ namespace Monkland.Patches.Menus
 		{
 		}
 
-		[MonoModIgnore]
-		public abstract class HudPart
-		{
-		}
-
-		[MonoModIgnore]
-		public void AddPart(HudPart part)
-		{
-		}
-
 		public void InitSleepHud(MultiplayerSleepAndDeathScreen sleepAndDeathScreen, Map.MapData mapData, SlugcatStats charStats)
 		{
 			this.AddPart(new FoodMeter(this, charStats.maxFood, charStats.foodToHibernate));

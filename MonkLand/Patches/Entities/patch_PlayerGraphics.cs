@@ -17,9 +17,6 @@ namespace Monkland.Patches
         {
         }
 
-		[MonoModIgnore]
-		private Player player;
-
 		public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
 		{
 			Color color;

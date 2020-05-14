@@ -14,7 +14,7 @@ namespace Monkland.SteamManagement
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
             creature = PhysicalObjectHandler.Read(creature, ref reader);
             //creature.blind = reader.ReadInt32();
-            (creature as Patches.patch_Player).Sync(reader.ReadBoolean());
+            creature.dead = reader.ReadBoolean();
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();
@@ -30,7 +30,7 @@ namespace Monkland.SteamManagement
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
             creature = PhysicalObjectHandler.Read(creature, ref reader);
             //creature.blind = reader.ReadInt32();
-            (creature as Patches.patch_Player).Sync(reader.ReadBoolean());
+            creature.dead = reader.ReadBoolean();
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();

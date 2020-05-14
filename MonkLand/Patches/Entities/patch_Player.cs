@@ -18,104 +18,7 @@ namespace Monkland.Patches
         {
         }
 
-        [MonoModIgnore]
-        private int lastStun;
-
-        [MonoModIgnore]
-        private int cantBeGrabbedCounter;
-
-        [MonoModIgnore]
-        private int goIntoCorridorClimb;
-
-        [MonoModIgnore]
-        private bool corridorDrop;
-
-        [MonoModIgnore]
-        private int verticalCorridorSlideCounter;
-
-        [MonoModIgnore]
-        private int horizontalCorridorSlideCounter;
-
-        [MonoModIgnore]
-        private IntVector2? corridorTurnDir;
-
-        [MonoModIgnore]
-        private int corridorTurnCounter;
-
-        [MonoModIgnore]
-        private int timeSinceInCorridorMode;
-
-        [MonoModIgnore]
-        private float[] dynamicRunSpeed;
-
-        [MonoModIgnore]
-        private float wiggle;
-
-        [MonoModIgnore]
-        private int noWiggleCounter;
-
-        [MonoModIgnore]
-        private int canCorridorJump;
-
-        [MonoModIgnore]
-        private int noGrabCounter;
-
-        [MonoModIgnore]
-        private int poleSkipPenalty;
-
-        [MonoModIgnore]
-        private int wantToPickUp;
-
-        [MonoModIgnore]
-        private int wantToThrow;
-
-        [MonoModIgnore]
-        private int dontGrabStuff;
-
-        [MonoModIgnore]
-        private int waterJumpDelay;
-
-        [MonoModIgnore]
-        private float swimForce;
-
-        [MonoModIgnore]
-        private Vector2? feetStuckPos;
-
-        [MonoModIgnore]
-        private int backwardsCounter;
-
-        [MonoModIgnore]
-        private int landingDelay;
-
-        [MonoModIgnore]
-        private int crawlTurnDelay;
-
-        [MonoModIgnore]
-        private IntVector2 lastWiggleDir;
-
-        [MonoModIgnore]
-        private IntVector2 wiggleDirectionCounters;
-
-        [MonoModIgnore]
-        private bool lastWiggleJump;
-
-        [MonoModIgnore]
-        private int ledgeGrabCounter;
-
-        [MonoModIgnore]
-        private bool straightUpOnHorizontalBeam;
-
-        [MonoModIgnore]
-        private Vector2 upOnHorizontalBeamPos;
-
-        [MonoModIgnore]
-        private int exitBellySlideCounter;
-
-        [MonoModIgnore]
-        private float privSneak;
-
         public int networkLife = 500;
-
 
         public override Color ShortCutColor()
         {
@@ -126,12 +29,7 @@ namespace Monkland.Patches
             return PlayerGraphics.SlugcatColor((base.State as PlayerState).slugcatCharacter);
         }
 
-        public void Sync(bool dead)
-        {
-            this.dead = dead;
-            networkLife = 100;
-    }
-
+        /*
         public void Sync(bool corridorDrop, int corridorTurnCounter, IntVector2? corridorTurnDir, int crawlTurnDelay)
         {
             this.corridorDrop = corridorDrop;
@@ -148,6 +46,7 @@ namespace Monkland.Patches
             IntVector2NHandler.Write(corridorTurnDir, ref writer);
             writer.Write(crawlTurnDelay);
         }
+        */
 
         public bool MapDiscoveryActive
         {

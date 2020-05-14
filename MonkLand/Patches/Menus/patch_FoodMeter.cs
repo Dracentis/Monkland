@@ -134,27 +134,15 @@ namespace Monkland.Patches.Menus
 			}
 		}
 
-		public class MeterCircle
+		public class MeterCircle : FoodMeter.MeterCircle
 		{
 			[MonoModIgnore]
-			public MeterCircle(FoodMeter meter, int number)
+			public MeterCircle(FoodMeter meter, int number) : base(meter, number)
 			{
 				this.meter = meter;
 				this.number = number;
 				this.slowXAdd = this.XAdd(1f);
 				this.lastSlowXAdd = this.slowXAdd;
-			}
-
-			[MonoModIgnore]
-			public float XAdd(float timeStacker)
-			{
-				return this.meter.CircleDistance(timeStacker) * (float)this.number + ((this.number < this.meter.ShowSurvivalLimit) ? 0f : (this.meter.CircleDistance(timeStacker) / 2f));
-			}
-
-			[MonoModIgnore]
-			public Vector2 DrawPos(float timeStacker)
-			{
-				return this.meter.DrawPos(timeStacker) + new Vector2(Mathf.Lerp(this.lastSlowXAdd, this.slowXAdd, timeStacker), 0f);
 			}
 
 			public void Update()
@@ -252,42 +240,6 @@ namespace Monkland.Patches.Menus
 				this.circles[0].visible = this.plopped;
 				this.circles[1].visible = (this.plopped && this.foodPlopped);
 			}
-
-			[MonoModIgnore]
-			public FoodMeter meter;
-
-			[MonoModIgnore]
-			public HUDCircle[] circles;
-
-			[MonoModIgnore]
-			public FSprite gradient;
-
-			[MonoModIgnore]
-			public int number;
-
-			[MonoModIgnore]
-			public float[,] rads;
-
-			[MonoModIgnore]
-			public bool plopped;
-
-			[MonoModIgnore]
-			public bool foodPlopped;
-
-			[MonoModIgnore]
-			public bool eaten;
-
-			[MonoModIgnore]
-			public int foodPlopDelay;
-
-			[MonoModIgnore]
-			public int eatCounter;
-
-			[MonoModIgnore]
-			public float slowXAdd;
-
-			[MonoModIgnore]
-			public float lastSlowXAdd;
 		}
 
 	}
