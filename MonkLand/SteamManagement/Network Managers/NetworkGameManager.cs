@@ -20,9 +20,10 @@ namespace Monkland.SteamManagement {
 
         public byte UtilityHandler = 0;
 
-        public HashSet<ulong> readiedPlayers = new HashSet<ulong>();
+        public HashSet<ulong> readiedPlayers = new HashSet<ulong>();// Set of players who are ready for the next cycle
         public List<Color> playerColors = new List<Color>();// List of player body colors
         public List<Color> playerEyeColors = new List<Color>();// List of player eye colors
+
         public int joinDelay = -1;
 
         public int startDelay = -1;

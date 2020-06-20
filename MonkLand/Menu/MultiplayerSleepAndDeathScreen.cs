@@ -219,7 +219,6 @@ namespace Menu
 				}
 				manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
 				MonklandSteamManager.instance.OnGameExit();
-				Steamworks.SteamMatchmaking.LeaveLobby(MonklandSteamManager.lobbyID);
 			}
 			else if (message == "READYUP")
 			{

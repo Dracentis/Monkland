@@ -123,14 +123,35 @@ namespace Monkland.Patches
 					break;
 				case ProcessManager.ProcessID.GhostScreen:
 				case ProcessManager.ProcessID.KarmaToMaxScreen:
-					this.currentMainLoop = new GhostEncounterScreen(this, ID);
+					if (MonklandSteamManager.isInGame)
+					{
+						this.currentMainLoop = new MultiplayerSleepAndDeathScreen(this, ProcessManager.ProcessID.SleepScreen);
+					}
+					else
+					{
+						this.currentMainLoop = new GhostEncounterScreen(this, ID);
+					}
 					break;
 				case ProcessManager.ProcessID.SlideShow:
-					this.currentMainLoop = new SlideShow(this, this.nextSlideshow);
+					if (MonklandSteamManager.isInGame)
+					{
+						this.currentMainLoop = new MultiplayerSleepAndDeathScreen(this, ProcessManager.ProcessID.SleepScreen);
+					}
+					else
+					{
+						this.currentMainLoop = new SlideShow(this, this.nextSlideshow);
+					}
 					break;
 				case ProcessManager.ProcessID.FastTravelScreen:
 				case ProcessManager.ProcessID.RegionsOverviewScreen:
-					this.currentMainLoop = new FastTravelScreen(this, ID);
+					if (MonklandSteamManager.isInGame)
+					{
+						this.currentMainLoop = new MultiplayerSleepAndDeathScreen(this, ProcessManager.ProcessID.SleepScreen);
+					}
+					else
+					{
+						this.currentMainLoop = new FastTravelScreen(this, ID);
+					}
 					break;
 				case ProcessManager.ProcessID.CustomEndGameScreen:
 					this.currentMainLoop = new CustomEndGameScreen(this);
@@ -145,7 +166,14 @@ namespace Monkland.Patches
 					this.currentMainLoop = new IntroRoll(this);
 					break;
 				case ProcessManager.ProcessID.Credits:
-					this.currentMainLoop = new EndCredits(this);
+					if (MonklandSteamManager.isInGame)
+					{
+						this.currentMainLoop = new MultiplayerSleepAndDeathScreen(this, ProcessManager.ProcessID.SleepScreen);
+					}
+					else
+					{
+						this.currentMainLoop = new EndCredits(this);
+					}
 					break;
 				case ProcessManager.ProcessID.ConsoleOptionsMenu:
 					this.currentMainLoop = new ConsoleOptionsMenu(this);
@@ -170,7 +198,14 @@ namespace Monkland.Patches
 					this.currentMainLoop = new InputOptionsMenu(this);
 					break;
 				case ProcessManager.ProcessID.Statistics:
-					this.currentMainLoop = new StoryGameStatisticsScreen(this);
+					if (MonklandSteamManager.isInGame)
+					{
+						this.currentMainLoop = new MultiplayerSleepAndDeathScreen(this, ProcessManager.ProcessID.SleepScreen);
+					}
+					else
+					{
+						this.currentMainLoop = new StoryGameStatisticsScreen(this);
+					}
 					break;
 			}
 			if (mainLoopProcess != null)

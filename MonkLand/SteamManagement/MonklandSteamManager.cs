@@ -22,7 +22,7 @@ namespace Monkland.SteamManagement {
         public static void Log(object message)
         {
             if (DEBUG)
-                Debug.Log(message);
+                Debug.Log("[MONKLAND] "+message.ToString());
         }
 
         public const ulong appID = 312520;
@@ -131,6 +131,8 @@ namespace Monkland.SteamManagement {
                 EChatMemberStateChange change = (EChatMemberStateChange)update.m_rgfChatMemberStateChange;
                 if( change == EChatMemberStateChange.k_EChatMemberStateChangeEntered ) {
                     MultiplayerChat.AddChat( string.Format( "User {0} joined the game!", SteamFriends.GetFriendPersonaName( new CSteamID( update.m_ulSteamIDUserChanged ) ) ) );
+                    Log(string.Format("User {0} joined the game!", SteamFriends.GetFriendPersonaName(new CSteamID(update.m_ulSteamIDUserChanged))));
+                    
                     if (!connectedPlayers.Contains(update.m_ulSteamIDUserChanged))
                     {
                         PlayerJoinedManagers(update.m_ulSteamIDUserChanged);
@@ -140,16 +142,22 @@ namespace Monkland.SteamManagement {
                     if ( update.m_ulSteamIDUserChanged != SteamUser.GetSteamID().m_SteamID ) {
                         otherPlayers.Add( update.m_ulSteamIDUserChanged );
                     }
-                    
+                    Log("Connected Players:");
+                    Log(connectedPlayers.ToArray().ToString());
+
+
                 }
                 else if( change == EChatMemberStateChange.k_EChatMemberStateChangeLeft || change == EChatMemberStateChange.k_EChatMemberStateChangeKicked || change == EChatMemberStateChange.k_EChatMemberStateChangeDisconnected ) {
                     MultiplayerChat.AddChat( string.Format( "User {0} left the game!", SteamFriends.GetFriendPersonaName( new CSteamID( update.m_ulSteamIDUserChanged ) ) ) );
+                    Log(string.Format("User {0} left the game!", SteamFriends.GetFriendPersonaName(new CSteamID(update.m_ulSteamIDUserChanged))));
                     PlayerLeftManagers(update.m_ulSteamIDUserChanged); 
                     connectedPlayers.Remove(update.m_ulSteamIDUserChanged);
                     MultiplayerPlayerList.RemovePlayerLabel( update.m_ulSteamIDUserChanged );
                     if( update.m_ulSteamIDUserChanged != SteamUser.GetSteamID().m_SteamID ) {
                         otherPlayers.Remove( update.m_ulSteamIDUserChanged );
                     }
+                    Log("Connected Players:");
+                    Log(connectedPlayers.ToArray().ToString());
                 }
             } catch( System.Exception e ) {
                 Debug.LogError( e );
@@ -454,13 +462,13 @@ namespace Monkland.SteamManagement {
                         RecieveForcewaitReply( br, packet.sentPlayer );
                         return true;
                     } else {
-                        if (DEBUG && this.channelIndex != 2)
+                        /*if (DEBUG && this.channelIndex != 2)
                         {
                             StringBuilder sb = new StringBuilder();
                             for (int i = 0; i < packet.data.Length; i++)
                                 sb.Append(packet.data[i] + "|");
                             Log("Received packet from player " + SteamFriends.GetFriendPersonaName(packet.sentPlayer) + " with data " + sb.ToString() + " in channel " + this.channelName);
-                        }
+                        }*/
                         handlers[packet.handlerID]( br, packet.sentPlayer );
                     }
                     return false;
@@ -493,8 +501,8 @@ namespace Monkland.SteamManagement {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < packet.data.Length; i++)
                         sb.Append(packet.data[i] + "|");
-                    if (this.channelIndex != 2)
-                        Log("Sending packet to player " + SteamFriends.GetFriendPersonaName(user) + " with data " + sb.ToString() + " in channel " + channelName);
+                    //if (this.channelIndex != 2)
+                    //    Log("Sending packet to player " + SteamFriends.GetFriendPersonaName(user) + " with data " + sb.ToString() + " in channel " + channelName);
                     //Log(Environment.StackTrace);
                 }
 
@@ -635,7 +643,7 @@ namespace Monkland.SteamManagement {
         private void RegisterDefaultChannels() {
             allChannels.Add(
                 new PacketChannel(
-                    "Default Channel", //Channel name
+                    "Default Channel", //Used by Game Manager
                     0, //Channel Index
                     this, //Monkland Steam Manager
                     40, //Packets per update
@@ -646,7 +654,7 @@ namespace Monkland.SteamManagement {
             );
             allChannels.Add(
                 new PacketChannel(
-                    "World", //Channel name
+                    "World", //Used by World Manager
                     1, //Channel Index
                     this, //Monkland Steam Manager
                     40, //Packets per update
@@ -657,7 +665,7 @@ namespace Monkland.SteamManagement {
             );
             allChannels.Add(
                 new PacketChannel(
-                    "Entity", //Channel name
+                    "Entity", //Used by Entity Manager
                     2, //Channel Index
                     this, //Monkland Steam Manager
                     120, //Packets per update
