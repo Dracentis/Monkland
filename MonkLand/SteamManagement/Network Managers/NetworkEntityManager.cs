@@ -6,6 +6,7 @@ using UnityEngine;
 using RWCustom;
 using System.IO;
 using Monkland.Patches;
+using System.Runtime.CompilerServices;
 
 namespace Monkland.SteamManagement
 {
@@ -89,6 +90,12 @@ namespace Monkland.SteamManagement
                     if (patch_RainWorldGame.mainGame != null)
                     {
                         ReadRelease(br, sentPlayer);
+                    }
+                    return;
+                case (byte)PacketType.Hit:
+                    if (patch_RainWorldGame.mainGame != null)
+                    {
+                        ReadHit(br, sentPlayer);
                     }
                     return;
             }
@@ -270,13 +277,49 @@ namespace Monkland.SteamManagement
             }
         }
 
+        public void SendHit(HitType type, Weapon obj, PhysicalObject hit, BodyChunk chunk)
+        {
+            if (hit == null || obj == null || !isSynced(obj) || !isSynced(hit) || (obj.abstractPhysicalObject as patch_AbstractPhysicalObject).owner != NetworkGameManager.playerID)
+            {
+                return;
+            }
+            if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(obj.room.abstractRoom.name))
+                return;
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
+            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+            writer.Write((byte)PacketType.Hit);
+            writer.Write((byte)HitType.Rock);
+            writer.Write(obj.room.abstractRoom.name);
+            writer.Write((obj.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            writer.Write((hit.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            if (chunk != null)
+            {
+                writer.Write(chunk.index);
+            }
+            else
+            {
+                writer.Write(-1);
+            }
+            MonklandSteamManager.Log("[Entity] Sending Hit: " + (obj.abstractPhysicalObject as patch_AbstractPhysicalObject).dist + " hit " + (hit.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+            foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name])
+            {
+                if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
+                {
+                    if (target != playerID)
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                }
+            }
+        }
+
         public enum PacketType
         {
             Player,
             Rock,
             EstablishGrasp,
             SwitchGrasps,
-            ReleaseGrasp
+            ReleaseGrasp,
+            Hit
         }
 
         #endregion
@@ -363,6 +406,46 @@ namespace Monkland.SteamManagement
             abstractObject.pos.room = abstractRoom.index;
         }
 
+        public void ReadHit(BinaryReader br, CSteamID sentPlayer)
+        {
+            HitType type = (HitType)br.ReadByte();
+            string roomName = br.ReadString();//Read Room Name
+            AbstractRoom abstractRoom = patch_RainWorldGame.mainGame.world.GetAbstractRoom(roomName);
+            if (abstractRoom == null || sentPlayer.m_SteamID == NetworkGameManager.playerID)
+                return;
+
+            if (abstractRoom.realizedRoom != null)
+            {
+                PhysicalObject obj = DistHandler.ReadPhysicalObject(ref br, abstractRoom.realizedRoom);
+                PhysicalObject hit = DistHandler.ReadPhysicalObject(ref br, abstractRoom.realizedRoom);
+                int chunk = br.ReadInt32();
+                if (obj != null)
+                {
+                    if (type == HitType.Rock && (obj is Rock))
+                    {
+                        MonklandSteamManager.Log("[Entity] Incomming hit: " + (obj.abstractPhysicalObject as patch_AbstractPhysicalObject).dist + " hit something!");
+                        if (chunk != -1)
+                        {
+                            (obj as patch_Rock).NetHit(hit, hit.bodyChunks[chunk]);
+                        }
+                        else
+                        {
+                            (obj as patch_Rock).NetHit(hit, null);
+                        }
+                    }
+                }
+            }
+        }
+
+        public enum HitType
+        {
+            Rock,
+            Spear,
+            Bomb,
+            FlashBang
+        }
+
+        #region grasps
         public void ReadGrab(BinaryReader br, CSteamID sentPlayer)
         {
             if (!MonklandSteamManager.WorldManager.gameRunning || patch_RainWorldGame.mainGame == null || patch_RainWorldGame.mainGame.world == null)
@@ -545,6 +628,7 @@ namespace Monkland.SteamManagement
             (grabber as patch_Creature).NetSwitch(from, to);
 
         }
+        #endregion
 
         #endregion
     }

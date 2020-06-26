@@ -4,6 +4,8 @@ using System.Drawing.Printing;
 using System.Text;
 using Monkland.SteamManagement;
 using MonoMod;
+using UnityEngine;
+using RWCustom;
 
 namespace Monkland.Patches
 {
@@ -51,6 +53,74 @@ namespace Monkland.Patches
                     this.Destroy();
                 }
             }
+        }
+
+        public bool NetHit(PhysicalObject hit, BodyChunk chunk)
+        {
+            if (hit == null)
+            {
+                return false;
+            }
+            if (this.thrownBy is Scavenger && (this.thrownBy as Scavenger).AI != null)
+            {
+                (this.thrownBy as Scavenger).AI.HitAnObjectWithWeapon(this, hit);
+            }
+            this.vibrate = 20;
+            this.ChangeMode(Weapon.Mode.Free);
+            if (hit is Creature)
+            {
+                (hit as Creature).Violence(base.firstChunk, new Vector2?(base.firstChunk.vel * base.firstChunk.mass), chunk, null, Creature.DamageType.Blunt, 0.01f, 45f);
+            }
+            else if (chunk != null)
+            {
+                chunk.vel += base.firstChunk.vel * base.firstChunk.mass / chunk.mass;
+            }
+            base.firstChunk.vel = base.firstChunk.vel * -0.5f + Custom.DegToVec(UnityEngine.Random.value * 360f) * Mathf.Lerp(0.1f, 0.4f, UnityEngine.Random.value) * base.firstChunk.vel.magnitude;
+            this.room.PlaySound(SoundID.Rock_Hit_Creature, base.firstChunk);
+            if (chunk != null)
+            {
+                this.room.AddObject(new ExplosionSpikes(this.room, chunk.pos, 5, 2f, 4f, 4.5f, 30f, new Color(1f, 1f, 1f, 0.5f)));
+            }
+            this.SetRandomSpin();
+            return true;
+        }
+
+        public override bool HitSomething(SharedPhysics.CollisionResult result, bool eu)
+        {
+            if (result.obj == null)
+            {
+                return false;
+            }
+            if (!(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject && result.obj != null)
+            {
+                MonklandSteamManager.EntityManager.SendHit(NetworkEntityManager.HitType.Rock, this, result.obj, result.chunk);
+            }
+            if (this.thrownBy is Scavenger && (this.thrownBy as Scavenger).AI != null)
+            {
+                (this.thrownBy as Scavenger).AI.HitAnObjectWithWeapon(this, result.obj);
+            }
+            this.vibrate = 20;
+            this.ChangeMode(Weapon.Mode.Free);
+            if (result.obj is Creature)
+            {
+                (result.obj as Creature).Violence(base.firstChunk, new Vector2?(base.firstChunk.vel * base.firstChunk.mass), result.chunk, result.onAppendagePos, Creature.DamageType.Blunt, 0.01f, 45f);
+            }
+            else if (result.chunk != null)
+            {
+                result.chunk.vel += base.firstChunk.vel * base.firstChunk.mass / result.chunk.mass;
+            }
+            else if (result.onAppendagePos != null)
+            {
+                (result.obj as PhysicalObject.IHaveAppendages).ApplyForceOnAppendage(result.onAppendagePos, base.firstChunk.vel * base.firstChunk.mass);
+            }
+            base.firstChunk.vel = base.firstChunk.vel * -0.5f + Custom.DegToVec(UnityEngine.Random.value * 360f) * Mathf.Lerp(0.1f, 0.4f, UnityEngine.Random.value) * base.firstChunk.vel.magnitude;
+            this.room.PlaySound(SoundID.Rock_Hit_Creature, base.firstChunk);
+            if (result.chunk != null)
+            {
+                this.room.AddObject(new ExplosionSpikes(this.room, result.chunk.pos + Custom.DirVec(result.chunk.pos, result.collisionPoint) * result.chunk.rad, 5, 2f, 4f, 4.5f, 30f, new Color(1f, 1f, 1f, 0.5f)));
+            }
+            this.SetRandomSpin();
+            return true;
         }
     }
 }
