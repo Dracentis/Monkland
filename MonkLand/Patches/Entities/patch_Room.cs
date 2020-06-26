@@ -20,7 +20,7 @@ namespace Monkland.Patches
         {
         }
 
-        //public int playerSyncDelay = 5;
+        public int syncDelay = 50;
 
         public extern void orig_Update();
 
@@ -30,15 +30,38 @@ namespace Monkland.Patches
             if (MonklandSteamManager.isInGame)
             {
                 if (MonklandSteamManager.WorldManager.commonRooms.ContainsKey(this.abstractRoom.name) && this.game.Players[0].realizedObject != null && this.game.Players[0].Room.name == this.abstractRoom.name)
-                {
-                    //playerSyncDelay = 5;
-                    MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
+				{
+					MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
+					for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
+					{
+						for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
+						{
+							if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == NetworkGameManager.playerID)
+							{
+								if (abstractRoom.realizedRoom.physicalObjects[i][j] is Rock)
+								{
+									if ((abstractRoom.realizedRoom.physicalObjects[i][j] as Rock).mode == Weapon.Mode.Thrown)
+									{
+										MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
+									}
+									else if (syncDelay == 0)
+                                    {
+										MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
+									}
+								}
+							}
+						}
+					}
+					if (syncDelay <= 0)
+					{
+						syncDelay = 50;
+					}
+					else
+					{
+						syncDelay--;
+					}
                 }
-                //else if (playerSyncDelay > 0)
-                //{
-                //    playerSyncDelay--;
-                //}
-            }
+			}
         }
 
 		public void Loaded()

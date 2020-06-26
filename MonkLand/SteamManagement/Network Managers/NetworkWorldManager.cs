@@ -207,7 +207,7 @@ namespace Monkland.SteamManagement
                 {
                     roomlist = roomlist + ", " + room;
                 }
-                MonklandSteamManager.Log("Room Packet: Player shares " + roomlist + " rooms with other players.");
+                MonklandSteamManager.Log("[World] Room Packet: Player shares " + roomlist + " rooms with other players.");
             }
         }
 

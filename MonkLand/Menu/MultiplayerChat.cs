@@ -20,6 +20,7 @@ namespace Monkland {
         public VerticalSlider slider;
 
         public MultiplayerChat(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base( menu, owner, pos, size ) {
+            this.ClearMessages();
             backgroundRect = new RoundedRect( menu, owner, pos, size, true );
             this.subObjects.Add( backgroundRect );
 
@@ -44,6 +45,7 @@ namespace Monkland {
             chatStrings.Clear();
             chatMessages.Clear();
             chatHash.Clear();
+            newMessages.Clear();
         }
 
         public static void AddChat(string message)

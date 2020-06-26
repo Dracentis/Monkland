@@ -16,7 +16,7 @@ namespace Monkland.UI {
         public static bool shouldDisplayMessages = false;
 
         private static FLabel statusLabel;
-        public const string VERSION = "0.1.9";
+        public const string VERSION = "0.2.1";
             
         private static List<QuickDisplayMessage> displayMessages = new List<QuickDisplayMessage>();
         private static List<FLabel> uiLabels = new List<FLabel>();
@@ -29,7 +29,7 @@ namespace Monkland.UI {
 
             uiContainer = new FContainer();
 
-            statusLabel = new FLabel( "font", "Monkland 0.1.9" );
+            statusLabel = new FLabel( "font", "Monkland " + VERSION);
             statusLabel.alignment = FLabelAlignment.Left;
             statusLabel.SetPosition( 50, Futile.screen.height - 50 );
             uiContainer.AddChild( statusLabel );

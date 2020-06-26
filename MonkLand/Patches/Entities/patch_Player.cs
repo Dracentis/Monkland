@@ -28,6 +28,292 @@ namespace Monkland.Patches
         private int goIntoCorridorClimb;
 
         [MonoModIgnore]
+        private enum ObjectGrabability
+        {
+            CantGrab,
+            OneHand,
+            BigOneHand,
+            TwoHands,
+            Drag
+        }
+
+        [MonoModIgnore]
+        private extern patch_Player.ObjectGrabability Grabability(PhysicalObject obj);
+
+        [MonoModIgnore]
+        private void PickupPressed()
+        {
+            this.wantToPickUp = 5;
+            this.swallowAndRegurgitateCounter = 0;
+        }
+
+        [MonoModIgnore]
+        private void BiteEdibleObject(bool eu)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                if (base.grasps[i] != null && base.grasps[i].grabbed is IPlayerEdible && (base.grasps[i].grabbed as IPlayerEdible).Edible)
+                {
+                    if ((base.grasps[i].grabbed as IPlayerEdible).BitesLeft == 1 && this.SessionRecord != null)
+                    {
+                        this.SessionRecord.AddEat(base.grasps[i].grabbed);
+                    }
+                    if (base.grasps[i].grabbed is Creature)
+                    {
+                        (base.grasps[i].grabbed as Creature).SetKillTag(base.abstractCreature);
+                    }
+                    if (base.graphicsModule != null)
+                    {
+                        (base.graphicsModule as PlayerGraphics).BiteFly(i);
+                    }
+                    (base.grasps[i].grabbed as IPlayerEdible).BitByPlayer(base.grasps[i], eu);
+                    return;
+                }
+            }
+        }
+
+        [MonoModIgnore]
+        private void TossObject(int grasp, bool eu)
+        {
+            if (base.grasps[grasp].grabbed is Creature)
+            {
+                this.room.PlaySound(SoundID.Slugcat_Throw_Creature, base.grasps[grasp].grabbedChunk, false, 1f, 1f);
+            }
+            else
+            {
+                this.room.PlaySound(SoundID.Slugcat_Throw_Misc_Inanimate, base.grasps[grasp].grabbedChunk, false, 1f, 1f);
+            }
+            PhysicalObject grabbed = base.grasps[grasp].grabbed;
+            float num = 45f;
+            float num2 = 4f;
+            if (this.input[0].x != 0 && this.input[0].y == 0)
+            {
+                num = Custom.LerpMap(grabbed.TotalMass, 0.2f, 0.3f, 60f, 50f);
+                num2 = Custom.LerpMap(grabbed.TotalMass, 0.2f, 0.3f, 12.5f, 8f, 2f);
+            }
+            else if (this.input[0].x != 0 && this.input[0].y == 1)
+            {
+                num = 25f;
+                num2 = 9f;
+            }
+            else if (this.input[0].x == 0 && this.input[0].y == 1)
+            {
+                num = 5f;
+                num2 = 8f;
+            }
+            if (this.Grabability(grabbed) == patch_Player.ObjectGrabability.OneHand)
+            {
+                num2 *= 2f;
+                if (this.input[0].x != 0 && this.input[0].y == 0)
+                {
+                    num = 70f;
+                }
+            }
+            if (this.animation == Player.AnimationIndex.Flip && this.input[0].y < 0 && this.input[0].x == 0)
+            {
+                num = 180f;
+                num2 = 8f;
+                for (int i = 0; i < grabbed.bodyChunks.Length; i++)
+                {
+                    grabbed.bodyChunks[i].goThroughFloors = true;
+                }
+            }
+            if (grabbed is PlayerCarryableItem)
+            {
+                num2 *= (grabbed as PlayerCarryableItem).ThrowPowerFactor;
+            }
+            if (grabbed is JellyFish)
+            {
+                (grabbed as JellyFish).Tossed(this);
+            }
+            else if (grabbed is VultureGrub)
+            {
+                (grabbed as VultureGrub).InitiateSignalCountDown();
+                num2 *= 0.5f;
+            }
+            else if (grabbed is Hazer)
+            {
+                (grabbed as Hazer).tossed = true;
+                num2 = Mathf.Max(num2, 9f);
+            }
+            if (grabbed.TotalMass < base.TotalMass * 2f && this.ThrowDirection != 0)
+            {
+                float num3 = (this.ThrowDirection >= 0) ? Mathf.Max(base.bodyChunks[0].pos.x, base.bodyChunks[1].pos.x) : Mathf.Min(base.bodyChunks[0].pos.x, base.bodyChunks[1].pos.x);
+                for (int j = 0; j < grabbed.bodyChunks.Length; j++)
+                {
+                    if (this.ThrowDirection < 0)
+                    {
+                        if (grabbed.bodyChunks[j].pos.x > num3 - 8f)
+                        {
+                            grabbed.bodyChunks[j].pos.x = num3 - 8f;
+                        }
+                        if (grabbed.bodyChunks[j].vel.x > 0f)
+                        {
+                            grabbed.bodyChunks[j].vel.x = 0f;
+                        }
+                    }
+                    else if (this.ThrowDirection > 0)
+                    {
+                        if (grabbed.bodyChunks[j].pos.x < num3 + 8f)
+                        {
+                            grabbed.bodyChunks[j].pos.x = num3 + 8f;
+                        }
+                        if (grabbed.bodyChunks[j].vel.x < 0f)
+                        {
+                            grabbed.bodyChunks[j].vel.x = 0f;
+                        }
+                    }
+                }
+            }
+            if (!this.HeavyCarry(grabbed) && grabbed.TotalMass < base.TotalMass * 0.75f)
+            {
+                for (int k = 0; k < grabbed.bodyChunks.Length; k++)
+                {
+                    grabbed.bodyChunks[k].pos.y = base.mainBodyChunk.pos.y;
+                }
+            }
+            if (this.Grabability(grabbed) == patch_Player.ObjectGrabability.Drag)
+            {
+                base.grasps[grasp].grabbedChunk.vel += Custom.DegToVec(num * (float)this.ThrowDirection) * num2 / Mathf.Max(0.5f, base.grasps[grasp].grabbedChunk.mass);
+            }
+            else
+            {
+                for (int l = 0; l < grabbed.bodyChunks.Length; l++)
+                {
+                    if (grabbed.bodyChunks[l].vel.y < 0f)
+                    {
+                        grabbed.bodyChunks[l].vel.y = 0f;
+                    }
+                    grabbed.bodyChunks[l].vel = Vector2.Lerp(grabbed.bodyChunks[l].vel * 0.35f, base.mainBodyChunk.vel, Custom.LerpMap(grabbed.TotalMass, 0.2f, 0.5f, 0.6f, 0.3f));
+                    grabbed.bodyChunks[l].vel += Custom.DegToVec(num * (float)this.ThrowDirection) * Mathf.Clamp(num2 / (Mathf.Lerp(grabbed.TotalMass, 0.4f, 0.2f) * (float)grabbed.bodyChunks.Length), 4f, 14f);
+                    if (num2 > 4f && grabbed is LanternMouse)
+                    {
+                        (grabbed as LanternMouse).Stun(20);
+                    }
+                }
+            }
+            if (base.grasps[grasp].grabbed is Snail)
+            {
+                (base.grasps[grasp].grabbed as Snail).triggerTicker = 40;
+            }
+            this.room.socialEventRecognizer.CreaturePutItemOnGround(base.grasps[grasp].grabbed, this);
+        }
+
+        [MonoModIgnore]
+        private bool CanIPickThisUp(PhysicalObject obj)
+        {
+            if (this.Grabability(obj) == patch_Player.ObjectGrabability.CantGrab)
+            {
+                return false;
+            }
+            if (obj is Spear)
+            {
+                if ((obj as Spear).mode == Weapon.Mode.OnBack)
+                {
+                    return false;
+                }
+                if (((obj as Spear).mode == Weapon.Mode.Free || (obj as Spear).mode == Weapon.Mode.StuckInCreature) && this.CanPutSpearToBack)
+                {
+                    return true;
+                }
+            }
+            int num = (int)this.Grabability(obj);
+            if (num == 2)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    if (base.grasps[i] != null && this.Grabability(base.grasps[i].grabbed) > patch_Player.ObjectGrabability.OneHand)
+                    {
+                        return false;
+                    }
+                }
+            }
+            if (obj is Weapon)
+            {
+                if ((obj as Weapon).mode == Weapon.Mode.StuckInWall)
+                {
+                    return false;
+                }
+                if ((obj as Weapon).mode == Weapon.Mode.Thrown)
+                {
+                    return false;
+                }
+                if ((obj as Weapon).forbiddenToPlayer > 0)
+                {
+                    return false;
+                }
+            }
+            int num2 = 0;
+            for (int j = 0; j < 2; j++)
+            {
+                if (base.grasps[j] != null)
+                {
+                    if (base.grasps[j].grabbed == obj)
+                    {
+                        return false;
+                    }
+                    if (this.Grabability(base.grasps[j].grabbed) > patch_Player.ObjectGrabability.OneHand)
+                    {
+                        num2++;
+                    }
+                }
+            }
+            return num2 != 2 && (num2 <= 0 || num <= 2);
+        }
+
+        [MonoModIgnore]
+        private PhysicalObject PickupCandidate(float favorSpears)
+        {
+            PhysicalObject result = null;
+            float num = float.MaxValue;
+            for (int i = 0; i < this.room.physicalObjects.Length; i++)
+            {
+                for (int j = 0; j < this.room.physicalObjects[i].Count; j++)
+                {
+                    if ((!(this.room.physicalObjects[i][j] is PlayerCarryableItem) || (this.room.physicalObjects[i][j] as PlayerCarryableItem).forbiddenToPlayer < 1) && Custom.DistLess(base.bodyChunks[0].pos, this.room.physicalObjects[i][j].bodyChunks[0].pos, this.room.physicalObjects[i][j].bodyChunks[0].rad + 40f) && (Custom.DistLess(base.bodyChunks[0].pos, this.room.physicalObjects[i][j].bodyChunks[0].pos, this.room.physicalObjects[i][j].bodyChunks[0].rad + 20f) || this.room.VisualContact(base.bodyChunks[0].pos, this.room.physicalObjects[i][j].bodyChunks[0].pos)) && this.CanIPickThisUp(this.room.physicalObjects[i][j]))
+                    {
+                        float num2 = Vector2.Distance(base.bodyChunks[0].pos, this.room.physicalObjects[i][j].bodyChunks[0].pos);
+                        if (this.room.physicalObjects[i][j] is Spear)
+                        {
+                            num2 -= favorSpears;
+                        }
+                        if (this.room.physicalObjects[i][j].bodyChunks[0].pos.x < base.bodyChunks[0].pos.x == this.flipDirection < 0)
+                        {
+                            num2 -= 10f;
+                        }
+                        if (num2 < num)
+                        {
+                            result = this.room.physicalObjects[i][j];
+                            num = num2;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        [MonoModIgnore]
+        private bool IsObjectThrowable(PhysicalObject obj)
+        {
+            return !(obj is VultureMask) && !(obj is TubeWorm);
+        }
+
+        [MonoModIgnore]
+        private void ReleaseObject(int grasp, bool eu)
+        {
+            this.room.PlaySound((!(base.grasps[grasp].grabbed is Creature)) ? SoundID.Slugcat_Lay_Down_Object : SoundID.Slugcat_Lay_Down_Creature, base.grasps[grasp].grabbedChunk, false, 1f, 1f);
+            this.room.socialEventRecognizer.CreaturePutItemOnGround(base.grasps[grasp].grabbed, this);
+            if (base.grasps[grasp].grabbed is PlayerCarryableItem)
+            {
+                (base.grasps[grasp].grabbed as PlayerCarryableItem).Forbid();
+            }
+            this.ReleaseGrasp(grasp);
+        }
+
+        [MonoModIgnore]
+        private PhysicalObject pickUpCandidate;
+
+        [MonoModIgnore]
         private bool corridorDrop;
 
         [MonoModIgnore]
@@ -126,11 +412,16 @@ namespace Monkland.Patches
             return PlayerGraphics.SlugcatColor((base.State as PlayerState).slugcatCharacter);
         }
 
+        public void setWantToPickUp(int value)
+        {
+            this.wantToPickUp = value;
+        }
+
         public void Sync(bool dead)
         {
             this.dead = dead;
             networkLife = 100;
-    }
+        }
 
         public void Sync(bool corridorDrop, int corridorTurnCounter, IntVector2? corridorTurnDir, int crawlTurnDelay)
         {
@@ -556,5 +847,457 @@ namespace Monkland.Patches
             }
         }
 
+        public extern void orig_GrabUpdate(bool eu);
+
+        public void GrabUpdate(bool eu)
+        {
+            if ((this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject)
+            {
+
+                if (this.spearOnBack != null)
+                {
+                    this.spearOnBack.Update(eu);
+                }
+                bool flag = this.input[0].x == 0 && this.input[0].y == 0 && !this.input[0].jmp && !this.input[0].thrw && base.mainBodyChunk.submersion < 0.5f;
+                bool flag2 = false;
+                bool flag3 = false;
+                if (this.input[0].pckp && !this.input[1].pckp && this.switchHandsProcess == 0f)
+                {
+                    bool flag4 = base.grasps[0] != null || base.grasps[1] != null;
+                    if (base.grasps[0] != null && (this.Grabability(base.grasps[0].grabbed) == patch_Player.ObjectGrabability.TwoHands || this.Grabability(base.grasps[0].grabbed) == patch_Player.ObjectGrabability.Drag))
+                    {
+                        flag4 = false;
+                    }
+                    if (flag4)
+                    {
+                        if (this.switchHandsCounter == 0)
+                        {
+                            this.switchHandsCounter = 15;
+                        }
+                        else
+                        {
+                            this.room.PlaySound(SoundID.Slugcat_Switch_Hands_Init, base.mainBodyChunk);
+                            this.switchHandsProcess = 0.01f;
+                            this.wantToPickUp = 0;
+                            this.noPickUpOnRelease = 20;
+                        }
+                    }
+                    else
+                    {
+                        this.switchHandsProcess = 0f;
+                    }
+                }
+                if (this.switchHandsProcess > 0f)
+                {
+                    float num = this.switchHandsProcess;
+                    this.switchHandsProcess += 0.0833333358f;
+                    if (num < 0.5f && this.switchHandsProcess >= 0.5f)
+                    {
+                        this.room.PlaySound(SoundID.Slugcat_Switch_Hands_Complete, base.mainBodyChunk);
+                        //base.SwitchGrasps(0, 1);
+                    }
+                    if (this.switchHandsProcess >= 1f)
+                    {
+                        this.switchHandsProcess = 0f;
+                    }
+                }
+                int num2 = -1;
+                if (flag)
+                {
+                    int num3 = -1;
+                    int num4 = -1;
+                    int num5 = 0;
+                    while (num3 < 0 && num5 < 2)
+                    {
+                        if (base.grasps[num5] != null && base.grasps[num5].grabbed is IPlayerEdible && (base.grasps[num5].grabbed as IPlayerEdible).Edible)
+                        {
+                            num3 = num5;
+                        }
+                        num5++;
+                    }
+                    if ((num3 == -1 || (this.FoodInStomach >= this.MaxFoodInStomach && !(base.grasps[num3].grabbed is KarmaFlower) && !(base.grasps[num3].grabbed is Mushroom))) && (this.objectInStomach == null || this.CanPutSpearToBack))
+                    {
+                        int num6 = 0;
+                        while (num4 < 0 && num2 < 0 && num6 < 2)
+                        {
+                            if (base.grasps[num6] != null)
+                            {
+                                if (this.CanPutSpearToBack && base.grasps[num6].grabbed is Spear)
+                                {
+                                    num2 = num6;
+                                }
+                                else if (this.CanBeSwallowed(base.grasps[num6].grabbed))
+                                {
+                                    num4 = num6;
+                                }
+                            }
+                            num6++;
+                        }
+                    }
+                    if (num3 > -1 && this.noPickUpOnRelease < 1)
+                    {
+                        if (!this.input[0].pckp)
+                        {
+                            int num7 = 1;
+                            while (num7 < 10 && this.input[num7].pckp)
+                            {
+                                num7++;
+                            }
+                            if (num7 > 1 && num7 < 10)
+                            {
+                                this.PickupPressed();
+                            }
+                        }
+                    }
+                    else if (this.input[0].pckp && !this.input[1].pckp)
+                    {
+                        this.PickupPressed();
+                    }
+                    if (this.input[0].pckp)
+                    {
+                        if (num2 > -1 || this.CanRetrieveSpearFromBack)
+                        {
+                            this.spearOnBack.increment = true;
+                        }
+                        else if (num4 > -1 || this.objectInStomach != null)
+                        {
+                            flag3 = true;
+                        }
+                    }
+                    if (num3 > -1 && this.wantToPickUp < 1 && (this.input[0].pckp || this.eatCounter <= 15) && base.Consious && Custom.DistLess(base.mainBodyChunk.pos, base.mainBodyChunk.lastPos, 3.6f))
+                    {
+                        if (base.graphicsModule != null)
+                        {
+                            (base.graphicsModule as PlayerGraphics).LookAtObject(base.grasps[num3].grabbed);
+                        }
+                        flag2 = true;
+                        if (this.FoodInStomach < this.MaxFoodInStomach || base.grasps[num3].grabbed is KarmaFlower || base.grasps[num3].grabbed is Mushroom)
+                        {
+                            flag3 = false;
+                            if (this.spearOnBack != null)
+                            {
+                                this.spearOnBack.increment = false;
+                            }
+                            if (this.eatCounter < 1)
+                            {
+                                this.eatCounter = 15;
+                                this.BiteEdibleObject(eu);
+                            }
+                        }
+                        else if (this.eatCounter < 20 && this.room.game.cameras[0].hud != null)
+                        {
+                            this.room.game.cameras[0].hud.foodMeter.RefuseFood();
+                        }
+                    }
+                }
+                else if (this.input[0].pckp && !this.input[1].pckp)
+                {
+                    this.PickupPressed();
+                }
+                else
+                {
+                    if (this.CanPutSpearToBack)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            if (base.grasps[i] != null && base.grasps[i].grabbed is Spear)
+                            {
+                                num2 = i;
+                                break;
+                            }
+                        }
+                    }
+                    if (this.input[0].pckp && (num2 > -1 || this.CanRetrieveSpearFromBack))
+                    {
+                        this.spearOnBack.increment = true;
+                    }
+                }
+                if (this.input[0].pckp && base.grasps[0] != null && base.grasps[0].grabbed is Creature && this.CanEatMeat(base.grasps[0].grabbed as Creature) && (base.grasps[0].grabbed as Creature).Template.meatPoints > 0)
+                {
+                    this.eatMeat++;
+                    //this.EatMeatUpdate();
+                    if (this.spearOnBack != null)
+                    {
+                        this.spearOnBack.increment = false;
+                        this.spearOnBack.interactionLocked = true;
+                    }
+                    if (this.eatMeat % 80 == 0 && ((base.grasps[0].grabbed as Creature).State.meatLeft <= 0 || this.FoodInStomach >= this.MaxFoodInStomach))
+                    {
+                        this.eatMeat = 0;
+                        this.wantToPickUp = 0;
+                        //this.TossObject(0, eu);
+                        //this.ReleaseGrasp(0);
+                        this.standing = true;
+                    }
+                    return;
+                }
+                if (!this.input[0].pckp && base.grasps[0] != null && this.eatMeat > 60)
+                {
+                    this.eatMeat = 0;
+                    this.wantToPickUp = 0;
+                    //this.TossObject(0, eu);
+                    //this.ReleaseGrasp(0);
+                    this.standing = true;
+                    return;
+                }
+                this.eatMeat = Custom.IntClamp(this.eatMeat - 1, 0, 50);
+                if (flag2 && this.eatCounter > 0)
+                {
+                    this.eatCounter--;
+                }
+                else if (!flag2 && this.eatCounter < 40)
+                {
+                    this.eatCounter++;
+                }
+                if (flag3)
+                {
+                    this.swallowAndRegurgitateCounter++;
+                    if (this.objectInStomach != null && this.swallowAndRegurgitateCounter > 110)
+                    {
+                        //this.Regurgitate();
+                        if (this.spearOnBack != null)
+                        {
+                            this.spearOnBack.interactionLocked = true;
+                        }
+                        this.swallowAndRegurgitateCounter = 0;
+                    }
+                    else if (this.objectInStomach == null && this.swallowAndRegurgitateCounter > 90)
+                    {
+                        for (int j = 0; j < 2; j++)
+                        {
+                            if (base.grasps[j] != null && this.CanBeSwallowed(base.grasps[j].grabbed))
+                            {
+                                base.bodyChunks[0].pos += Custom.DirVec(base.grasps[j].grabbed.firstChunk.pos, base.bodyChunks[0].pos) * 2f;
+                                //this.SwallowObject(j);
+                                if (this.spearOnBack != null)
+                                {
+                                    this.spearOnBack.interactionLocked = true;
+                                }
+                                this.swallowAndRegurgitateCounter = 0;
+                                (base.graphicsModule as PlayerGraphics).swallowing = 20;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    this.swallowAndRegurgitateCounter = 0;
+                }
+                for (int k = 0; k < base.grasps.Length; k++)
+                {
+                    if (base.grasps[k] != null && base.grasps[k].grabbed.slatedForDeletetion)
+                    {
+                        this.ReleaseGrasp(k);
+                    }
+                }
+                if (base.grasps[0] != null && this.Grabability(base.grasps[0].grabbed) == patch_Player.ObjectGrabability.TwoHands)
+                {
+                    this.pickUpCandidate = null;
+                }
+                else
+                {
+                    PhysicalObject physicalObject = (this.dontGrabStuff >= 1) ? null : this.PickupCandidate(20f);
+                    if (this.pickUpCandidate != physicalObject && physicalObject != null && physicalObject is PlayerCarryableItem)
+                    {
+                        (physicalObject as PlayerCarryableItem).Blink();
+                    }
+                    this.pickUpCandidate = physicalObject;
+                }
+                if (this.switchHandsCounter > 0)
+                {
+                    this.switchHandsCounter--;
+                }
+                if (this.wantToPickUp > 0)
+                {
+                    this.wantToPickUp--;
+                }
+                if (this.wantToThrow > 0)
+                {
+                    this.wantToThrow--;
+                }
+                if (this.noPickUpOnRelease > 0)
+                {
+                    this.noPickUpOnRelease--;
+                }
+                if (this.input[0].thrw && !this.input[1].thrw)
+                {
+                    this.wantToThrow = 5;
+                }
+                if (this.wantToThrow > 0)
+                {
+                    for (int l = 0; l < 2; l++)
+                    {
+                        if (base.grasps[l] != null && this.IsObjectThrowable(base.grasps[l].grabbed))
+                        {
+                            //this.ThrowObject(l, eu);
+                            this.wantToThrow = 0;
+                            break;
+                        }
+                    }
+                }
+                if (this.wantToPickUp > 0)
+                {
+                    bool flag5 = true;
+                    if (this.animation == Player.AnimationIndex.DeepSwim)
+                    {
+                        if (base.grasps[0] == null && base.grasps[1] == null)
+                        {
+                            flag5 = false;
+                        }
+                        else
+                        {
+                            for (int m = 0; m < 10; m++)
+                            {
+                                if (this.input[m].y > -1 || this.input[m].x != 0)
+                                {
+                                    flag5 = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int n = 0; n < 5; n++)
+                        {
+                            if (this.input[n].y > -1)
+                            {
+                                flag5 = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (base.grasps[0] != null && this.HeavyCarry(base.grasps[0].grabbed))
+                    {
+                        flag5 = true;
+                    }
+                    if (flag5)
+                    {
+                        int num8 = -1;
+                        for (int num9 = 0; num9 < 2; num9++)
+                        {
+                            if (base.grasps[num9] != null)
+                            {
+                                num8 = num9;
+                                break;
+                            }
+                        }
+                        if (num8 > -1)
+                        {
+                            this.wantToPickUp = 0;
+                            //this.ReleaseObject(num8, eu);
+                        }
+                        else if (this.spearOnBack != null && this.spearOnBack.spear != null && base.mainBodyChunk.ContactPoint.y < 0)
+                        {
+                            //this.room.socialEventRecognizer.CreaturePutItemOnGround(this.spearOnBack.spear, this);
+                            //this.spearOnBack.DropSpear();
+                        }
+                    }
+                    else if (this.pickUpCandidate != null)
+                    {
+                        if (this.pickUpCandidate is Spear && this.CanPutSpearToBack && ((base.grasps[0] != null && this.Grabability(base.grasps[0].grabbed) >= patch_Player.ObjectGrabability.BigOneHand) || (base.grasps[1] != null && this.Grabability(base.grasps[1].grabbed) >= patch_Player.ObjectGrabability.BigOneHand) || (base.grasps[0] != null && base.grasps[1] != null)))
+                        {
+                            Debug.Log("spear straight to back");
+                            this.room.PlaySound(SoundID.Slugcat_Switch_Hands_Init, base.mainBodyChunk);
+                            //this.spearOnBack.SpearToBack(this.pickUpCandidate as Spear);
+                        }
+                        else
+                        {
+                            int num10 = 0;
+                            for (int num11 = 0; num11 < 2; num11++)
+                            {
+                                if (base.grasps[num11] == null)
+                                {
+                                    num10++;
+                                }
+                            }
+                            if (this.Grabability(this.pickUpCandidate) == patch_Player.ObjectGrabability.TwoHands && num10 < 4)
+                            {
+                                for (int num12 = 0; num12 < 2; num12++)
+                                {
+                                    if (base.grasps[num12] != null)
+                                    {
+                                        //this.ReleaseGrasp(num12);
+                                    }
+                                }
+                            }
+                            else if (num10 == 0)
+                            {
+                                for (int num13 = 0; num13 < 2; num13++)
+                                {
+                                    if (base.grasps[num13] != null && base.grasps[num13].grabbed is Fly)
+                                    {
+                                        //this.ReleaseGrasp(num13);
+                                        break;
+                                    }
+                                }
+                            }
+                            for (int num14 = 0; num14 < 2; num14++)
+                            {
+                                if (base.grasps[num14] == null)
+                                {
+                                    if (this.pickUpCandidate is Creature)
+                                    {
+                                        this.room.PlaySound(SoundID.Slugcat_Pick_Up_Creature, this.pickUpCandidate.firstChunk, false, 1f, 1f);
+                                    }
+                                    else if (this.pickUpCandidate is PlayerCarryableItem)
+                                    {
+                                        for (int num15 = 0; num15 < this.pickUpCandidate.grabbedBy.Count; num15++)
+                                        {
+                                            //this.pickUpCandidate.grabbedBy[num15].grabber.GrabbedObjectSnatched(this.pickUpCandidate.grabbedBy[num15].grabbed, this);
+                                            //this.pickUpCandidate.grabbedBy[num15].grabber.ReleaseGrasp(this.pickUpCandidate.grabbedBy[num15].graspUsed);
+                                        }
+                                        //(this.pickUpCandidate as PlayerCarryableItem).PickedUp(this);
+                                    }
+                                    else
+                                    {
+                                        this.room.PlaySound(SoundID.Slugcat_Pick_Up_Misc_Inanimate, this.pickUpCandidate.firstChunk, false, 1f, 1f);
+                                    }
+                                    //this.SlugcatGrab(this.pickUpCandidate, num14);
+                                    if (this.pickUpCandidate.graphicsModule != null && this.Grabability(this.pickUpCandidate) < (patch_Player.ObjectGrabability)5)
+                                    {
+                                        this.pickUpCandidate.graphicsModule.BringSpritesToFront();
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        this.wantToPickUp = 0;
+                    }
+                }
+            }
+            else
+            {
+                orig_GrabUpdate(eu);
+            }
+        }
+
+        public void SlugcatGrab(PhysicalObject obj, int graspUsed)
+        {
+            if (obj is IPlayerEdible)
+            {
+                if (!(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject)
+                    this.Grab(obj, graspUsed, 0, Creature.Grasp.Shareability.CanOnlyShareWithNonExclusive, 0.5f, false, true);
+            }
+            int chunkGrabbed = 0;
+            if (this.Grabability(obj) == patch_Player.ObjectGrabability.Drag)
+            {
+                float dst = float.MaxValue;
+                for (int i = 0; i < obj.bodyChunks.Length; i++)
+                {
+                    if (Custom.DistLess(base.mainBodyChunk.pos, obj.bodyChunks[i].pos, dst))
+                    {
+                        dst = Vector2.Distance(base.mainBodyChunk.pos, obj.bodyChunks[i].pos);
+                        chunkGrabbed = i;
+                    }
+                }
+            }
+            this.switchHandsCounter = 0;
+            this.wantToPickUp = 0;
+            this.noPickUpOnRelease = 20;
+            if (!(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject)
+                this.Grab(obj, graspUsed, chunkGrabbed, Creature.Grasp.Shareability.CanOnlyShareWithNonExclusive, 0.5f, true, !(obj is Cicada) && !(obj is JetFish));
+        }
     }
 }

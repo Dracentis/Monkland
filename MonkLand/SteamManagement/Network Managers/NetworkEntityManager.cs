@@ -67,10 +67,50 @@ namespace Monkland.SteamManagement
                         ReadPlayer(br, sentPlayer);
                     }
                     return;
+                case (byte)PacketType.Rock:
+                    if (patch_RainWorldGame.mainGame != null)
+                    {
+                        ReadRock(br, sentPlayer);
+                    }
+                    return;
+                case (byte)PacketType.EstablishGrasp:
+                    if (patch_RainWorldGame.mainGame != null)
+                    {
+                        ReadGrab(br, sentPlayer);
+                    }
+                    return;
+                case (byte)PacketType.SwitchGrasps:
+                    if (patch_RainWorldGame.mainGame != null)
+                    {
+                        ReadSwitch(br, sentPlayer);
+                    }
+                    return;
+                case (byte)PacketType.ReleaseGrasp:
+                    if (patch_RainWorldGame.mainGame != null)
+                    {
+                        ReadRelease(br, sentPlayer);
+                    }
+                    return;
             }
         }
 
         #endregion
+
+        public bool isSynced(PhysicalObject obj)
+        {
+            if (obj is Player)
+            {
+                return true;
+            }
+            else if (obj is Rock)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         #region Outgoing Packets
 
@@ -83,13 +123,22 @@ namespace Monkland.SteamManagement
                 MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
                 BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
-                if ((physicalObject as PhysicalObject) is Player)
+                if (physicalObject is Player)
                 {
                     writer.Write((byte)PacketType.Player);
                     writer.Write(physicalObject.room.abstractRoom.name);
                     writer.Write((physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
                     WorldCoordinateHandler.Write(physicalObject.abstractPhysicalObject.pos, ref writer);
                     PlayerHandler.Write(physicalObject as PhysicalObject as Player, ref writer);
+                }
+                else if (physicalObject is Rock)
+                {
+                    writer.Write((byte)PacketType.Rock);
+                    writer.Write(physicalObject.room.abstractRoom.name);
+                    writer.Write((physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                    WorldCoordinateHandler.Write(physicalObject.abstractPhysicalObject.pos, ref writer);
+                    EntityIDHandler.Write(physicalObject.abstractPhysicalObject.ID, ref writer);
+                    WeaponHandler.Write(physicalObject as Rock, ref writer);
                 }
                 else
                 {
@@ -111,17 +160,123 @@ namespace Monkland.SteamManagement
             }
         }
 
+        public void SendGrab(Creature.Grasp grasp)
+        {
+            if (grasp == null || grasp.grabber == null || grasp.grabbed == null || !isSynced(grasp.grabber) || !isSynced(grasp.grabbed) || (grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).owner != NetworkGameManager.playerID)
+            {
+                return;
+            }
+            if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(grasp.grabber.room.abstractRoom.name))
+                return;
+            if (grasp.grabbed is Player)//One of our creatures is grabbing another player so the grabber should belong to the grabbed
+            {
+                MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
+                BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+                writer.Write((byte)PacketType.EstablishGrasp);
+                writer.Write(grasp.grabber.room.abstractRoom.name);
+                writer.Write((grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                writer.Write((grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                writer.Write(grasp.graspUsed);
+                writer.Write(grasp.grabbedChunk.index);
+                writer.Write((int)grasp.shareability);
+                writer.Write(grasp.dominance);
+                writer.Write(grasp.pacifying);
+                MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+                foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grasp.grabber.room.abstractRoom.name])
+                {
+                    if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
+                    {
+                        if (target != playerID)
+                            MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                }
+                (grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).owner = (grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).owner;
+            }
+            else//One of our creatures is the grabber so we should take ownership of the grabbed
+            {
+                MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
+                BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+                writer.Write((byte)PacketType.EstablishGrasp);
+                writer.Write(grasp.grabber.room.abstractRoom.name);
+                writer.Write((grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                writer.Write((grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                writer.Write(grasp.graspUsed);
+                writer.Write(grasp.grabbedChunk.index);
+                writer.Write((int)grasp.shareability);
+                writer.Write(grasp.dominance);
+                writer.Write(grasp.pacifying);
+                MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+                foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grasp.grabber.room.abstractRoom.name])
+                {
+                    if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
+                    {
+                        if (target != playerID)
+                            MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                }
+                (grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).owner = (grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).owner;
+            }
+        }
+
+        public void SendSwitch(Creature grabber, int from, int to)
+        {
+            if (grabber == null || !isSynced(grabber) || (grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).owner != NetworkGameManager.playerID)
+            {
+                return;
+            }
+            if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(grabber.room.abstractRoom.name))
+                return;
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
+            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+            writer.Write((byte)PacketType.SwitchGrasps);
+            writer.Write(grabber.room.abstractRoom.name);
+            writer.Write((grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            writer.Write(from);
+            writer.Write(to);
+            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+            foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grabber.room.abstractRoom.name])
+            {
+                if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
+                {
+                    if (target != playerID)
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                }
+            }
+
+        }
+
+        public void SendRelease(Creature.Grasp grasp)
+        {
+            if (grasp == null || grasp.grabber == null || grasp.grabbed == null || !isSynced(grasp.grabber) || !isSynced(grasp.grabbed) || (grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).owner != NetworkGameManager.playerID)
+            {
+                return;
+            }
+            if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(grasp.grabber.room.abstractRoom.name))
+                return;
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
+            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+            writer.Write((byte)PacketType.ReleaseGrasp);
+            writer.Write(grasp.grabber.room.abstractRoom.name);
+            writer.Write((grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            writer.Write((grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+            foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grasp.grabber.room.abstractRoom.name])
+            {
+                if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
+                {
+                    if (target != playerID)
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable);
+                }
+            }
+        }
+
         public enum PacketType
         {
-            IntVector2,
-            Vector2,
-            WorldCoordinate,
-            AbstractPhysicalObject,
-            PhyscialObject,
-            BodyChunk,
-            AbstractCreature,
-            Creature,
-            Player
+            Player,
+            Rock,
+            EstablishGrasp,
+            SwitchGrasps,
+            ReleaseGrasp
         }
 
         #endregion
@@ -144,22 +299,251 @@ namespace Monkland.SteamManagement
             {
                 if (((cr as AbstractPhysicalObject) as patch_AbstractPhysicalObject).dist == dist && cr.realizedCreature != null)
                 {
-                    cr.realizedCreature = PlayerHandler.Read((cr.realizedCreature as Player), ref br);// Read Player
-                    cr.pos.room = abstractRoom.index;
+                    if (((cr as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == sentPlayer.m_SteamID)
+                    {
+                        cr.realizedCreature = PlayerHandler.Read((cr.realizedCreature as Player), ref br);// Read Player
+                        cr.pos.room = abstractRoom.index;
+                    }
                     return;
                 }
             }
             startPos.room = abstractRoom.index;
             startPos.abstractNode = -1;
-            AbstractCreature abstractCreature = new AbstractCreature(patch_RainWorldGame.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, startPos, new EntityID(-1, 1));
+            AbstractCreature abstractCreature = new AbstractCreature(patch_RainWorldGame.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, startPos, new EntityID(-1, dist));
             abstractCreature.state = new PlayerState(abstractCreature, 1, 0, false);
-            ((abstractCreature as AbstractPhysicalObject) as patch_AbstractPhysicalObject).dist = dist;
+            ((abstractCreature as AbstractPhysicalObject) as patch_AbstractPhysicalObject).ID.number = dist;
             ((abstractCreature as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner = sentPlayer.m_SteamID;
             abstractCreature.pos.room = abstractRoom.index;
             patch_RainWorldGame.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
             abstractCreature.RealizeInRoom();
             abstractCreature.realizedCreature = PlayerHandler.Read((abstractCreature.realizedCreature as Player), ref br);// Read Player
             abstractCreature.pos.room = abstractRoom.index;
+        }
+
+        public void ReadRock(BinaryReader br, CSteamID sentPlayer)
+        {
+            if (!MonklandSteamManager.WorldManager.gameRunning)
+                return;
+            string roomName = br.ReadString();//Read Room Name
+            if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(roomName))
+                return;
+            AbstractRoom abstractRoom = patch_RainWorldGame.mainGame.world.GetAbstractRoom(roomName);
+            if (abstractRoom == null || abstractRoom.realizedRoom == null)
+                return;
+            int dist = br.ReadInt32();// Read Disinguisher
+            WorldCoordinate startPos = WorldCoordinateHandler.Read(ref br);// Read World Coordinate
+            EntityID ID = EntityIDHandler.Read(ref br);// Read EntityID
+            ID.number = dist;
+            for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
+            {
+                for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
+                {
+                    if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).dist == dist)
+                    {
+                        if (((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == sentPlayer.m_SteamID)
+                        {
+                            (abstractRoom.realizedRoom.physicalObjects[i][j] as patch_Rock).Sync();
+                            abstractRoom.realizedRoom.physicalObjects[i][j] = WeaponHandler.Read((abstractRoom.realizedRoom.physicalObjects[i][j] as Rock), ref br);// Read Rock
+                            abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject.pos.room = abstractRoom.index;
+                        }
+                        return;
+                    }
+                }
+            }
+            startPos.room = abstractRoom.index;
+            startPos.abstractNode = -1;
+            AbstractPhysicalObject abstractObject = new AbstractPhysicalObject(patch_RainWorldGame.mainGame.world, AbstractPhysicalObject.AbstractObjectType.Rock, null, startPos, ID);
+            (abstractObject as patch_AbstractPhysicalObject).ID.number = dist;
+            (abstractObject as patch_AbstractPhysicalObject).owner = sentPlayer.m_SteamID;
+            abstractObject.pos.room = abstractRoom.index;
+            patch_RainWorldGame.mainGame.world.GetAbstractRoom(abstractObject.pos.room).AddEntity(abstractObject);
+            abstractObject.RealizeInRoom();
+            (abstractObject.realizedObject as patch_Rock).Sync();
+            abstractObject.realizedObject = WeaponHandler.Read((abstractObject.realizedObject as Rock), ref br);// Read Rock
+            abstractObject.pos.room = abstractRoom.index;
+        }
+
+        public void ReadGrab(BinaryReader br, CSteamID sentPlayer)
+        {
+            if (!MonklandSteamManager.WorldManager.gameRunning || patch_RainWorldGame.mainGame == null || patch_RainWorldGame.mainGame.world == null)
+                return;
+            string roomName = br.ReadString();//Read Room Name
+            AbstractRoom abstractRoom = patch_RainWorldGame.mainGame.world.GetAbstractRoom(roomName);
+            if (abstractRoom == null)
+                return;
+            if (abstractRoom.realizedRoom != null)
+            {
+                Creature grabber = DistHandler.ReadCreature(ref br, abstractRoom.realizedRoom);
+                PhysicalObject grabbed = DistHandler.ReadPhysicalObject(ref br, abstractRoom.realizedRoom);
+                int graspUsed = br.ReadInt32();
+                int grabbedChunk = br.ReadInt32();
+                Creature.Grasp.Shareability shareability = (Creature.Grasp.Shareability)br.ReadInt32();
+                float dominance = br.ReadSingle();
+                bool pacifying = br.ReadBoolean();
+                if (grabbed != null)
+                {
+                    if (grabbed is Player && grabber != null)
+                    {
+                        (grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).owner = (grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).owner;
+                    }
+                    else
+                    {
+                        (grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).owner = sentPlayer.m_SteamID;
+                    }
+                }
+                if (grabber == null || grabbed == null)
+                {
+                    MonklandSteamManager.Log("[Entity] Incomming grab: One or more targets not found!");
+                    return;
+                }
+                if (grabber.grasps[graspUsed] != null && grabber.grasps[graspUsed].grabbed != null && (grabber.grasps[graspUsed].grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist == (grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist)
+                {
+                    MonklandSteamManager.Log("[Entity] Incomming grab: Grab already satisfyed, " + (grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist + " grabbed " + (grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                    return;
+                }
+                int preexisting = -1;
+                for (int i = 0; i < grabber.grasps.Length; i++)
+                {
+                    if (grabber.grasps[i] != null && grabber.grasps[i].grabbed != null && (grabber.grasps[i].grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist == (grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist)
+                    {
+                        preexisting = i;
+                    }
+                }
+                if (preexisting != -1 && preexisting != graspUsed)
+                {
+                    MonklandSteamManager.Log("[Entity] Incomming grab: Found preexisting satifying grab, " + (grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist + " grabbed " + (grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                    (grabber as patch_Creature).NetSwitch(preexisting, graspUsed);
+                    return;
+                }
+                MonklandSteamManager.Log("[Entity] Incomming grab: GRAB! " + (grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist + " grabbed " + (grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+                (grabber as patch_Creature).NetGrab(grabbed, graspUsed, grabbedChunk, shareability, dominance, pacifying);
+            }
+            else
+            {
+                int grabber = br.ReadInt32();
+                AbstractCreature abstractGrabber = null;
+                int grabbed = br.ReadInt32();
+                AbstractPhysicalObject abstractGrabbed = null;
+                int graspUsed = br.ReadInt32();
+                for (int i = 0; i < abstractRoom.entities.Count; i++)
+                {
+                    if (abstractRoom.entities[i] != null && abstractRoom.entities[i] is AbstractPhysicalObject)
+                    {
+                        if ((abstractRoom.entities[i] as patch_AbstractPhysicalObject).dist == grabber && (abstractRoom.entities[i] is AbstractCreature))
+                        {
+                            abstractGrabber = (abstractRoom.entities[i] as AbstractCreature);
+                            for (int j = 0; j < (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects.Count; j++)
+                            {
+                                if ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j] != null && (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].A != null && (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B != null && ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].A as patch_AbstractPhysicalObject).dist == grabber && ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B as patch_AbstractPhysicalObject).dist == grabbed)
+                                {
+                                    MonklandSteamManager.Log("[Entity] Incomming grab: Grab already satisfyed" + grabber + " grabbed " + grabbed);
+                                    abstractGrabbed = (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B;
+                                    (abstractGrabbed as patch_AbstractPhysicalObject).owner = sentPlayer.m_SteamID;
+                                    return;
+                                }
+                            }
+                        }
+                        else if ((abstractRoom.entities[i] as patch_AbstractPhysicalObject).dist == grabbed)
+                        {
+                            abstractGrabbed = (abstractRoom.entities[i] as AbstractPhysicalObject);
+                            (abstractGrabbed as patch_AbstractPhysicalObject).owner = sentPlayer.m_SteamID;
+                            for (int j = 0; j < (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects.Count; j++)
+                            {
+                                if ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j] != null && (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].A != null && (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B != null && ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].A as patch_AbstractPhysicalObject).dist == grabber && ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B as patch_AbstractPhysicalObject).dist == grabbed)
+                                {
+                                    MonklandSteamManager.Log("[Entity] Incomming grab: Grab already satisfyed" + grabber + " grabbed " + grabbed);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (abstractGrabber != null && abstractGrabbed != null)
+                {
+                    MonklandSteamManager.Log("[Entity] Incomming grab: Abstract GRAB!" + grabber + " grabbed " + grabbed);
+                    new AbstractPhysicalObject.CreatureGripStick(abstractGrabber, abstractGrabbed, graspUsed, true);
+                }
+                else
+                {
+                    MonklandSteamManager.Log("[Entity] Incomming grab: One or more abstract targets not found!");
+                }
+            }
+
+        }
+
+        public void ReadRelease(BinaryReader br, CSteamID sentPlayer)
+        {
+            if (!MonklandSteamManager.WorldManager.gameRunning || patch_RainWorldGame.mainGame == null || patch_RainWorldGame.mainGame == null)
+                return;
+            string roomName = br.ReadString();//Read Room Name
+            AbstractRoom abstractRoom = patch_RainWorldGame.mainGame.world.GetAbstractRoom(roomName);
+            if (abstractRoom == null)
+                return;
+            if (abstractRoom.realizedRoom != null)
+            {
+                Creature grabber = DistHandler.ReadCreature(ref br, abstractRoom.realizedRoom);
+                int grabbed = br.ReadInt32();
+                if (grabber == null)
+                {
+                    MonklandSteamManager.Log("[Entity] Incomming release grasp: One or more targets not found!");
+                    return;
+                }
+                for (int i = 0; i < grabber.grasps.Length; i++)
+                {
+                    if (grabber.grasps[i] != null && grabber.grasps[i].grabbed != null && (grabber.grasps[i].grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist == grabbed)
+                    {
+                        MonklandSteamManager.Log("[Entity] Incomming release grasp: RELEASE! " + (grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist + " released " + grabbed);
+                        (grabber as patch_Creature).NetRelease(i);
+                    }
+                }
+            }
+            else 
+            {
+                int grabber = br.ReadInt32();
+                int grabbed = br.ReadInt32();
+                for (int i = 0; i < abstractRoom.entities.Count; i++)
+                {
+                    if (abstractRoom.entities[i] != null && abstractRoom.entities[i] is AbstractPhysicalObject)
+                    {
+                        for (int j = 0; j < (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects.Count; j++)
+                        {
+                            if ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j] != null && (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].A != null && (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B != null && ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].A as patch_AbstractPhysicalObject).dist == grabber && ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B as patch_AbstractPhysicalObject).dist == grabbed)
+                            {
+                                MonklandSteamManager.Log("[Entity] Incomming release grasp: Abstract RELEASE! " + grabber + " released " + grabbed);
+                                (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].Deactivate();
+                            }
+                        }
+                    }
+                }
+                MonklandSteamManager.Log("[Entity] Incomming release grasp: One or more abstract targets not found!");
+            }
+
+        }
+
+        public void ReadSwitch(BinaryReader br, CSteamID sentPlayer)
+        {
+            if (!MonklandSteamManager.WorldManager.gameRunning || patch_RainWorldGame.mainGame == null || patch_RainWorldGame.mainGame == null)
+                return;
+            string roomName = br.ReadString();//Read Room Name
+            if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(roomName))
+                return;
+            AbstractRoom abstractRoom = patch_RainWorldGame.mainGame.world.GetAbstractRoom(roomName);
+            if (abstractRoom == null || abstractRoom.realizedRoom == null)
+            {
+                MonklandSteamManager.Log("[Entity] Incomming switch: Room not found!");
+                return; 
+            }
+            Creature grabber = DistHandler.ReadCreature(ref br, abstractRoom.realizedRoom);
+            int from = br.ReadInt32();
+            int to = br.ReadInt32();
+            if (grabber == null)
+            {
+                MonklandSteamManager.Log("[Entity] Incomming switch: Target not found!");
+                return;
+            }
+            MonklandSteamManager.Log("[Entity] Incomming switch: SWITCH! "+ (grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            (grabber as patch_Creature).NetSwitch(from, to);
+
         }
 
         #endregion

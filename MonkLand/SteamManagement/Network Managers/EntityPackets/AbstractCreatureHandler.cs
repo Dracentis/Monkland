@@ -14,7 +14,7 @@ namespace Monkland.SteamManagement
             creature.InDen = reader.ReadBoolean();
             creature.timeSpentHere = reader.ReadInt32();
             //creature.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
-            (creature as AbstractPhysicalObject as Patches.patch_AbstractPhysicalObject).dist = reader.ReadInt32();
+            (creature as AbstractPhysicalObject as Patches.patch_AbstractPhysicalObject).ID.number = reader.ReadInt32();
             creature.destroyOnAbstraction = true;
             //creature.abstractAI = AbstractCreatureAIHandler.Read(creature.abstractAI, ref reader);
             //Additional personality and relationship traits should be synced here!

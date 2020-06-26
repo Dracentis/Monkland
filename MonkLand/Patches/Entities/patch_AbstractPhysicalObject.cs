@@ -15,7 +15,13 @@ namespace Monkland.Patches
         {
         }
 
-        public int dist = 0;
+        public int dist
+        {
+            get
+            {
+                return this.ID.number;
+            }
+        }
         public ulong owner = 0;
 
         public bool networkObject
@@ -31,10 +37,16 @@ namespace Monkland.Patches
         public void ctor_AbstractPhysicalObject(World world, AbstractObjectType type, PhysicalObject realizedObject, WorldCoordinate pos, EntityID ID)
         {
             OriginalConstructor(world, type, realizedObject, pos, ID);
+            if (ID.number != -1 && ID.number != 5)
+            {
+                while ((this.ID.number >= -1 && this.ID.number <= 15000))
+                {
+                    this.ID.number = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+                }
+            }
             if (MonklandSteamManager.isInGame)
             {
                 owner = NetworkGameManager.playerID;
-                dist = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             }
         }
     }

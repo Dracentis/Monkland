@@ -13,7 +13,7 @@ namespace Monkland.SteamManagement
             IntVector2 intVector2 = new IntVector2();
             int x = reader.ReadInt32();
             int y = reader.ReadInt32();
-            if (x == y && y == 0)
+            if (x == y && y == -50000)
             {
                 return null;
             }
@@ -29,8 +29,8 @@ namespace Monkland.SteamManagement
         {
             if (intVector2 == null)
             {
-                writer.Write(0);
-                writer.Write(0);
+                writer.Write(-50000);
+                writer.Write(-50000);
             }
             else
             {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using RWCustom;
+using Monkland.Patches;
+using System.Drawing.Printing;
 
 namespace Monkland.SteamManagement
 {
@@ -21,7 +23,6 @@ namespace Monkland.SteamManagement
             creature.newToRoomInvinsibility = reader.ReadInt32();
             creature.NPCTransportationDestination = WorldCoordinateHandler.Read(ref reader);
             creature.shortcutDelay = reader.ReadInt32();
-            //Grasps should be synced here!!
             return creature;
         }
 
@@ -37,7 +38,32 @@ namespace Monkland.SteamManagement
             creature.newToRoomInvinsibility = reader.ReadInt32();
             creature.NPCTransportationDestination = WorldCoordinateHandler.Read(ref reader);
             creature.shortcutDelay = reader.ReadInt32();
-            //Grasps should be synced here!!
+            /*int len = reader.ReadInt32();
+            for (int i = 0; i < len; i++)
+            {
+                if (i < creature.grasps.Length && creature.grasps[i] != null)
+                {
+                    creature.grasps[i] = GraspHandler.Read(ref creature.grasps[i], creature, ref reader, creature.room);
+                }
+                else
+                {
+                    Creature.Grasp grasp = GraspHandler.Read(creature, ref reader, creature.room);
+                    if (i < creature.grasps.Length && grasp != null && grasp.grabbed != null && grasp.grabber != null)
+                    {
+                        MonklandSteamManager.Log("Grabbed Rock!");
+                        (creature as Player).switchHandsCounter = 0;
+                        ((creature as Player) as patch_Player).setWantToPickUp(0);
+                        (creature as Player).noPickUpOnRelease = 20;
+                        if (creature.grasps[i] != null)
+                        {
+                            creature.ReleaseGrasp(i);
+                        }
+                        creature.grasps[i] = new Creature.Grasp(creature, grasp.grabbed, i, grasp.chunkGrabbed, grasp.shareability, grasp.dominance, grasp.pacifying);
+                        grasp.grabbed.Grabbed(creature.grasps[i]);
+                        new AbstractPhysicalObject.CreatureGripStick(creature.abstractCreature, grasp.grabbed.abstractPhysicalObject, i, grasp.pacifying);
+                    }
+                }
+            }*/
             return creature;
         }
 
@@ -53,6 +79,10 @@ namespace Monkland.SteamManagement
             writer.Write(creature.newToRoomInvinsibility);
             WorldCoordinateHandler.Write(creature.NPCTransportationDestination, ref writer);
             writer.Write(creature.shortcutDelay);
+            /*for(int i = 0; i < creature.grasps.Length; i++)
+            {
+                GraspHandler.Write(creature.grasps[i], ref writer);
+            }*/
         }
     }
 }

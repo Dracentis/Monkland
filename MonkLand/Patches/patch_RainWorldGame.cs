@@ -46,55 +46,8 @@ namespace Monkland.Patches
 
             if (MonklandSteamManager.isInGame)
                 MonklandSteamManager.monklandUI = new UI.MonklandUI( Futile.stage );
-            /*
-            AbstractRoom thisRoom = this.world.GetAbstractRoom( this.overWorld.FIRSTROOM );
-
-
-            if( thisRoom != null ) {
-                int num = thisRoom.index;
-
-                foreach( AbstractCreature ac in session.Players ) {
-                    ac.Destroy();
-                    this.world.GetAbstractRoom( ac.Room.index ).RemoveEntity( ac );
-                }
-
-                foreach( AbstractPhysicalObject absPhys in thisRoom.entities ) {
-                    patch_AbstractPhysicalObject patch = absPhys as patch_AbstractPhysicalObject;
-
-                    if( !MonklandSteamManager.ObjectManager.IsNetObject( patch ) ) {
-                        patch.ownerID = NetworkGameManager.playerID;
-                        MonklandSteamManager.ObjectManager.SendObjectCreation( patch );
-                    }
-                }
-
-                session.Players.Clear();
-                */
-                if( mainGame == null )
+            if( mainGame == null )
                     mainGame = this;
-                /*
-                ulong playerID = MonklandSteamManager.instance.allChannels[0].SendForcewaitPacket( 0, (CSteamID)NetworkGameManager.managerID );
-
-                Debug.Log( "Player Count is " + session.Players.Count );
-
-                if( this.IsStorySession ) {
-                    patch_AbstractCreature playerCreature = new AbstractCreature( this.world, StaticWorld.GetCreatureTemplate( "Slugcat" ), null, new WorldCoordinate( num, 15, 25, -1 ), new EntityID( -1, (int)playerID ) ) as patch_AbstractCreature;
-                    playerCreature.state = new PlayerState( playerCreature, 0, this.GetStorySession.saveState.saveStateNumber, false );
-                    this.world.GetAbstractRoom( playerCreature.pos.room ).AddEntity( playerCreature );
-                    if( this.session.Players.Count > 0 )
-                        this.session.Players.Insert( 0, playerCreature );
-                    else
-                        this.session.Players.Add( playerCreature );
-
-                    playerCreature.ownerIDNew = NetworkGameManager.playerID;
-                    MonklandSteamManager.ObjectManager.SendObjectCreation( playerCreature );
-
-                    MonklandUI.trackedPlayer = playerCreature;
-
-                    this.cameras[0].followAbstractCreature = playerCreature;
-                    this.roomRealizer.followCreature = playerCreature;
-                }
-
-            }*/
 
         }
 
@@ -135,6 +88,26 @@ namespace Monkland.Patches
                 mainGame = null;
             }
             OriginalShutdown();
+        }
+
+        public EntityID GetNewID()
+        {
+            int newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            while ((newID >= -1 && newID <= 15000))
+            {
+                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            }
+            return new EntityID(-1, newID);
+        }
+
+        public EntityID GetNewID(int spawner)
+        {
+            int newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            while ((newID >= -1 && newID <= 15000))
+            {
+                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            }
+            return new EntityID(spawner, newID);
         }
     }
 }

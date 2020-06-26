@@ -16,7 +16,7 @@ namespace Monkland.SteamManagement
             physicalObject.InDen = reader.ReadBoolean();
             physicalObject.timeSpentHere = reader.ReadInt32();
             physicalObject.type = (AbstractPhysicalObject.AbstractObjectType) reader.ReadByte();
-            (physicalObject as Patches.patch_AbstractPhysicalObject).dist = reader.ReadInt32();
+            (physicalObject as Patches.patch_AbstractPhysicalObject).ID.number = reader.ReadInt32();
             physicalObject.destroyOnAbstraction = true;
             return physicalObject;
         }
