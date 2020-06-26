@@ -670,6 +670,35 @@ namespace Monkland.Patches
 			}
 		}
 
+		public void MultiplayerNewToRoom(List<ulong> players)
+        {
+			if (MonklandSteamManager.isInGame && this.abstractRoom.realizedRoom != null)
+			{
+				if (this.game.Players[0].realizedObject != null)
+					MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, players);
+				for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
+				{
+					for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
+					{
+						if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == NetworkGameManager.playerID)
+						{
+							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Rock)
+							{
+								MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, players);
+							}
+							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Creature)
+							{
+								foreach (Creature.Grasp grasp in (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps)
+								{
+									MonklandSteamManager.EntityManager.SendGrab(grasp);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		public void AddRoomSpecificScript(Room room)
 		{
 			string name = room.abstractRoom.name;
