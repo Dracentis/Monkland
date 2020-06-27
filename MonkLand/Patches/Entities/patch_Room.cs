@@ -672,10 +672,10 @@ namespace Monkland.Patches
 
 		public void MultiplayerNewToRoom(List<ulong> players)
         {
-			if (MonklandSteamManager.isInGame && this.abstractRoom.realizedRoom != null)
+			if (MonklandSteamManager.isInGame && this.abstractRoom.realizedRoom != null && abstractRoom.realizedRoom.physicalObjects != null)
 			{
 				if (this.game.Players[0].realizedObject != null)
-					MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, players);
+					MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, players, true);
 				for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
 				{
 					for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
@@ -684,9 +684,9 @@ namespace Monkland.Patches
 						{
 							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Rock)
 							{
-								MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, players);
+								MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, players, true);
 							}
-							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Creature)
+							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Creature && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps != null && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps.Length > 0)
 							{
 								foreach (Creature.Grasp grasp in (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps)
 								{

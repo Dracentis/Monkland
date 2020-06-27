@@ -121,7 +121,7 @@ namespace Monkland.SteamManagement
 
         #region Outgoing Packets
 
-        public void Send(PhysicalObject physicalObject, List<ulong> targets)
+        public void Send(PhysicalObject physicalObject, List<ulong> targets, bool reliable = false)
         {
             try
             {
@@ -155,10 +155,16 @@ namespace Monkland.SteamManagement
                 MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
                 foreach (ulong target in targets)
                 {
-                    if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
+                    if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target) && target != playerID)
                     {
-                        if (target != playerID)
+                        if (reliable)
+                        {
+                            MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable);
+                        }
+                        else
+                        {
                             MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        }
                     }
                 }
             }catch(Exception e)
@@ -191,10 +197,9 @@ namespace Monkland.SteamManagement
                 MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
                 foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grasp.grabber.room.abstractRoom.name])
                 {
-                    if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
+                    if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target) && target != playerID)
                     {
-                        if (target != playerID)
-                            MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable);
                     }
                 }
                 (grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).owner = (grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).owner;
@@ -246,7 +251,7 @@ namespace Monkland.SteamManagement
                 if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
                 {
                     if (target != playerID)
-                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable);
                 }
             }
 
