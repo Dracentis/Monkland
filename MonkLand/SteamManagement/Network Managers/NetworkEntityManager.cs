@@ -7,6 +7,7 @@ using RWCustom;
 using System.IO;
 using Monkland.Patches;
 using System.Runtime.CompilerServices;
+using Monkland.UI;
 
 namespace Monkland.SteamManagement
 {
@@ -137,6 +138,8 @@ namespace Monkland.SteamManagement
                     writer.Write((physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
                     WorldCoordinateHandler.Write(physicalObject.abstractPhysicalObject.pos, ref writer);
                     PlayerHandler.Write(physicalObject as PhysicalObject as Player, ref writer);
+                    if (MonklandSteamManager.DEBUG)
+                        MonklandUI.UpdateMessage("Player\nOwner:" + (physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).owner + "\nID:" + (physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).dist, 1, physicalObject.bodyChunks[0].pos, (physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).dist, physicalObject.room.abstractRoom.index, (physicalObject as patch_Player).ShortCutColor());
                 }
                 else if (physicalObject is Rock)
                 {
@@ -146,6 +149,8 @@ namespace Monkland.SteamManagement
                     WorldCoordinateHandler.Write(physicalObject.abstractPhysicalObject.pos, ref writer);
                     EntityIDHandler.Write(physicalObject.abstractPhysicalObject.ID, ref writer);
                     WeaponHandler.Write(physicalObject as Rock, ref writer);
+                    if (MonklandSteamManager.DEBUG)
+                        MonklandUI.UpdateMessage("Rock\nOwner:" + (physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).owner + "\nID:" + (physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).dist, 1, physicalObject.bodyChunks[0].pos, (physicalObject.abstractPhysicalObject as patch_AbstractPhysicalObject).dist, physicalObject.room.abstractRoom.index, Color.white);
                 }
                 else
                 {
@@ -271,6 +276,7 @@ namespace Monkland.SteamManagement
             writer.Write(grasp.grabber.room.abstractRoom.name);
             writer.Write((grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
             writer.Write((grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
+            MonklandSteamManager.Log("[Entity] Sending Release: " + (grasp.grabber.abstractPhysicalObject as patch_AbstractPhysicalObject).dist + " released " + (grasp.grabbed.abstractPhysicalObject as patch_AbstractPhysicalObject).dist);
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grasp.grabber.room.abstractRoom.name])
             {
@@ -350,6 +356,8 @@ namespace Monkland.SteamManagement
                     if (((cr as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == sentPlayer.m_SteamID)
                     {
                         cr.realizedCreature = PlayerHandler.Read((cr.realizedCreature as Player), ref br);// Read Player
+                        if (MonklandSteamManager.DEBUG)
+                            MonklandUI.UpdateMessage(SteamFriends.GetFriendPersonaName(sentPlayer)+"\nOwner:" + sentPlayer.m_SteamID + "\nID:" + dist, 1, cr.realizedCreature.bodyChunks[0].pos, dist, abstractRoom.index, (cr.realizedCreature as patch_Player).ShortCutColor());
                         cr.pos.room = abstractRoom.index;
                     }
                     return;
@@ -392,6 +400,8 @@ namespace Monkland.SteamManagement
                         {
                             (abstractRoom.realizedRoom.physicalObjects[i][j] as patch_Rock).Sync();
                             abstractRoom.realizedRoom.physicalObjects[i][j] = WeaponHandler.Read((abstractRoom.realizedRoom.physicalObjects[i][j] as Rock), ref br);// Read Rock
+                            if (MonklandSteamManager.DEBUG)
+                                MonklandUI.UpdateMessage("Rock\nOwner:" + sentPlayer.m_SteamID + "\nID:" + dist, 2, abstractRoom.realizedRoom.physicalObjects[i][j].bodyChunks[0].pos, dist, abstractRoom.index, Color.white);
                             abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject.pos.room = abstractRoom.index;
                         }
                         return;
@@ -450,7 +460,7 @@ namespace Monkland.SteamManagement
             FlashBang
         }
 
-        #region grasps
+        #region Incomming Grasps
         public void ReadGrab(BinaryReader br, CSteamID sentPlayer)
         {
             if (!MonklandSteamManager.WorldManager.gameRunning || patch_RainWorldGame.mainGame == null || patch_RainWorldGame.mainGame.world == null)

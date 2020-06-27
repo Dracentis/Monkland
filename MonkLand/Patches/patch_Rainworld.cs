@@ -24,8 +24,16 @@ namespace Monkland.Patches {
 
 
             orig_Start();
-            this.buildType = BuildType.Development;
-            setup.devToolsActive = true;
+            if (MonklandSteamManager.DEBUG)
+            {
+                this.buildType = BuildType.Development;
+                setup.devToolsActive = true;
+            }
+            else
+            {
+                this.buildType = BuildType.Distribution;
+                setup.devToolsActive = false;
+            }
         }
 
     }

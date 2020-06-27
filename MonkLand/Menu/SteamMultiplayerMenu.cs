@@ -10,7 +10,8 @@ using Monkland.SteamManagement;
 using Monkland.Patches;
 
 namespace Monkland {
-    class SteamMultiplayerMenu: Menu.Menu {
+    class SteamMultiplayerMenu: Menu.Menu, CheckBox.IOwnCheckBox
+    {
 
         public MultiplayerChat gameChat;
         public MultiplayerPlayerList playerList;
@@ -24,6 +25,7 @@ namespace Monkland {
         public HorizontalSlider eyesRed;
         public HorizontalSlider eyesGreen;
         public HorizontalSlider eyesBlue;
+        public CheckBox debugCheckBox;
         public FLabel settingsLabel;
         public FLabel bodyLabel;
         public FLabel eyesLabel;
@@ -135,7 +137,11 @@ namespace Monkland {
             slugcat.y = manager.rainWorld.screenSize.y - 235;
             slugcat.isVisible = true;
             this.pages[0].Container.AddChild(this.slugcat);
-            
+
+            //Debug Mode checkbox
+            this.debugCheckBox = new CheckBox(this, this.pages[0], this, new Vector2(1080, manager.rainWorld.screenSize.y - 400), 120f, "Debug Mode", "DEBUG");
+            this.pages[0].subObjects.Add(this.debugCheckBox);
+
             //Back button
             this.backButton = new SimpleButton(this, this.pages[0], base.Translate("BACK"), "EXIT", new Vector2( 100f, 50f ), new Vector2(110f, 30f));
             this.pages[0].subObjects.Add(this.backButton);
@@ -172,9 +178,11 @@ namespace Monkland {
             this.eyesGreen.nextSelectable[1] = this.eyesRed;
             this.eyesGreen.nextSelectable[3] = this.eyesBlue;
             this.eyesBlue.nextSelectable[1] = this.eyesGreen;
-            this.eyesBlue.nextSelectable[3] = this.readyUpButton;
+            this.eyesBlue.nextSelectable[3] = this.debugCheckBox;
+            this.debugCheckBox.nextSelectable[1] = this.eyesBlue;
+            this.debugCheckBox.nextSelectable[3] = this.readyUpButton;
             this.readyUpButton.nextSelectable[0] = this.backButton;
-            this.readyUpButton.nextSelectable[1] = this.eyesBlue;
+            this.readyUpButton.nextSelectable[1] = this.debugCheckBox;
             this.readyUpButton.nextSelectable[2] = this.startGameButton;
             this.readyUpButton.nextSelectable[3] = this.bodyRed;
             this.startGameButton.nextSelectable[0] = this.readyUpButton;
@@ -257,6 +265,28 @@ namespace Monkland {
                 }
             }
             return 0f;
+        }
+
+        public bool GetChecked(CheckBox box)
+        {
+            string idstring = box.IDString;
+            switch (idstring)
+            {
+                case "DEBUG":
+                    return MonklandSteamManager.DEBUG;
+            }
+            return false;
+        }
+
+        public void SetChecked(CheckBox box, bool c)
+        {
+            string idstring = box.IDString;
+            switch (idstring)
+            {
+                case "DEBUG":
+                    MonklandSteamManager.DEBUG = c;
+                    break;
+            }
         }
 
         public override void Update() {

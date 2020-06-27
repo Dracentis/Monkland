@@ -17,12 +17,16 @@ namespace Monkland.SteamManagement {
         public static CSteamID lobbyID;
         public static SteamMultiplayerMenu menu;
 
-        public static bool DEBUG = true;
+        public static bool DEBUG = false;
 
         public static void Log(object message)
         {
             if (DEBUG)
-                Debug.Log("[MONKLAND] "+message.ToString());
+            {
+                if (MonklandSteamManager.GameManager != null && MonklandSteamManager.isInGame)
+                    MonklandUI.AddMessage(message.ToString());
+                Debug.Log("[MONKLAND] " + message.ToString());
+            }
         }
 
         public const ulong appID = 312520;

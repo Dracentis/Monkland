@@ -45,7 +45,10 @@ namespace Monkland.Patches
             OriginalConstructor( manager );
 
             if (MonklandSteamManager.isInGame)
-                MonklandSteamManager.monklandUI = new UI.MonklandUI( Futile.stage );
+            {
+                this.devToolsActive = MonklandSteamManager.DEBUG;
+                MonklandSteamManager.monklandUI = new UI.MonklandUI(Futile.stage);
+            }
             if( mainGame == null )
                     mainGame = this;
 

@@ -55,6 +55,8 @@ namespace Monkland.Patches
         public extern bool orig_Grab(PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying);
 		public override bool Grab(PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
 		{
+            if (MonklandSteamManager.isInGame && (obj.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name].Contains((obj.abstractPhysicalObject as patch_AbstractPhysicalObject).owner))
+                return false;
 			if (orig_Grab(obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying))
             {
                 if (MonklandSteamManager.isInGame) {
