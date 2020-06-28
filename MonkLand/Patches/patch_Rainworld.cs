@@ -31,7 +31,7 @@ namespace Monkland.Patches {
             }
             else
             {
-                this.buildType = BuildType.Distribution;
+                this.buildType = BuildType.Development;
                 setup.devToolsActive = false;
             }
         }

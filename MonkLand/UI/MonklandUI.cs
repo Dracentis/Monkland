@@ -23,6 +23,8 @@ namespace Monkland.UI {
         public static AbstractCreature trackedPlayer;
 
         public MonklandUI(FStage stage) {
+            displayMessages = new List<QuickDisplayMessage>();
+            uiLabels = new List<FLabel>();
             worldStage = stage;
 
             uiContainer = new FContainer();
@@ -89,7 +91,7 @@ namespace Monkland.UI {
                     if (uiLabels[j].text != "")
                     {
                         uiLabels[j].text = "";
-                        uiLabels[j].Redraw(false, false);
+                        //uiLabels[j].Redraw(false, false);
                     }
                 }
             }
@@ -105,7 +107,7 @@ namespace Monkland.UI {
                         uiLabels[i].text = displayMessages[i].text;
                         uiLabels[i].color = displayMessages[i].color;
                         uiLabels[i].SetPosition(50, Futile.screen.height - 50 - (20 * k));
-                        uiLabels[i].Redraw(false, false);
+                        //uiLabels[i].Redraw(false, false);
                     }
                 }
                 else
@@ -117,13 +119,12 @@ namespace Monkland.UI {
                             uiLabels[i].text = displayMessages[i].text;
                             uiLabels[i].color = displayMessages[i].color;
                             uiLabels[i].SetPosition(displayMessages[i].worldPos.x, displayMessages[i].worldPos.y);
-                            uiLabels[i].Redraw(false, false);
+                            //uiLabels[i].Redraw(false, false);
                         }
                     }
                     else if (uiLabels[i].text != "")
                     {
                         uiLabels[i].text = "";
-                        uiLabels[i].Redraw(false, false);
                     }
                 }
             }
@@ -135,7 +136,6 @@ namespace Monkland.UI {
             if (statusLabel != null)
             {
                 statusLabel.text = message;
-                statusLabel.Redraw(false, false);
             }
         }
 
@@ -191,6 +191,8 @@ namespace Monkland.UI {
             displayMessages.Clear();
             uiContainer.RemoveAllChildren();
             uiContainer.RemoveFromContainer();
+            uiLabels.Clear();
+            displayMessages.Clear();
             uiContainer = null;
         }
 

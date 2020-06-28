@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Monkland.SteamManagement;
@@ -40,11 +40,10 @@ namespace Monkland.Patches
         {
             if (this.grasps[grasp] != null)
             {
-                if (MonklandSteamManager.isInGame)
-                {
+                if (MonklandSteamManager.isInGame && !(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject)
                     MonklandSteamManager.EntityManager.SendRelease(this.grasps[grasp]);
-                }
             }
+            //if (!MonklandSteamManager.isInGame || !(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject)
             orig_ReleaseGrasp(grasp);
         }
         public void NetRelease(int grasp)

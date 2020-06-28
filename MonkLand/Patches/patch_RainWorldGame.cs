@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -46,7 +46,8 @@ namespace Monkland.Patches
 
             if (MonklandSteamManager.isInGame)
             {
-                this.devToolsActive = MonklandSteamManager.DEBUG;
+                if (this.rainWorld.buildType == RainWorld.BuildType.Development)
+                    this.devToolsActive = MonklandSteamManager.DEBUG;
                 MonklandSteamManager.monklandUI = new UI.MonklandUI(Futile.stage);
             }
             if( mainGame == null )

@@ -26,6 +26,7 @@ namespace Monkland.SteamManagement {
                 if (MonklandSteamManager.GameManager != null && MonklandSteamManager.isInGame)
                     MonklandUI.AddMessage(message.ToString());
                 Debug.Log("[MONKLAND] " + message.ToString());
+                Debug.LogError("[MONKLAND] " + message.ToString());
             }
         }
 

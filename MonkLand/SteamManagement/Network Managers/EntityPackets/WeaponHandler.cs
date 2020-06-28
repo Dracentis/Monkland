@@ -20,7 +20,7 @@ namespace Monkland.SteamManagement
             Weapon.Mode mode = (Weapon.Mode)reader.ReadInt32();
             if (mode != weapon.mode)
             {
-                weapon.ChangeOverlap(true);
+                //weapon.ChangeOverlap(true);
                 weapon.ChangeMode(mode);
             }
             if (mode == Weapon.Mode.Thrown && weapon.grabbedBy.Count > 0)
@@ -49,7 +49,7 @@ namespace Monkland.SteamManagement
             Weapon.Mode mode = (Weapon.Mode)reader.ReadInt32();
             if (mode != weapon.mode)
             {
-                weapon.ChangeOverlap(true);
+                //weapon.ChangeOverlap(true);
                 weapon.ChangeMode(mode);
             }
             if (mode == Weapon.Mode.Thrown && weapon.grabbedBy.Count > 0)

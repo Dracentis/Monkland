@@ -47,8 +47,13 @@ namespace Monkland.Patches
                 else
                 {
                     networkLife = 120;
-                    foreach (Creature.Grasp grasp in this.grabbedBy){
-                        grasp.Release();
+                    for (int i = 0; i < this.grabbedBy.Count; i++)
+                    {
+                        if(grabbedBy[i] != null)
+                        {
+                            grabbedBy[i].Release();
+                            i--;
+                        }
                     }
                     this.Destroy();
                 }
@@ -61,7 +66,7 @@ namespace Monkland.Patches
             {
                 return false;
             }
-            if (this.thrownBy is Scavenger && (this.thrownBy as Scavenger).AI != null)
+            if (this.thrownBy != null && this.thrownBy is Scavenger && (this.thrownBy as Scavenger).AI != null)
             {
                 (this.thrownBy as Scavenger).AI.HitAnObjectWithWeapon(this, hit);
             }
@@ -75,7 +80,7 @@ namespace Monkland.Patches
             {
                 chunk.vel += base.firstChunk.vel * base.firstChunk.mass / chunk.mass;
             }
-            base.firstChunk.vel = base.firstChunk.vel * -0.5f + Custom.DegToVec(UnityEngine.Random.value * 360f) * Mathf.Lerp(0.1f, 0.4f, UnityEngine.Random.value) * base.firstChunk.vel.magnitude;
+            this.firstChunk.vel = this.firstChunk.vel * -0.5f + Custom.DegToVec(UnityEngine.Random.value * 360f) * Mathf.Lerp(0.1f, 0.4f, UnityEngine.Random.value) * this.firstChunk.vel.magnitude;
             this.room.PlaySound(SoundID.Rock_Hit_Creature, base.firstChunk);
             if (chunk != null)
             {
