@@ -20,50 +20,75 @@ namespace Monkland.Patches
         {
         }
 
-        public int syncDelay = 50;
+        public int syncDelay = 20;
 
         public extern void orig_Update();
 
+		//Entity Live Updates HERE
         public void Update()
         {
             orig_Update();
-            if (MonklandSteamManager.isInGame)
-            {
-                if (MonklandSteamManager.WorldManager.commonRooms.ContainsKey(this.abstractRoom.name) && this.game.Players[0].realizedObject != null && this.game.Players[0].Room.name == this.abstractRoom.name)
+            if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(this.abstractRoom.name) && this.game.Players[0].realizedObject != null && this.game.Players[0].Room.name == this.abstractRoom.name)
+			{
+				MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
+				for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
 				{
-					MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
-					for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
+					for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
 					{
-						for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
+						if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == NetworkGameManager.playerID)
 						{
-							if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == NetworkGameManager.playerID)
+							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Rock)
 							{
-								if (abstractRoom.realizedRoom.physicalObjects[i][j] is Rock)
-								{
-									if ((abstractRoom.realizedRoom.physicalObjects[i][j] as Rock).mode == Weapon.Mode.Thrown)
-									{
-										MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
-									}
-									else if (syncDelay == 0)
-                                    {
-										MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name]);
-									}
+								if (syncDelay == 0)
+                                {
+									MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name], true);
 								}
 							}
 						}
 					}
-					if (syncDelay <= 0)
-					{
-						syncDelay = 50;
-					}
-					else
-					{
-						syncDelay--;
-					}
-                }
+				}
+				if (syncDelay <= 0)
+				{
+					syncDelay = 20;
+				}
+				else
+				{
+					syncDelay--;
+				}
 			}
         }
 
+		//Entity Room Start Updates HERE
+		public void MultiplayerNewToRoom(List<ulong> players)
+        {
+			if (MonklandSteamManager.isInGame && this.abstractRoom.realizedRoom != null && abstractRoom.realizedRoom.physicalObjects != null)
+			{
+				if (this.game.Players[0].realizedObject != null)
+					MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, players, true);
+				for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
+				{
+					for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
+					{
+						if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == NetworkGameManager.playerID)
+						{
+							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Rock)
+							{
+								MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, players, true);
+							}
+							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Creature && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps != null && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps.Length > 0)
+							{
+								foreach (Creature.Grasp grasp in (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps)
+								{
+									MonklandSteamManager.EntityManager.SendGrab(grasp);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		//Fixes the Gravity Room Problem:
 		public void Loaded()
 		{
 			if (this.game == null)
@@ -420,7 +445,14 @@ namespace Monkland.Patches
 			}
 			if (this.roomSettings.roomSpecificScript)
 			{
-				this.AddRoomSpecificScript(this);
+				if (this.abstractRoom.name == "SS_E08")
+				{
+					this.AddObject(new SS_E08GradientGravity(this));
+				}
+				else
+				{
+					RoomSpecificScript.AddRoomSpecificScript(this);
+				}
 			}
 			if (this.abstractRoom.firstTimeRealized)
 			{
@@ -667,89 +699,6 @@ namespace Monkland.Patches
 			if (this.world.rainCycle.CycleStartUp < 1f && this.roomSettings.CeilingDrips > 0f && this.roomSettings.DangerType != RoomRain.DangerType.None && !this.abstractRoom.shelter)
 			{
 				this.AddObject(new DrippingSound());
-			}
-		}
-
-		public void MultiplayerNewToRoom(List<ulong> players)
-        {
-			if (MonklandSteamManager.isInGame && this.abstractRoom.realizedRoom != null && abstractRoom.realizedRoom.physicalObjects != null)
-			{
-				if (this.game.Players[0].realizedObject != null)
-					MonklandSteamManager.EntityManager.Send(this.game.Players[0].realizedObject, players, true);
-				for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
-				{
-					for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
-					{
-						if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == NetworkGameManager.playerID)
-						{
-							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Rock)
-							{
-								MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, players, true);
-							}
-							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Creature && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps != null && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps.Length > 0)
-							{
-								foreach (Creature.Grasp grasp in (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps)
-								{
-									MonklandSteamManager.EntityManager.SendGrab(grasp);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		public void AddRoomSpecificScript(Room room)
-		{
-			string name = room.abstractRoom.name;
-			switch (name)
-			{
-				case "SS_E08":
-					room.AddObject(new SS_E08GradientGravity(room));
-					break;
-				case "SU_C04":
-					room.AddObject(new RoomSpecificScript.SU_C04StartUp(room));
-					break;
-				case "SU_A22":
-					if (room.game.session is StoryGameSession && (room.game.session as StoryGameSession).saveState.cycleNumber == 1)
-					{
-						room.AddObject(new RoomSpecificScript.SU_A23FirstCycleMessage(room));
-					}
-					break;
-				case "SL_C12":
-					if (room.game.session is StoryGameSession && !(room.game.session as StoryGameSession).saveState.regionStates[room.world.region.regionNumber].roomsVisited[room.abstractRoom.index - room.world.firstRoomIndex] && (room.game.session as StoryGameSession).saveState.regionStates[room.world.region.regionNumber].roomsVisited[room.world.GetAbstractRoom("SL_A08").index - room.world.firstRoomIndex])
-					{
-						room.AddObject(new RoomSpecificScript.SL_C12JetFish(room));
-					}
-					break;
-				case "SB_A14":
-					room.AddObject(new RoomSpecificScript.SB_A14KarmaIncrease(room));
-					break;
-				case "SU_A43":
-					room.AddObject(new RoomSpecificScript.SU_A43SuperJumpOnly());
-					break;
-				case "deathPit":
-					room.AddObject(new RoomSpecificScript.DeathPit(room));
-					break;
-				case "LF_H01":
-					if (room.game.IsStorySession && room.game.GetStorySession.saveState.saveStateNumber == 2 && room.abstractRoom.firstTimeRealized && room.game.GetStorySession.saveState.cycleNumber == 0 && room.game.GetStorySession.saveState.denPosition == "LF_H01")
-					{
-						room.AddObject(new HardmodeStart(room));
-					}
-					break;
-				case "LF_A03":
-					if (room.game.IsStorySession && room.game.GetStorySession.saveState.saveStateNumber == 2 && room.abstractRoom.firstTimeRealized && room.game.GetStorySession.saveState.cycleNumber == 0 && room.game.manager.rainWorld.progression.miscProgressionData.redMeatEatTutorial < 2)
-					{
-						room.AddObject(new RoomSpecificScript.LF_A03());
-					}
-					break;
-				case "SS_D02":
-					if (room.game.IsStorySession && !room.game.GetStorySession.saveState.miscWorldSaveData.memoryArraysFrolicked)
-					{
-						room.game.GetStorySession.saveState.miscWorldSaveData.memoryArraysFrolicked = true;
-						Debug.Log("----MEMORY FROLICK!");
-					}
-					break;
 			}
 		}
 

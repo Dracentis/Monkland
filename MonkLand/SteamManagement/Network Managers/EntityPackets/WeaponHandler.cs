@@ -16,7 +16,7 @@ namespace Monkland.SteamManagement
             weapon.closestCritDist = reader.ReadSingle();
             weapon.exitThrownModeSpeed = reader.ReadSingle();
             weapon.firstFrameTraceFromPos = Vector2NHandler.Read(ref reader);
-            Weapon.Mode lastMode = (Weapon.Mode)reader.ReadInt32();
+            //Weapon.Mode lastMode = (Weapon.Mode)reader.ReadInt32();
             Weapon.Mode mode = (Weapon.Mode)reader.ReadInt32();
             if (mode != weapon.mode)
             {
@@ -27,7 +27,7 @@ namespace Monkland.SteamManagement
             {
                 weapon.AllGraspsLetGoOfThisObject(false);
             }
-            weapon.lastMode = lastMode;
+            //weapon.lastMode = lastMode;
             weapon.mode = mode;
             weapon.rotation = Vector2Handler.Read(ref reader);
             weapon.rotationSpeed = reader.ReadSingle();
@@ -45,7 +45,7 @@ namespace Monkland.SteamManagement
             weapon.closestCritDist = reader.ReadSingle();
             weapon.exitThrownModeSpeed = reader.ReadSingle();
             weapon.firstFrameTraceFromPos = Vector2NHandler.Read(ref reader);
-            Weapon.Mode lastMode = (Weapon.Mode)reader.ReadInt32();
+            //Weapon.Mode lastMode = (Weapon.Mode)reader.ReadInt32();
             Weapon.Mode mode = (Weapon.Mode)reader.ReadInt32();
             if (mode != weapon.mode)
             {
@@ -56,7 +56,7 @@ namespace Monkland.SteamManagement
             {
                 weapon.AllGraspsLetGoOfThisObject(false);
             }
-            weapon.lastMode = lastMode;
+            //weapon.lastMode = lastMode;
             weapon.mode = mode;
             weapon.rotation = Vector2Handler.Read(ref reader);
             weapon.rotationSpeed = reader.ReadSingle();
@@ -74,7 +74,7 @@ namespace Monkland.SteamManagement
             writer.Write(weapon.closestCritDist);
             writer.Write(weapon.exitThrownModeSpeed);
             Vector2NHandler.Write(weapon.firstFrameTraceFromPos, ref writer);
-            writer.Write((int)weapon.lastMode);
+            //writer.Write((int)weapon.lastMode);
             writer.Write((int)weapon.mode);
             Vector2Handler.Write(weapon.rotation, ref writer);
             writer.Write(weapon.rotationSpeed);

@@ -23,14 +23,14 @@ namespace Monkland.Patches
         public void ctor_Rock(AbstractPhysicalObject abstractPhysicalObject, World world)
         {
             OriginalConstructor(abstractPhysicalObject, world);
-            this.networkLife = 120;
+            this.networkLife = 60;
         }
 
-        public int networkLife = 120;
+        public int networkLife = 60;
 
         public void Sync()
         {
-            networkLife = 120;
+            networkLife = 60;
         }
 
         public extern void orig_Update(bool eu);
@@ -46,7 +46,7 @@ namespace Monkland.Patches
                 }
                 else
                 {
-                    networkLife = 120;
+                    networkLife = 60;
                     for (int i = 0; i < this.grabbedBy.Count; i++)
                     {
                         if(grabbedBy[i] != null)
@@ -90,42 +90,67 @@ namespace Monkland.Patches
             return true;
         }
 
+        public extern bool orig_HitSomething(SharedPhysics.CollisionResult result, bool eu);
+
         public override bool HitSomething(SharedPhysics.CollisionResult result, bool eu)
         {
-            if (result.obj == null)
+            bool hit = orig_HitSomething(result, eu);
+            if (hit && MonklandSteamManager.isInGame && !(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(this.room.abstractRoom.name))
             {
-                return false;
+                MonklandSteamManager.EntityManager.SendHit(this, result.obj, result.chunk);
+                MonklandSteamManager.EntityManager.Send(this, MonklandSteamManager.WorldManager.commonRooms[this.room.abstractRoom.name], true);
             }
-            if (!(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject && result.obj != null)
+            return hit;
+        }
+
+        public void NetThrown(Creature thrownBy, Vector2 thrownPos, Vector2? firstFrameTraceFromPos, IntVector2 throwDir, float frc)
+        {
+            //base.Thrown()
+            this.thrownBy = thrownBy;
+            this.thrownPos = thrownPos;
+            this.throwDir = throwDir;
+            this.firstFrameTraceFromPos = firstFrameTraceFromPos;
+            this.changeDirCounter = 3;
+            this.ChangeOverlap(true);
+            this.firstChunk.HardSetPosition(thrownPos);
+            this.GoThroughFloors = false;
+            if (throwDir.x != 0)
             {
-                MonklandSteamManager.EntityManager.SendHit(NetworkEntityManager.HitType.Rock, this, result.obj, result.chunk);
+                base.firstChunk.vel.y = thrownBy.mainBodyChunk.vel.y * 0.5f;
+                base.firstChunk.vel.x = thrownBy.mainBodyChunk.vel.x * 0.2f;
+                BodyChunk firstChunk = base.firstChunk;
+                firstChunk.vel.x = firstChunk.vel.x + (float)throwDir.x * 40f * frc;
+                BodyChunk firstChunk2 = base.firstChunk;
+                firstChunk2.vel.y = firstChunk2.vel.y + ((!(this is Spear)) ? 3f : 1.5f);
             }
-            if (this.thrownBy is Scavenger && (this.thrownBy as Scavenger).AI != null)
+            else
             {
-                (this.thrownBy as Scavenger).AI.HitAnObjectWithWeapon(this, result.obj);
+                if (throwDir.y == 0)
+                {
+                    this.ChangeMode(Weapon.Mode.Free);
+                    return;
+                }
+                base.firstChunk.vel.x = thrownBy.mainBodyChunk.vel.x * 0.5f;
+                base.firstChunk.vel.y = (float)throwDir.y * 40f * frc;
             }
-            this.vibrate = 20;
-            this.ChangeMode(Weapon.Mode.Free);
-            if (result.obj is Creature)
+            this.ChangeMode(Weapon.Mode.Thrown);
+            this.setRotation = new Vector2?(throwDir.ToVector2());
+            this.rotationSpeed = 0f;
+            this.meleeHitChunk = null;
+
+            this.room.PlaySound(SoundID.Slugcat_Throw_Rock, base.firstChunk);//Rock
+        }
+
+        public extern void orig_Thrown(Creature thrownBy, Vector2 thrownPos, Vector2? firstFrameTraceFromPos, IntVector2 throwDir, float frc, bool eu);
+
+        public override void Thrown(Creature thrownBy, Vector2 thrownPos, Vector2? firstFrameTraceFromPos, IntVector2 throwDir, float frc, bool eu)
+        {
+            orig_Thrown(thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
+            if (MonklandSteamManager.isInGame && !(this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(this.room.abstractRoom.name))
             {
-                (result.obj as Creature).Violence(base.firstChunk, new Vector2?(base.firstChunk.vel * base.firstChunk.mass), result.chunk, result.onAppendagePos, Creature.DamageType.Blunt, 0.01f, 45f);
+                MonklandSteamManager.EntityManager.SendThrow(this, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc);
+                MonklandSteamManager.EntityManager.Send(this, MonklandSteamManager.WorldManager.commonRooms[this.room.abstractRoom.name], true);
             }
-            else if (result.chunk != null)
-            {
-                result.chunk.vel += base.firstChunk.vel * base.firstChunk.mass / result.chunk.mass;
-            }
-            else if (result.onAppendagePos != null)
-            {
-                (result.obj as PhysicalObject.IHaveAppendages).ApplyForceOnAppendage(result.onAppendagePos, base.firstChunk.vel * base.firstChunk.mass);
-            }
-            base.firstChunk.vel = base.firstChunk.vel * -0.5f + Custom.DegToVec(UnityEngine.Random.value * 360f) * Mathf.Lerp(0.1f, 0.4f, UnityEngine.Random.value) * base.firstChunk.vel.magnitude;
-            this.room.PlaySound(SoundID.Rock_Hit_Creature, base.firstChunk);
-            if (result.chunk != null)
-            {
-                this.room.AddObject(new ExplosionSpikes(this.room, result.chunk.pos + Custom.DirVec(result.chunk.pos, result.collisionPoint) * result.chunk.rad, 5, 2f, 4f, 4.5f, 30f, new Color(1f, 1f, 1f, 0.5f)));
-            }
-            this.SetRandomSpin();
-            return true;
         }
     }
 }

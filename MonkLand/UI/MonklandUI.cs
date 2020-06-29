@@ -14,7 +14,7 @@ namespace Monkland.UI {
         public static FContainer uiContainer;
 
         private static FLabel statusLabel;
-        public const string VERSION = "0.2.6";
+        public const string VERSION = "0.2.7";
             
         private static List<QuickDisplayMessage> displayMessages = new List<QuickDisplayMessage>();
         private static List<FLabel> uiLabels = new List<FLabel>();
