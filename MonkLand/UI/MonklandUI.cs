@@ -14,13 +14,14 @@ namespace Monkland.UI {
         public static FContainer uiContainer;
 
         private static FLabel statusLabel;
-        public const string VERSION = "0.2.7";
+        public const string VERSION = "0.2.8";
             
         private static List<QuickDisplayMessage> displayMessages = new List<QuickDisplayMessage>();
         private static List<FLabel> uiLabels = new List<FLabel>();
 
         public static Room currentRoom;
         public static AbstractCreature trackedPlayer;
+        public static Vector2 cpos = new Vector2(0f, 0f);
 
         public MonklandUI(FStage stage) {
             displayMessages = new List<QuickDisplayMessage>();
@@ -49,6 +50,16 @@ namespace Monkland.UI {
 
             displayMessages.Clear();
             stage.AddChild( uiContainer );
+        }
+
+        public static Vector2 camPos()
+        {
+            if (trackedPlayer != null && currentRoom != null && trackedPlayer.realizedCreature != null && trackedPlayer.realizedCreature.DangerPos != null && currentRoom.cameraPositions != null && currentRoom.CameraViewingPoint(trackedPlayer.realizedCreature.DangerPos) >= 0 && currentRoom.CameraViewingPoint(trackedPlayer.realizedCreature.DangerPos) < currentRoom.cameraPositions.Length)
+            {
+                cpos = currentRoom.cameraPositions[currentRoom.CameraViewingPoint(trackedPlayer.realizedCreature.DangerPos)];
+            }
+            return cpos;
+            
         }
 
         public void Update(RainWorldGame game) {
@@ -165,7 +176,7 @@ namespace Monkland.UI {
             {
                 if (displayMessages[i].tracking == dist)
                 {
-                    displayMessages[i].worldPos = worldPos;
+                    displayMessages[i].worldPos = worldPos - camPos();
                     displayMessages[i].text = message;
                     displayMessages[i].life = time;
                     displayMessages[i].color = color;
@@ -178,7 +189,7 @@ namespace Monkland.UI {
                 text = message,
                 life = time,
                 isWorld = true,
-                worldPos = worldPos,
+                worldPos = worldPos - camPos(),
                 color = color,
                 roomID = roomID
             };

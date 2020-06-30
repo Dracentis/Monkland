@@ -67,6 +67,35 @@ namespace Monkland.SteamManagement
             return weapon;
         }
 
+        public static Spear Read(Spear weapon, ref BinaryReader reader)
+        {
+            weapon = PhysicalObjectHandler.Read(weapon, ref reader);
+            weapon.changeDirCounter = reader.ReadInt32();
+            weapon.closestCritDist = reader.ReadSingle();
+            weapon.exitThrownModeSpeed = reader.ReadSingle();
+            weapon.firstFrameTraceFromPos = Vector2NHandler.Read(ref reader);
+            //Weapon.Mode lastMode = (Weapon.Mode)reader.ReadInt32();
+            Weapon.Mode mode = (Weapon.Mode)reader.ReadInt32();
+            if (mode != weapon.mode)
+            {
+                //weapon.ChangeOverlap(true);
+                weapon.ChangeMode(mode);
+            }
+            if (mode == Weapon.Mode.Thrown && weapon.grabbedBy.Count > 0)
+            {
+                weapon.AllGraspsLetGoOfThisObject(false);
+            }
+            //weapon.lastMode = lastMode;
+            weapon.mode = mode;
+            weapon.rotation = Vector2Handler.Read(ref reader);
+            weapon.rotationSpeed = reader.ReadSingle();
+            weapon.throwModeFrames = reader.ReadInt32();
+            weapon.thrownBy = DistHandler.ReadCreature(ref weapon.thrownBy, ref reader, weapon.room);
+            weapon.thrownClosestToCreature = DistHandler.ReadCreature(ref weapon.thrownClosestToCreature, ref reader, weapon.room);
+            weapon.thrownPos = Vector2Handler.Read(ref reader);
+            return weapon;
+        }
+
         public static void Write(Weapon weapon, ref BinaryWriter writer)
         {
             PhysicalObjectHandler.Write(weapon, ref writer);

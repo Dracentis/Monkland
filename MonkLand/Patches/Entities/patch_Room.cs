@@ -44,6 +44,13 @@ namespace Monkland.Patches
 									MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name], true);
 								}
 							}
+							else if (abstractRoom.realizedRoom.physicalObjects[i][j] is Spear)
+							{
+								if (syncDelay == 0)
+								{
+									MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[this.abstractRoom.name], true);
+								}
+							}
 						}
 					}
 				}
@@ -75,11 +82,42 @@ namespace Monkland.Patches
 							{
 								MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock, players, true);
 							}
+							else if (abstractRoom.realizedRoom.physicalObjects[i][j] is Spear)
+							{
+								MonklandSteamManager.EntityManager.Send(abstractRoom.realizedRoom.physicalObjects[i][j] as Spear, players, true);
+							}
+						}
+					}
+				}
+				for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
+				{
+					for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
+					{
+						if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null && ((abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as AbstractPhysicalObject) as patch_AbstractPhysicalObject).owner == NetworkGameManager.playerID)
+						{
 							if (abstractRoom.realizedRoom.physicalObjects[i][j] is Creature && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps != null && (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps.Length > 0)
 							{
 								foreach (Creature.Grasp grasp in (abstractRoom.realizedRoom.physicalObjects[i][j] as Creature).grasps)
 								{
 									MonklandSteamManager.EntityManager.SendGrab(grasp);
+								}
+							}
+							foreach (AbstractPhysicalObject.AbstractObjectStick stick in abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject.stuckObjects)
+							{
+								if ((stick.A as patch_AbstractPhysicalObject).dist == (abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject as patch_AbstractPhysicalObject).dist)
+								{
+									if (stick is AbstractPhysicalObject.AbstractSpearStick)
+									{
+										MonklandSteamManager.EntityManager.SendSpearStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearStick).chunk, (stick as AbstractPhysicalObject.AbstractSpearStick).bodyPart, (stick as AbstractPhysicalObject.AbstractSpearStick).angle);
+									}
+									else if (stick is AbstractPhysicalObject.AbstractSpearAppendageStick)
+									{
+										MonklandSteamManager.EntityManager.SendSpearAppendageStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).appendage, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).prevSeg, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).distanceToNext, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).angle);
+									}
+									else if (stick is AbstractPhysicalObject.ImpaledOnSpearStick)
+									{
+										MonklandSteamManager.EntityManager.SendSpearImpaledStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).chunk, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).onSpearPosition);
+									}
 								}
 							}
 						}
