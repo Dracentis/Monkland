@@ -130,6 +130,8 @@ namespace Monkland.SteamManagement
 
         public bool isSynced(PhysicalObject obj)
         {
+            if (obj == null)
+                return false;
             if (obj is Player)
                 return true;
             if (obj is Rock)
@@ -141,6 +143,8 @@ namespace Monkland.SteamManagement
 
         public bool isSynced(AbstractPhysicalObject obj)
         {
+            if (obj == null)
+                return false;
             if (obj is AbstractCreature && (obj as AbstractCreature).creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat)
                 return true;
             if (obj.type == AbstractPhysicalObject.AbstractObjectType.Rock)

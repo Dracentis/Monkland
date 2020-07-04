@@ -44,7 +44,9 @@ namespace Monkland.Patches {
 
             EyesGreen,
 
-            EyesBlue
+            EyesBlue,
+
+            MaxPlayers
         }
 
     }

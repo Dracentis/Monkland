@@ -16,11 +16,14 @@ namespace Monkland {
         public MultiplayerPlayerList(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, Vector2 displayElementSize, float displayElementFade = 10) : base( menu, owner, pos, size, displayElementSize, displayElementFade ) { }
 
         public static void RemovePlayerLabel(ulong id) {
-            MenuLabel label = playerLabels[id];
-            (label.owner as MultiplayerPlayerList).playerHash.Remove(id);
-            label.owner.subObjects.Remove( label );
-            label.RemoveSprites();
-            playerLabels.Remove( id );
+            if (playerLabels.ContainsKey(id))
+            {
+                MenuLabel label = playerLabels[id];
+                (label.owner as MultiplayerPlayerList).playerHash.Remove(id);
+                label.owner.subObjects.Remove(label);
+                label.RemoveSprites();
+                playerLabels.Remove(id);
+            }
         }
 
         public void ClearList() {

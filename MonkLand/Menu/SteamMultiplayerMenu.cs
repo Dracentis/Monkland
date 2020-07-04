@@ -10,7 +10,7 @@ using Monkland.SteamManagement;
 using Monkland.Patches;
 
 namespace Monkland {
-    class SteamMultiplayerMenu: Menu.Menu, CheckBox.IOwnCheckBox
+    class SteamMultiplayerMenu: Menu.Menu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
 
         public MultiplayerChat gameChat;
@@ -31,6 +31,8 @@ namespace Monkland {
         public FLabel eyesLabel;
         public RoundedRect colorBox;
 
+        public SelectOneButton[] slugcatButtons;
+
         private FSprite slugcat;
         private FSprite eyes;
         private FSprite darkSprite;
@@ -45,6 +47,31 @@ namespace Monkland {
                 MonklandSteamManager.instance.CreateLobby();
             }
 
+            #region UI ELEMENTS SIZE DEFINITION
+            float resOffset = (1366 - manager.rainWorld.screenSize.x) / 2; // shift everything to the right depending on the resolution. 1/2 of the diff with the max resolution.
+
+            float screenWidth = manager.rainWorld.screenSize.x;
+            float screenHeight = manager.rainWorld.screenSize.y;
+            // initialize some dynamic sizes and positions for UI elements.
+            // player list and multiplayer settings have the same size no matter what the resolution.
+            // the room chat adjusts to fill all the middle space
+            float panelGutter = 15; // gap width between the panels
+
+            float playerListWidth = 200; // constant
+            float multiplayerSettingsWidth = 300; // constant
+            float multiplayerSettingsSliderWidth = multiplayerSettingsWidth - 115; // constant
+            float roomChatWidth = screenWidth - (playerListWidth + multiplayerSettingsWidth + panelGutter * 4); // depends on resolution
+
+            float playerListPositionX = panelGutter; // position depending on size
+            float multiplayerSettingsPositionX = screenWidth - (multiplayerSettingsWidth + panelGutter); // position depending on screen width
+            float multiplayerSettingsSliderPositionX = multiplayerSettingsPositionX + 10; // constant
+            float roomChatPositionX = playerListWidth + panelGutter * 2; // position depending on player list width
+
+            float controlButtonSpaceHeight = 100; // constant
+            float panelHeight = screenHeight - (controlButtonSpaceHeight + panelGutter * 2); // leaving a space for control buttons
+            float panelPositionY = controlButtonSpaceHeight; // constant
+            #endregion
+
             this.blackFade = 1f;
             this.lastBlackFade = 1f;
             this.pages.Add( new Page( this, null, "main", 0 ) );
@@ -54,76 +81,75 @@ namespace Monkland {
             this.darkSprite.color = new Color( 0f, 0f, 0f );
             this.darkSprite.anchorX = 0f;
             this.darkSprite.anchorY = 0f;
-            this.darkSprite.scaleX = 1368f;
-            this.darkSprite.scaleY = 770f;
-            this.darkSprite.x = -1f;
-            this.darkSprite.y = -1f;
+            this.darkSprite.scaleX = screenWidth;
+            this.darkSprite.scaleY = screenHeight;
+            this.darkSprite.x = screenWidth / 2f;
+            this.darkSprite.y = screenHeight / 2f;
             this.darkSprite.alpha = 0.85f;
             this.pages[0].Container.AddChild( this.darkSprite );
             this.blackFadeSprite = new FSprite( "Futile_White", true );
             this.blackFadeSprite.scaleX = 87.5f;
-            this.gameStarting = false;
             this.blackFadeSprite.scaleY = 50f;
-            this.blackFadeSprite.x = manager.rainWorld.screenSize.x / 2f;
-            this.blackFadeSprite.y = manager.rainWorld.screenSize.y / 2f;
+            this.blackFadeSprite.x = screenWidth / 2f;
+            this.blackFadeSprite.y = screenHeight / 2f;
             this.blackFadeSprite.color = new Color( 0f, 0f, 0f );
             Futile.stage.AddChild( this.blackFadeSprite );
 
             //Multiplayer Settings Box
-            colorBox = new RoundedRect(this, this.pages[0], new Vector2( 940, 125), new Vector2( 400, 600 ), false);
+            colorBox = new RoundedRect(this, this.pages[0], new Vector2(resOffset + multiplayerSettingsPositionX, panelPositionY), new Vector2(multiplayerSettingsWidth, panelHeight), false);
             this.pages[0].subObjects.Add(colorBox);
 
             //Settings Label
             settingsLabel = new FLabel("font", "Multiplayer Settings");
-            settingsLabel.SetPosition(new Vector2(1140, manager.rainWorld.screenSize.y - 60));
+            settingsLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 60));
             Futile.stage.AddChild(this.settingsLabel);
 
             //Body Color Label
             bodyLabel = new FLabel("font", "Body Color");
-            bodyLabel.SetPosition(new Vector2(1140, manager.rainWorld.screenSize.y - 90));
+            bodyLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 90));
             Futile.stage.AddChild(this.bodyLabel);
 
             //Red Slider
-            bodyRed = new HorizontalSlider(this, this.pages[0], "Red", new Vector2(960, manager.rainWorld.screenSize.y - 130), new Vector2(255, 30), (Slider.SliderID)patch_Slider.SliderID.BodyRed, false);
-            bodyRed.floatValue = 1f;
+            bodyRed = new HorizontalSlider(this, this.pages[0], "Red", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 130), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.BodyRed, false);
+            bodyRed.floatValue = MonklandSteamManager.bodyColor.r;
             bodyRed.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyRed);
             //Green Slider
-            bodyGreen = new HorizontalSlider(this, this.pages[0], "Green", new Vector2(960, manager.rainWorld.screenSize.y - 170), new Vector2(255, 30), (Slider.SliderID)patch_Slider.SliderID.BodyGreen, false);
-            bodyGreen.floatValue = 1f;
+            bodyGreen = new HorizontalSlider(this, this.pages[0], "Green", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 170), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.BodyGreen, false);
+            bodyGreen.floatValue = MonklandSteamManager.bodyColor.g;
             bodyGreen.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyGreen);
             //Blue Slider
-            bodyBlue = new HorizontalSlider(this, this.pages[0], "Blue", new Vector2(960, manager.rainWorld.screenSize.y - 210), new Vector2(255, 30), (Slider.SliderID)patch_Slider.SliderID.BodyBlue, false);
-            bodyBlue.floatValue = 1f;
+            bodyBlue = new HorizontalSlider(this, this.pages[0], "Blue", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 210), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.BodyBlue, false);
+            bodyBlue.floatValue = MonklandSteamManager.bodyColor.b;
             bodyBlue.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyBlue);
 
             //Eye Color Label
             eyesLabel = new FLabel("font", "Eye Color");
-            eyesLabel.SetPosition(new Vector2(1140, manager.rainWorld.screenSize.y - 235));
+            eyesLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 240));
             Futile.stage.AddChild(this.eyesLabel);
 
             //Red Slider
-            eyesRed = new HorizontalSlider(this, this.pages[0], "Red ", new Vector2(960, manager.rainWorld.screenSize.y - 280), new Vector2(255, 30), (Slider.SliderID)patch_Slider.SliderID.EyesRed, false);
-            eyesRed.floatValue = 0f;
+            eyesRed = new HorizontalSlider(this, this.pages[0], "Red ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 280), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.EyesRed, false);
+            eyesRed.floatValue = MonklandSteamManager.eyeColor.r;
             this.pages[0].subObjects.Add(this.eyesRed);
             //Green Slider
-            eyesGreen = new HorizontalSlider(this, this.pages[0], "Green ", new Vector2(960, manager.rainWorld.screenSize.y - 320), new Vector2(255, 30), (Slider.SliderID)patch_Slider.SliderID.EyesGreen, false);
-            eyesGreen.floatValue = 0f;
+            eyesGreen = new HorizontalSlider(this, this.pages[0], "Green ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 320), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.EyesGreen, false);
+            eyesGreen.floatValue = MonklandSteamManager.eyeColor.g;
             this.pages[0].subObjects.Add(this.eyesGreen);
             //Blue Slider
-            eyesBlue = new HorizontalSlider(this, this.pages[0], "Blue ", new Vector2(960, manager.rainWorld.screenSize.y - 360), new Vector2(255, 30), (Slider.SliderID)patch_Slider.SliderID.EyesBlue, false);
-            eyesBlue.floatValue = 0f;
+            eyesBlue = new HorizontalSlider(this, this.pages[0], "Blue ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 360), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.EyesBlue, false);
+            eyesBlue.floatValue = MonklandSteamManager.eyeColor.b;
             this.pages[0].subObjects.Add(this.eyesBlue);
-            
-            
+
+
             //Slugcat Eyes Sprite
             eyes = new FSprite("FoodCircleB", true);
             eyes.scaleX = 1f;
-            eyes.scaleY = 1f;
+            eyes.scaleY = 1.1f;
             eyes.color = new Color(0, 0, 0);
-            eyes.x = 964;
+            eyes.x = multiplayerSettingsPositionX + 130;
             eyes.y = manager.rainWorld.screenSize.y - 236;
             eyes.isVisible = true;
             this.pages[0].Container.AddChild(this.eyes);
@@ -133,38 +159,43 @@ namespace Monkland {
             slugcat.scaleX = 1f;
             slugcat.scaleY = 1f;
             slugcat.color = new Color(1f, 1f, 1f);
-            slugcat.x = 970;
+            slugcat.x = multiplayerSettingsPositionX + 136;
             slugcat.y = manager.rainWorld.screenSize.y - 235;
             slugcat.isVisible = true;
             this.pages[0].Container.AddChild(this.slugcat);
 
             //Debug Mode checkbox
-            this.debugCheckBox = new CheckBox(this, this.pages[0], this, new Vector2(1080, manager.rainWorld.screenSize.y - 400), 120f, "Debug Mode", "DEBUG");
+            this.debugCheckBox = new CheckBox(this, this.pages[0], this, new Vector2(resOffset + multiplayerSettingsSliderPositionX+120f, screenHeight - 400f), 120f, "Debug Mode", "DEBUG");
             this.pages[0].subObjects.Add(this.debugCheckBox);
 
+            //Slugcat Buttons
+            this.slugcatButtons = new SelectOneButton[3];
+            this.slugcatButtons[0] = new SelectOneButton(this, this.pages[0], base.Translate("SURVIOR"), "Slugcat", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 445f), new Vector2(110f, 30f), this.slugcatButtons, 0);
+            this.pages[0].subObjects.Add(this.slugcatButtons[0]);
+            this.slugcatButtons[1] = new SelectOneButton(this, this.pages[0], base.Translate("MONK"), "Slugcat", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 490f), new Vector2(110f, 30f), this.slugcatButtons, 1);
+            this.pages[0].subObjects.Add(this.slugcatButtons[1]);
+            this.slugcatButtons[2] = new SelectOneButton(this, this.pages[0], base.Translate("HUNTER"), "Slugcat", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 535f), new Vector2(110f, 30f), this.slugcatButtons, 2);
+            this.pages[0].subObjects.Add(this.slugcatButtons[2]);
+
             //Back button
-            this.backButton = new SimpleButton(this, this.pages[0], base.Translate("BACK"), "EXIT", new Vector2( 100f, 50f ), new Vector2(110f, 30f));
+            this.backButton = new SimpleButton(this, this.pages[0], base.Translate("BACK"), "EXIT", new Vector2(resOffset + 15f, 50f), new Vector2(110f, 30f));
             this.pages[0].subObjects.Add(this.backButton);
 
-            //Back button
-            this.backButton = new SimpleButton( this, this.pages[0], base.Translate( "BACK" ), "EXIT", new Vector2( 100f, 50f ), new Vector2( 110f, 30f ) );
-            this.pages[0].subObjects.Add( this.backButton );
-
             //Start Game button
-            this.startGameButton = new SimpleButton( this, this.pages[0], "Start Game", "STARTGAME", new Vector2( 1060, 50f ), new Vector2( 110f, 30f ) );
-            this.pages[0].subObjects.Add( this.startGameButton );
+            this.startGameButton = new SimpleButton(this, this.pages[0], "Start Game", "STARTGAME", new Vector2(resOffset + screenWidth - 125, 50f), new Vector2(110f, 30f));
+            this.pages[0].subObjects.Add(this.startGameButton);
 
             //Ready Up button
-            this.readyUpButton = new SimpleButton( this, this.pages[0], "Ready UP", "READYUP", new Vector2( 940, 50f ), new Vector2( 110f, 30f ) );
-            this.pages[0].subObjects.Add( this.readyUpButton );
+            this.readyUpButton = new SimpleButton(this, this.pages[0], "Ready UP", "READYUP", new Vector2(resOffset + screenWidth - 250, 50f), new Vector2(110f, 30f));
+            this.pages[0].subObjects.Add(this.readyUpButton);
 
             //Multiplayer Chat
-            this.gameChat = new MultiplayerChat( this, this.pages[0], new Vector2( 320, 125 ), new Vector2( 600, 600 ) );
-            this.pages[0].subObjects.Add( this.gameChat );
+            this.gameChat = new MultiplayerChat(this, this.pages[0], new Vector2(resOffset + roomChatPositionX, panelPositionY), new Vector2(roomChatWidth, panelHeight));
+            this.pages[0].subObjects.Add(this.gameChat);
 
             //Invite menu
-            playerList = new MultiplayerPlayerList( this, this.pages[0], new Vector2( 100, 125 ), new Vector2( 200, 600 ), new Vector2( 180, 180 ) );
-            this.pages[0].subObjects.Add( this.playerList );
+            playerList = new MultiplayerPlayerList(this, this.pages[0], new Vector2(resOffset + playerListPositionX, panelPositionY), new Vector2(playerListWidth, panelHeight), new Vector2(playerListWidth - 20, playerListWidth - 20));
+            this.pages[0].subObjects.Add(this.playerList);
 
             //Controller Combatability
             this.bodyRed.nextSelectable[1] = this.readyUpButton;
@@ -218,26 +249,32 @@ namespace Monkland {
                     case ((Slider.SliderID)patch_Slider.SliderID.BodyRed):
                         MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         MonklandSteamManager.GameManager.SendColor(0);
+                        MonklandSteamManager.bodyColor = new Color(f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         return;
                     case ((Slider.SliderID)patch_Slider.SliderID.BodyGreen):
                         MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         MonklandSteamManager.GameManager.SendColor(1);
+                        MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         return;
                     case ((Slider.SliderID)patch_Slider.SliderID.BodyBlue):
                         MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
                         MonklandSteamManager.GameManager.SendColor(2);
+                        MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
                         return;
                     case ((Slider.SliderID)patch_Slider.SliderID.EyesRed):
                         MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         MonklandSteamManager.GameManager.SendColor(3);
+                        MonklandSteamManager.eyeColor = new Color(f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         return;
                     case ((Slider.SliderID)patch_Slider.SliderID.EyesGreen):
                         MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         MonklandSteamManager.GameManager.SendColor(4);
+                        MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                         return;
                     case ((Slider.SliderID)patch_Slider.SliderID.EyesBlue):
                         MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
                         MonklandSteamManager.GameManager.SendColor(5);
+                        MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
                         return;
                 }
             }
@@ -265,6 +302,26 @@ namespace Monkland {
                 }
             }
             return 0f;
+        }
+
+        public int GetCurrentlySelectedOfSeries(string series)
+        {
+            switch (series)
+            {
+                case "Slugcat":
+                    return this.manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat;
+            }
+            return -1;
+        }
+
+        public void SetCurrentlySelectedOfSeries(string series, int to)
+        {
+            switch (series)
+            {
+                case "Slugcat":
+                    this.manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = to;
+                    break;
+            }
         }
 
         public bool GetChecked(CheckBox box)
@@ -303,6 +360,7 @@ namespace Monkland {
                 //Debug.Log("Color: " + MonklandSteamManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r + ", " + MonklandSteamManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g + ", " + MonklandSteamManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                 eyes.color = MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)];
             }
+            this.debugCheckBox.buttonBehav.greyedOut = (MonklandSteamManager.lobbyInfo != null && MonklandSteamManager.lobbyInfo.owner.m_SteamID != 0 && !MonklandSteamManager.lobbyInfo.debugAllowed);
             if ( NetworkGameManager.managerID == NetworkGameManager.playerID ) {
                 //startGameButton.pos = new Vector2( 1060, 50f );
                 startGameButton.buttonBehav.greyedOut = gameStarting;
@@ -338,13 +396,14 @@ namespace Monkland {
 
         public override void Singal(MenuObject sender, string message) {
             if (message == "EXIT") {
-                if (manager.musicPlayer != null) { 
-                    manager.musicPlayer.FadeOutAllSongs(5f);
-                    this.manager.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
-                }
-                manager.RequestMainProcessSwitch( ProcessManager.ProcessID.MainMenu );
+                //if (manager.musicPlayer != null) { 
+                //    manager.musicPlayer.FadeOutAllSongs(5f);
+                //    this.manager.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
+                //}
+                //manager.RequestMainProcessSwitch( ProcessManager.ProcessID.MainMenu );
                 MonklandSteamManager.instance.OnGameExit();
                 Steamworks.SteamMatchmaking.LeaveLobby( SteamManagement.MonklandSteamManager.lobbyID );
+                ((patch_ProcessManager)this.manager).ImmediateSwitchCustom(new LobbyFinderMenu(this.manager));//opens lobby finder menu menu
             } else if( message == "READYUP" ) {
                 MonklandSteamManager.GameManager.SendColor(0);
                 MonklandSteamManager.GameManager.SendColor(1);

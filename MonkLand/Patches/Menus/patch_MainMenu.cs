@@ -144,7 +144,7 @@ namespace Monkland.Patches {
             if (message == "COOP")
             {
                 base.PlaySound(SoundID.MENU_Switch_Page_In);
-                ((patch_ProcessManager)this.manager).ImmediateSwitchCustom(new SteamMultiplayerMenu(this.manager, true));//opens multiplayer menu
+                ((patch_ProcessManager)this.manager).ImmediateSwitchCustom(new LobbyFinderMenu(this.manager));//opens lobby finder menu menu
             }
             else
             {

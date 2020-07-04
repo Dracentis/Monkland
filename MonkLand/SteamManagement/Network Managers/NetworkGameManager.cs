@@ -32,6 +32,11 @@ namespace Monkland.SteamManagement {
 
         public override void Update()
         {
+            if (!MonklandSteamManager.isInGame)
+            {
+                joinDelay = -1;
+                startDelay = -1;
+            }
             if (joinDelay > 0)
             {
                 joinDelay -= 1;
@@ -86,8 +91,17 @@ namespace Monkland.SteamManagement {
 
         public override void PlayerJoined(ulong steamID)
         {
-            playerColors.Add(new Color(1f, 1f, 1f));
-            playerEyeColors.Add(new Color(0.004f, 0.004f, 0.004f));
+            if (steamID == playerID)
+            {
+                playerColors.Add(MonklandSteamManager.bodyColor);
+                playerEyeColors.Add(MonklandSteamManager.eyeColor);
+                //MonklandSteamManager.Log("Using Last Colors");
+            }
+            else
+            {
+                playerColors.Add(new Color(1f, 1f, 1f));
+                playerEyeColors.Add(new Color(0.004f, 0.004f, 0.004f));
+            }
             joinDelay = 100;
         }
 
@@ -209,6 +223,9 @@ namespace Monkland.SteamManagement {
         {
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
+            if (!MonklandSteamManager.connectedPlayers.Contains(playerID))
+                return;
 
             //Write message type
             writer.Write(Convert.ToByte(colorID+2));

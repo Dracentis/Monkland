@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HUD;
 using RWCustom;
@@ -47,7 +47,7 @@ namespace Menu
 		{
 			get
 			{
-				return !NetworkGameManager.isManager || MonklandSteamManager.WorldManager.ingamePlayers.Count > 0 || gameStarting;
+				return !NetworkGameManager.isManager || (MonklandSteamManager.WorldManager.ingamePlayers.Count > 0 && MonklandSteamManager.WorldManager.cycleLength-MonklandSteamManager.WorldManager.timer > -2500) || gameStarting;
 			}
 		}
 
