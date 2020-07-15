@@ -24,6 +24,15 @@ namespace Monkland.Patches
         private int stuckInChunkIndex;
 
         [MonoModIgnore]
+        private bool spinning;
+
+        [MonoModIgnore]
+        private bool addPoles;
+
+        [MonoModIgnore]
+        private int stillCounter;
+
+        [MonoModIgnore]
         public extern void OriginalConstructor(AbstractPhysicalObject abstractPhysicalObject, World world);
         [MonoModConstructor, MonoModOriginalName("OriginalConstructor")]
         public void ctor_Rock(AbstractPhysicalObject abstractPhysicalObject, World world)
@@ -41,9 +50,166 @@ namespace Monkland.Patches
 
         public extern void orig_Update(bool eu);
 
-        public void Update(bool eu)
+        public void NoChunkUpdate(bool eu)
         {
-            orig_Update(eu);
+            ((Action)Activator.CreateInstance(typeof(Action), this, typeof(Weapon).GetMethod("Update").MethodHandle.GetFunctionPointer()))();
+            this.soundLoop.sound = SoundID.None;
+            if (base.firstChunk.vel.magnitude > 5f)
+            {
+                if (base.mode == Weapon.Mode.Thrown)
+                {
+                    this.soundLoop.sound = SoundID.Spear_Thrown_Through_Air_LOOP;
+                }
+                else if (base.mode == Weapon.Mode.Free)
+                {
+                    this.soundLoop.sound = SoundID.Spear_Spinning_Through_Air_LOOP;
+                }
+                this.soundLoop.Volume = Mathf.InverseLerp(5f, 15f, base.firstChunk.vel.magnitude);
+            }
+            this.soundLoop.Update();
+            this.lastPivotAtTip = this.pivotAtTip;
+            this.pivotAtTip = (base.mode == Weapon.Mode.Thrown || base.mode == Weapon.Mode.StuckInCreature);
+            if (this.addPoles && this.room.readyForAI)
+            {
+                if (this.abstractSpear.stuckInWallCycles >= 0)
+                {
+                    this.room.GetTile(this.stuckInWall.Value).horizontalBeam = true;
+                    for (int i = -1; i < 2; i += 2)
+                    {
+                        if (!this.room.GetTile(this.stuckInWall.Value + new Vector2(20f * (float)i, 0f)).Solid)
+                        {
+                            this.room.GetTile(this.stuckInWall.Value + new Vector2(20f * (float)i, 0f)).horizontalBeam = true;
+                        }
+                    }
+                }
+                else
+                {
+                    this.room.GetTile(this.stuckInWall.Value).verticalBeam = true;
+                    for (int j = -1; j < 2; j += 2)
+                    {
+                        if (!this.room.GetTile(this.stuckInWall.Value + new Vector2(0f, 20f * (float)j)).Solid)
+                        {
+                            this.room.GetTile(this.stuckInWall.Value + new Vector2(0f, 20f * (float)j)).verticalBeam = true;
+                        }
+                    }
+                }
+                this.addPoles = false;
+            }
+            switch (base.mode)
+            {
+                case Weapon.Mode.Free:
+                    if (this.spinning)
+                    {
+                        if (Custom.DistLess(base.firstChunk.pos, base.firstChunk.lastPos, 4f * this.room.gravity))
+                        {
+                            this.stillCounter++;
+                        }
+                        else
+                        {
+                            this.stillCounter = 0;
+                        }
+                        if (base.firstChunk.ContactPoint.y < 0 || this.stillCounter > 20)
+                        {
+                            this.spinning = false;
+                            this.rotationSpeed = 0f;
+                            this.rotation = Custom.DegToVec(Mathf.Lerp(-50f, 50f, UnityEngine.Random.value) + 180f);
+                            base.firstChunk.vel *= 0f;
+                            this.room.PlaySound(SoundID.Spear_Stick_In_Ground, base.firstChunk);
+                        }
+                    }
+                    else if (!Custom.DistLess(base.firstChunk.lastPos, base.firstChunk.pos, 6f))
+                    {
+                        this.SetRandomSpin();
+                    }
+                    break;
+                case Weapon.Mode.Thrown:
+                    {
+                        BodyChunk firstChunk = base.firstChunk;
+                        firstChunk.vel.y = firstChunk.vel.y + 0.45f;
+                        if (Custom.DistLess(this.thrownPos, base.firstChunk.pos, 560f * Mathf.Max(1f, this.spearDamageBonus)) && base.firstChunk.ContactPoint == this.throwDir && this.room.GetTile(base.firstChunk.pos).Terrain == Room.Tile.TerrainType.Air && this.room.GetTile(base.firstChunk.pos + this.throwDir.ToVector2() * 20f).Terrain == Room.Tile.TerrainType.Solid && (UnityEngine.Random.value < ((!(this is ExplosiveSpear)) ? 0.33f : 0.8f) || Custom.DistLess(this.thrownPos, base.firstChunk.pos, 140f) || this.alwaysStickInWalls))
+                        {
+                            bool flag = true;
+                            foreach (AbstractWorldEntity abstractWorldEntity in this.room.abstractRoom.entities)
+                            {
+                                if (abstractWorldEntity is AbstractSpear && (abstractWorldEntity as AbstractSpear).realizedObject != null && ((abstractWorldEntity as AbstractSpear).realizedObject as Weapon).mode == Weapon.Mode.StuckInWall && abstractWorldEntity.pos.Tile == this.abstractPhysicalObject.pos.Tile)
+                                {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                            if (flag && !(this is ExplosiveSpear))
+                            {
+                                for (int k = 0; k < this.room.roomSettings.placedObjects.Count; k++)
+                                {
+                                    if (this.room.roomSettings.placedObjects[k].type == PlacedObject.Type.NoSpearStickZone && Custom.DistLess(this.room.MiddleOfTile(base.firstChunk.pos), this.room.roomSettings.placedObjects[k].pos, (this.room.roomSettings.placedObjects[k].data as PlacedObject.ResizableObjectData).Rad))
+                                    {
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (flag)
+                            {
+                                this.stuckInWall = new Vector2?(this.room.MiddleOfTile(base.firstChunk.pos));
+                                this.vibrate = 10;
+                                this.ChangeMode(Weapon.Mode.StuckInWall);
+                                this.room.PlaySound(SoundID.Spear_Stick_In_Wall, base.firstChunk);
+                                base.firstChunk.collideWithTerrain = false;
+                            }
+                        }
+                        break;
+                    }
+                case Weapon.Mode.StuckInCreature:
+                    this.setRotation = new Vector2?(Custom.DegToVec(this.stuckRotation));
+                    if (this.stuckInWall != null)
+                    {
+                        if (this.pinToWallCounter > 0)
+                        {
+                            this.pinToWallCounter--;
+                        }
+                        base.firstChunk.vel *= 0f;
+                        base.firstChunk.pos = this.stuckInWall.Value;
+                    }
+                    break;
+                case Weapon.Mode.StuckInWall:
+                    base.firstChunk.pos = this.stuckInWall.Value;
+                    base.firstChunk.vel *= 0f;
+                    break;
+            }
+            for (int l = this.abstractPhysicalObject.stuckObjects.Count - 1; l >= 0; l--)
+            {
+                if (this.abstractPhysicalObject.stuckObjects[l] is AbstractPhysicalObject.ImpaledOnSpearStick)
+                {
+                    if (this.abstractPhysicalObject.stuckObjects[l].B.realizedObject != null && (this.abstractPhysicalObject.stuckObjects[l].B.realizedObject.slatedForDeletetion || this.abstractPhysicalObject.stuckObjects[l].B.realizedObject.grabbedBy.Count > 0))
+                    {
+                        this.abstractPhysicalObject.stuckObjects[l].Deactivate();
+                    }
+                    else if (this.abstractPhysicalObject.stuckObjects[l].B.realizedObject != null && this.abstractPhysicalObject.stuckObjects[l].B.realizedObject.room == this.room)
+                    {
+                        this.abstractPhysicalObject.stuckObjects[l].B.realizedObject.firstChunk.MoveFromOutsideMyUpdate(eu, base.firstChunk.pos + this.rotation * Custom.LerpMap((float)(this.abstractPhysicalObject.stuckObjects[l] as AbstractPhysicalObject.ImpaledOnSpearStick).onSpearPosition, 0f, 4f, 15f, -15f));
+                        this.abstractPhysicalObject.stuckObjects[l].B.realizedObject.firstChunk.vel *= 0f;
+                    }
+                }
+            }
+        }
+
+        public new void Update(bool eu)
+        {
+            //Sanity check kind of thing, don't know if this actually happens but there's another cause for spear crashes and I want to rule this out
+            if (this.mode == Weapon.Mode.StuckInWall && !this.stuckInWall.HasValue)
+                {
+                    Debug.Log("SPEAR STUCK IN WALL WITH NO STUCK POS!");
+                    this.mode = Weapon.Mode.Free;
+            }
+            //Alt update called if stuck in creature without a stuckobject, prevents clients crashing when someone sticks a spear in a non-synced creature
+            if (this.stuckInObject == null && this.mode == Weapon.Mode.StuckInCreature)
+            {
+                this.NoChunkUpdate(eu);
+            }
+            else
+            {
+                this.orig_Update(eu);
+            }
             if ((this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject)
             {
                 if (this.networkLife > 0)
@@ -55,7 +221,7 @@ namespace Monkland.Patches
                     networkLife = 60;
                     for (int i = 0; i < this.grabbedBy.Count; i++)
                     {
-                        if(grabbedBy[i] != null)
+                        if (grabbedBy[i] != null)
                         {
                             grabbedBy[i].Release();
                             i--;
