@@ -91,12 +91,12 @@ namespace Monkland
 
             //Settings Label
             settingsLabel = new FLabel("font", "Multiplayer Settings");
-            settingsLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 60));
+            settingsLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 60.01f));
             Futile.stage.AddChild(this.settingsLabel);
 
             //Body Color Label
             bodyLabel = new FLabel("font", "Body Color");
-            bodyLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 90));
+            bodyLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 90.01f));
             Futile.stage.AddChild(this.bodyLabel);
 
             //Red Slider
@@ -117,7 +117,7 @@ namespace Monkland
 
             //Eye Color Label
             eyesLabel = new FLabel("font", "Eye Color");
-            eyesLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 240));
+            eyesLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 240.01f));
             Futile.stage.AddChild(this.eyesLabel);
 
             //Red Slider

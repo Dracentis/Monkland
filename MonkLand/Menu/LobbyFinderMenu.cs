@@ -104,12 +104,12 @@ namespace Monkland
 
             //Settings Label
             settingsLabel = new FLabel("font", "Multiplayer Settings");
-            settingsLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 60));
+            settingsLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 60.01f));
             Futile.stage.AddChild(this.settingsLabel);
 
             //Body Color Label
             bodyLabel = new FLabel("font", "Body Color");
-            bodyLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 90));
+            bodyLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 90.01f));
             Futile.stage.AddChild(this.bodyLabel);
 
             //Red Slider
@@ -130,7 +130,7 @@ namespace Monkland
 
             //Eye Color Label
             eyesLabel = new FLabel("font", "Eye Color");
-            eyesLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 240));
+            eyesLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 240.01f));
             Futile.stage.AddChild(this.eyesLabel);
 
             //Red Slider
@@ -193,19 +193,19 @@ namespace Monkland
 
             //Lobby browser Labels:
             this.namesLabel = new FLabel("font", "CREATED BY");
-            this.namesLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + (lobbyFinderWidth / 10), screenHeight - 75));
+            this.namesLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + (lobbyFinderWidth / 10), screenHeight - 75.01f));
             Futile.stage.AddChild(this.namesLabel);
 
             this.versionsLabel = new FLabel("font", "VERSION");
-            this.versionsLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + 1.8f * (lobbyFinderWidth / 5), screenHeight - 75));
+            this.versionsLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + 1.8f * (lobbyFinderWidth / 5), screenHeight - 75.01f));
             Futile.stage.AddChild(this.versionsLabel);
 
             this.playersLabel = new FLabel("font", "PLAYERS");
-            this.playersLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + 2.9f * (lobbyFinderWidth / 5), screenHeight - 75));
+            this.playersLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + 2.9f * (lobbyFinderWidth / 5), screenHeight - 75.01f));
             Futile.stage.AddChild(this.playersLabel);
 
             this.maxLabel = new FLabel("font", "MAX");
-            this.maxLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + 4 * (lobbyFinderWidth / 6), screenHeight - 75));
+            this.maxLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + 4 * (lobbyFinderWidth / 6), screenHeight - 75.01f));
             Futile.stage.AddChild(this.maxLabel);
 
             //Join buttons
@@ -250,7 +250,7 @@ namespace Monkland
 
             //Lobby Creator Label
             creatorLabel = new FLabel("font", "Lobby Settings");
-            creatorLabel.SetPosition(new Vector2(lobbyCreatorPositionX + 60 - resOffset, screenHeight - 60));
+            creatorLabel.SetPosition(new Vector2(lobbyCreatorPositionX + 60.01f - resOffset, screenHeight - 60.01f));
             Futile.stage.AddChild(this.creatorLabel);
 
             //Lobby Type Buttons
@@ -270,7 +270,7 @@ namespace Monkland
 
             //Max Players Label
             maxPlayersLabel = new FLabel("font", "Max Players: 10");
-            maxPlayersLabel.SetPosition(new Vector2(lobbyCreatorSliderPositionX + (lobbyCreatorWidth / 2) - 20 - resOffset, screenHeight - 200));
+            maxPlayersLabel.SetPosition(new Vector2(lobbyCreatorSliderPositionX + (lobbyCreatorWidth / 2) - 20.01f - resOffset, screenHeight - 200.01f));
             Futile.stage.AddChild(this.maxPlayersLabel);
 
             //Spears checkbox

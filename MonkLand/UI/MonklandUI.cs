@@ -35,7 +35,7 @@ namespace Monkland.UI
 
             statusLabel = new FLabel("font", text);
             statusLabel.alignment = FLabelAlignment.Left;
-            statusLabel.SetPosition(50, Futile.screen.height - 50);
+            statusLabel.SetPosition(50.01f, Futile.screen.height - 49.99f);
             uiContainer.AddChild(statusLabel);
 
             for (int i = 0; i < 200; i++)
@@ -115,11 +115,11 @@ namespace Monkland.UI
                 if (!displayMessages[i].isWorld)
                 {
                     k++;
-                    if (uiLabels[i].text != displayMessages[i].text || uiLabels[i].GetPosition().y != (Futile.screen.height - 50 - (20 * k)))
+                    if (uiLabels[i].text != displayMessages[i].text || Mathf.Abs(uiLabels[i].GetPosition().y - Futile.screen.height - 49.99f - (20 * k)) > float.Epsilon)
                     {
                         uiLabels[i].text = displayMessages[i].text;
                         uiLabels[i].color = displayMessages[i].color;
-                        uiLabels[i].SetPosition(50, Futile.screen.height - 50 - (20 * k));
+                        uiLabels[i].SetPosition(50.01f, Futile.screen.height - 49.99f - (20 * k));
                         //uiLabels[i].Redraw(false, false);
                     }
                 }
@@ -131,7 +131,7 @@ namespace Monkland.UI
                         {
                             uiLabels[i].text = displayMessages[i].text;
                             uiLabels[i].color = displayMessages[i].color;
-                            uiLabels[i].SetPosition(displayMessages[i].worldPos.x, displayMessages[i].worldPos.y);
+                            uiLabels[i].SetPosition(displayMessages[i].worldPos.x + 0.01f, displayMessages[i].worldPos.y + 0.01f);
                             //uiLabels[i].Redraw(false, false);
                         }
                     }

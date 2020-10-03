@@ -116,7 +116,7 @@ namespace Monkland
                 foreach (MenuLabel item in chatMessages)
                 {
                     float actualY = 5.01f + ((chatMessages.Count - i - 1) * 25) - (difference * scrollValue);
-                    item.pos = new Vector2(item.pos.x, actualY);
+                    item.pos = new Vector2(Mathf.Round(item.pos.x) + 0.01f, actualY);
 
                     float targetAlpha = 1;
 
