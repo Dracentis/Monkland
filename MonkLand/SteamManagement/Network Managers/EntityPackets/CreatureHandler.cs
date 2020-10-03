@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Monkland.Hooks.Entities;
 using System.IO;
-using RWCustom;
-using Monkland.Patches;
-using System.Drawing.Printing;
 
 namespace Monkland.SteamManagement
 {
-    class CreatureHandler
+    internal class CreatureHandler
     {
-
         public static Creature Read(Creature creature, ref BinaryReader reader)
         {
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
             creature = PhysicalObjectHandler.Read(creature, ref reader);
             //creature.blind = reader.ReadInt32();
-            (creature as Patches.patch_Player).Sync(reader.ReadBoolean());
+            CreatureHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();
@@ -31,7 +25,7 @@ namespace Monkland.SteamManagement
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
             creature = PhysicalObjectHandler.Read(creature, ref reader);
             //creature.blind = reader.ReadInt32();
-            (creature as Patches.patch_Player).Sync(reader.ReadBoolean());
+            PlayerHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();

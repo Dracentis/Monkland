@@ -1,0 +1,13 @@
+﻿[*.cs]
+
+# CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity = none
+
+# IDE0017: 개체 초기화 단순화
+dotnet_style_object_initializer = true:silent
+
+# IDE0051: 사용되지 않는 private 멤버 제거
+dotnet_diagnostic.IDE0051.severity = none
+
+# IDE1006: 명명 스타일
+dotnet_diagnostic.IDE1006.severity = silent

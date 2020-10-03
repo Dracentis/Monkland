@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 
 namespace Monkland.SteamManagement
 {
-    class SpearHandler
+    internal class SpearHandler
     {
         public static Spear Read(Spear spear, ref BinaryReader reader)
         {

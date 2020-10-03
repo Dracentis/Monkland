@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using RWCustom;
-using UnityEngine;
+﻿using System.IO;
 
 namespace Monkland.SteamManagement
 {
-    class InputHandler
+    internal class InputHandler
     {
         public static Player.InputPackage Read(Player.InputPackage input, ref BinaryReader reader)
         {
@@ -23,6 +18,7 @@ namespace Monkland.SteamManagement
             input.downDiagonal = reader.ReadInt32();
             return input;
         }
+
         public static Player Read(Player player, ref BinaryReader reader)
         {
             for (int i = player.input.Length - 1; i > 0; i--)

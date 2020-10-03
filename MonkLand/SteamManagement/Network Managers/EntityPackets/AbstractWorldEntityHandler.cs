@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using RWCustom;
-using UnityEngine;
+﻿using System.IO;
 
 namespace Monkland.SteamManagement
 {
-    static class AbstractWorldEntityHandler
+    internal static class AbstractWorldEntityHandler
     {
         public static AbstractWorldEntity Read(AbstractWorldEntity entity, ref BinaryReader reader)
         {

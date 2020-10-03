@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    static class Vector2Handler
+    internal static class Vector2Handler
     {
         public static Vector2 Read(ref BinaryReader reader)
         {

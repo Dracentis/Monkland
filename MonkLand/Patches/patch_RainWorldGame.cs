@@ -12,37 +12,39 @@ using Menu;
 namespace Monkland.Patches
 {
     [MonoMod.MonoModPatch("global::RainWorldGame")]
-    class patch_RainWorldGame : RainWorldGame {
-
+    class patch_RainWorldGame : RainWorldGame
+    {
         public static RainWorldGame mainGame;
 
         [MonoModIgnore]
-        public patch_RainWorldGame(ProcessManager manager) : base( manager ) {
+        public patch_RainWorldGame(ProcessManager manager) : base(manager)
+        {
         }
 
-		[MonoModIgnore]
-		private bool oDown;
+        [MonoModIgnore]
+        private bool oDown;
 
-		[MonoModIgnore]
-		private bool hDown;
+        [MonoModIgnore]
+        private bool hDown;
 
-		[MonoModIgnore]
-		private bool lastRestartButton;
+        [MonoModIgnore]
+        private bool lastRestartButton;
 
-		[MonoModIgnore]
-		private bool lastPauseButton;
+        [MonoModIgnore]
+        private bool lastPauseButton;
 
-		[MonoModIgnore]
-		private int updateAbstractRoom;
+        [MonoModIgnore]
+        private int updateAbstractRoom;
 
-		[MonoModIgnore]
-		private int updateShortCut;
+        [MonoModIgnore]
+        private int updateShortCut;
 
-		[MonoModIgnore]
+        [MonoModIgnore]
         public extern void OriginalConstructor(ProcessManager manager);
-        [MonoModConstructor, MonoModOriginalName( "OriginalConstructor" )]
-        public void ctor_RainWorldGame(ProcessManager manager) {
-            OriginalConstructor( manager );
+        [MonoModConstructor, MonoModOriginalName("OriginalConstructor")]
+        public void ctor_RainWorldGame(ProcessManager manager)
+        {
+            OriginalConstructor(manager);
 
             if (MonklandSteamManager.isInGame)
             {
@@ -50,40 +52,42 @@ namespace Monkland.Patches
                     this.devToolsActive = MonklandSteamManager.DEBUG;
                 MonklandSteamManager.monklandUI = new UI.MonklandUI(Futile.stage);
             }
-            if( mainGame == null )
-                    mainGame = this;
-
+            if (mainGame == null)
+                mainGame = this;
         }
 
         public extern void orig_Update();
-        public void Update() {
-            if( mainGame == null )
+        public void Update()
+        {
+            if (mainGame == null)
                 mainGame = this;
 
-			if (!lastPauseButton)
-				lastPauseButton = MonklandSteamManager.isInGame;
+            if (!lastPauseButton)
+                lastPauseButton = MonklandSteamManager.isInGame;
 
             orig_Update();
 
-			//New Code:
-			try {
+            //New Code:
+            try
+            {
                 if (MonklandSteamManager.isInGame)
                 {
                     if (MonklandSteamManager.monklandUI != null)
                         MonklandSteamManager.monklandUI.Update(this);
                     MonklandSteamManager.WorldManager.TickCycle();
                 }
-            } catch( System.Exception e ) {
-                Debug.LogError( e );
             }
-
-
+            catch (System.Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
 
         [MonoModIgnore]
         public extern void OriginalShutdown();
-        [MonoModOriginalName( "OriginalShutdown" )]
-        public void ShutDownProcess() {
+        [MonoModOriginalName("OriginalShutdown")]
+        public void ShutDownProcess()
+        {
             if (MonklandSteamManager.isInGame)
             {
                 MonklandSteamManager.monklandUI.ClearSprites();

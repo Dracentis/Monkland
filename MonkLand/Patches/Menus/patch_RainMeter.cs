@@ -50,7 +50,6 @@ namespace Monkland.Patches
             for (int i = 0; i < this.circles.Length; i++)
             {
                 this.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0);
-
             }
         }
 
@@ -81,7 +80,7 @@ namespace Monkland.Patches
 
         [MonoModIgnore]
         private float fRain;
-        
+
         public override void Update()
         {
             this.lastPos = this.pos;
@@ -209,6 +208,5 @@ namespace Monkland.Patches
                 this.circles[i].Draw(timeStacker);
             }
         }
-
     }
 }

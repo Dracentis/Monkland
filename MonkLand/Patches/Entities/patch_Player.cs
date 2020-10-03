@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 namespace Monkland.Patches
 {
     [MonoModPatch("global::Player")]
-    class patch_Player : Player
+    internal class patch_Player : Player
     {
         [MonoModIgnore]
         public patch_Player(AbstractCreature abstractCreature, World world) : base(abstractCreature, world)
@@ -402,7 +402,6 @@ namespace Monkland.Patches
 
         public int networkLife = 500;
 
-
         public override Color ShortCutColor()
         {
             if (MonklandSteamManager.isInGame)
@@ -574,6 +573,7 @@ namespace Monkland.Patches
                             this.slideLoop.pitch = Mathf.Lerp(0.7f, 1.3f, Mathf.Abs(base.mainBodyChunk.vel.y) / 4.9f);
                             this.slideLoop.volume = Mathf.Min(1f, Mathf.Abs(base.mainBodyChunk.vel.y) / 2.5f);
                             break;
+
                         default:
                             if (soundID2 != SoundID.Slugcat_Belly_Slide_LOOP)
                             {
@@ -628,6 +628,7 @@ namespace Monkland.Patches
                                 this.slideLoop.volume = Mathf.Min(1f, Mathf.Abs(base.mainBodyChunk.vel.x) / 10f);
                             }
                             break;
+
                         case SoundID.Slugcat_Skid_On_Ground_LOOP:
                             this.slideLoop.pitch = Mathf.Lerp(0.7f, 1.3f, Mathf.Abs(base.mainBodyChunk.vel.x) / 9.5f);
                             this.slideLoop.volume = Mathf.Min(1f, Mathf.Abs(base.mainBodyChunk.vel.x) / 6f);
@@ -647,7 +648,6 @@ namespace Monkland.Patches
                 {
                     this.timeSinceInCorridorMode++;
                 }
-
 
                 if (base.stun == 12)
                 {
@@ -853,7 +853,6 @@ namespace Monkland.Patches
         {
             if ((this.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject)
             {
-
                 if (this.spearOnBack != null)
                 {
                     this.spearOnBack.Update(eu);

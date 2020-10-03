@@ -1,12 +1,11 @@
 ﻿using System.IO;
-using RWCustom;
 using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    static class BodyChunkHandler
+    internal static class BodyChunkHandler
     {
-        public static BodyChunk Read(BodyChunk bodyChunk ,ref BinaryReader reader)
+        public static BodyChunk Read(BodyChunk bodyChunk, ref BinaryReader reader)
         {
             //(bodyChunk as Patches.patch_BodyChunk).Sync(IntVector2Handler.Read(ref reader));
             //bodyChunk.lastContactPoint = IntVector2Handler.Read(ref reader);
@@ -17,9 +16,10 @@ namespace Monkland.SteamManagement
             bodyChunk.vel = Vector2Handler.Read(ref reader);
             return bodyChunk;
         }
+
         public static BodyChunk Read(ref BinaryReader reader)
         {
-            BodyChunk bodyChunk = new BodyChunk(null, 0, new Vector2(0f,0f), 1f, 1f);
+            BodyChunk bodyChunk = new BodyChunk(null, 0, new Vector2(0f, 0f), 1f, 1f);
             //(bodyChunk as Patches.patch_BodyChunk).Sync(IntVector2Handler.Read(ref reader));
             //bodyChunk.lastContactPoint = IntVector2Handler.Read(ref reader);
 
@@ -38,8 +38,6 @@ namespace Monkland.SteamManagement
             //Vector2Handler.Write(bodyChunk.lastPos, ref writer);
             Vector2Handler.Write(bodyChunk.pos, ref writer);
             Vector2Handler.Write(bodyChunk.vel, ref writer);
-
         }
-
     }
 }

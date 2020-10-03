@@ -1,21 +1,17 @@
-﻿using System;
+﻿using Monkland.SteamManagement;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using Steamworks;
-using Monkland.Patches;
-using Monkland.SteamManagement;
 
-namespace Monkland.UI {
-    public class MonklandUI {
-
+namespace Monkland.UI
+{
+    public class MonklandUI
+    {
         public static FStage worldStage;
         public static FContainer uiContainer;
 
         private static FLabel statusLabel;
         public const string VERSION = "0.3.1";
-            
+
         private static List<QuickDisplayMessage> displayMessages = new List<QuickDisplayMessage>();
         private static List<FLabel> uiLabels = new List<FLabel>();
 
@@ -23,7 +19,8 @@ namespace Monkland.UI {
         public static AbstractCreature trackedPlayer;
         public static Vector2 cpos = new Vector2(0f, 0f);
 
-        public MonklandUI(FStage stage) {
+        public MonklandUI(FStage stage)
+        {
             displayMessages = new List<QuickDisplayMessage>();
             uiLabels = new List<FLabel>();
             worldStage = stage;
@@ -36,20 +33,21 @@ namespace Monkland.UI {
                 text = "";
             }
 
-            statusLabel = new FLabel( "font", text);
+            statusLabel = new FLabel("font", text);
             statusLabel.alignment = FLabelAlignment.Left;
-            statusLabel.SetPosition( 50, Futile.screen.height - 50 );
-            uiContainer.AddChild( statusLabel );
+            statusLabel.SetPosition(50, Futile.screen.height - 50);
+            uiContainer.AddChild(statusLabel);
 
-            for ( int i = 0; i < 200; i++ ) {
-                FLabel displayLabel = new FLabel( "font", "" );
+            for (int i = 0; i < 200; i++)
+            {
+                FLabel displayLabel = new FLabel("font", "");
                 displayLabel.alignment = FLabelAlignment.Left;
-                uiContainer.AddChild( displayLabel );
-                uiLabels.Add( displayLabel );
+                uiContainer.AddChild(displayLabel);
+                uiLabels.Add(displayLabel);
             }
 
             displayMessages.Clear();
-            stage.AddChild( uiContainer );
+            stage.AddChild(uiContainer);
         }
 
         public static Vector2 camPos()
@@ -59,24 +57,28 @@ namespace Monkland.UI {
                 cpos = currentRoom.cameraPositions[currentRoom.CameraViewingPoint(trackedPlayer.realizedCreature.DangerPos)];
             }
             return cpos;
-            
         }
 
-        public void Update(RainWorldGame game) {
-            FindPlayer( game );
+        public void Update(RainWorldGame game)
+        {
+            FindPlayer(game);
             DisplayQuickMessages();
         }
 
-        private void FindPlayer(RainWorldGame game) {
-            if( game.Players.Count > 0 ) {
+        private void FindPlayer(RainWorldGame game)
+        {
+            if (game.Players.Count > 0)
+            {
                 trackedPlayer = game.Players[0];
-                if( trackedPlayer != null ) {
+                if (trackedPlayer != null)
+                {
                     currentRoom = trackedPlayer.Room.realizedRoom;
                 }
             }
         }
 
-        private void DisplayQuickMessages() {
+        private void DisplayQuickMessages()
+        {
             bool redraw = false;
             for (int i = 0; i < displayMessages.Count; i++)
             {
@@ -99,7 +101,7 @@ namespace Monkland.UI {
             {
                 for (int j = 0; j < 200; j++)
                 {
-                    if (uiLabels[j].text != "")
+                    if (!string.IsNullOrEmpty(uiLabels[j].text))
                     {
                         uiLabels[j].text = "";
                         //uiLabels[j].Redraw(false, false);
@@ -133,41 +135,40 @@ namespace Monkland.UI {
                             //uiLabels[i].Redraw(false, false);
                         }
                     }
-                    else if (uiLabels[i].text != "")
-                    {
-                        uiLabels[i].text = "";
-                    }
+                    else if (!string.IsNullOrEmpty(uiLabels[i].text))
+                    { uiLabels[i].text = ""; }
                 }
             }
-
         }
 
         public static void UpdateStatus(string message)
         {
             if (statusLabel != null)
+            { statusLabel.text = message; }
+        }
+
+        public static void AddMessage(string message, float time = 3)
+        {
+            AddMessage(message, time, false, Vector2.zero, Color.white);
+        }
+
+        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos)
+        {
+            AddMessage(message, time, isWorld, worldPos, Color.white);
+        }
+
+        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos, Color color)
+        {
+            QuickDisplayMessage msg = new QuickDisplayMessage()
             {
-                statusLabel.text = message;
-            }
-        }
-
-        public static void AddMessage(string message, float time = 3) {
-            AddMessage( message, time, false, Vector2.zero, Color.white );
-        }
-
-        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos) {
-            AddMessage( message, time, isWorld, worldPos, Color.white );
-        }
-
-        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos, Color color) {
-            QuickDisplayMessage msg = new QuickDisplayMessage() {
                 text = message,
                 life = time,
                 isWorld = isWorld,
                 worldPos = worldPos,
                 color = color,
-                roomID = ( trackedPlayer == null ? 0 : trackedPlayer.Room.index )
+                roomID = (trackedPlayer == null ? 0 : trackedPlayer.Room.index)
             };
-            displayMessages.Add( msg );
+            displayMessages.Add(msg);
         }
 
         public static void UpdateMessage(string message, float time, Vector2 worldPos, int dist, int roomID, Color color)
@@ -197,7 +198,11 @@ namespace Monkland.UI {
             displayMessages.Add(msg);
         }
 
-        public void ClearSprites() {
+#pragma warning disable CA1822
+#pragma warning disable CA1034
+
+        public void ClearSprites()
+        {
             statusLabel.RemoveFromContainer();
             displayMessages.Clear();
             uiContainer.RemoveAllChildren();
@@ -207,7 +212,8 @@ namespace Monkland.UI {
             uiContainer = null;
         }
 
-        public class QuickDisplayMessage {
+        public class QuickDisplayMessage
+        {
             public string text;
             public float life;
             public Color color;
@@ -216,6 +222,5 @@ namespace Monkland.UI {
             public int tracking = -1;
             public int roomID;
         }
-
     }
 }

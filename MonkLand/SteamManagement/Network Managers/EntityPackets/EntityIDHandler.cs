@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using RWCustom;
-using UnityEngine;
+﻿using System.IO;
 
 namespace Monkland.SteamManagement
 {
-    static class EntityIDHandler
-    { 
+    internal static class EntityIDHandler
+    {
         public static EntityID Read(EntityID ID, ref BinaryReader reader)
         {
             ID.number = reader.ReadInt32();
             ID.spawner = reader.ReadInt32();
             return ID;
         }
+
         public static EntityID Read(ref BinaryReader reader)
         {
             EntityID ID = new EntityID(0, 0);
@@ -28,6 +24,5 @@ namespace Monkland.SteamManagement
             writer.Write(ID.number);
             writer.Write(ID.spawner);
         }
-        
     }
 }

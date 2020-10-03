@@ -1,13 +1,12 @@
 ﻿using System.IO;
-using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    static class WorldCoordinateHandler
+    internal static class WorldCoordinateHandler
     {
         public static WorldCoordinate Read(ref BinaryReader reader)
         {
-            WorldCoordinate coordinate = new WorldCoordinate(0,0,0,0);
+            WorldCoordinate coordinate = new WorldCoordinate(0, 0, 0, 0);
             coordinate.x = reader.ReadInt32();
             coordinate.y = reader.ReadInt32();
             coordinate.room = reader.ReadInt32();

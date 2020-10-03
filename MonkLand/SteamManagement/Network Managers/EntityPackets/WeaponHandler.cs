@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using RWCustom;
+﻿using System.IO;
 
 namespace Monkland.SteamManagement
 {
-    class WeaponHandler
+    internal class WeaponHandler
     {
-
         public static Weapon Read(Weapon weapon, ref BinaryReader reader)
         {
             weapon = PhysicalObjectHandler.Read(weapon, ref reader);

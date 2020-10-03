@@ -1,29 +1,32 @@
-﻿using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Monkland;
-using Monkland.Patches;
-using UnityEngine;
-using Monkland.UI;
+﻿using UnityEngine;
 
-namespace Monkland.SteamManagement {
-    class NetworkManager {
+namespace Monkland.SteamManagement
+{
+    internal class NetworkManager
+    {
+        public virtual void Reset()
+        {
+        }
 
-        public virtual void Reset() { }
-        public virtual void Update() { }
-        public virtual void RegisterHandlers() { }
+        public virtual void Update()
+        {
+        }
 
-        public virtual void PlayerJoined(ulong steamID) { }
+        public virtual void RegisterHandlers()
+        {
+        }
 
-        public virtual void PlayerLeft(ulong steamID) { }
+        public virtual void PlayerJoined(ulong steamID)
+        {
+        }
+
+        public virtual void PlayerLeft(ulong steamID)
+        {
+        }
 
         public void Log(string message)
         {
             Debug.Log(message);
         }
-
     }
 }

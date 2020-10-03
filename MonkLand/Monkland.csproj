@@ -5,6 +5,32 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Patches\Entities\patch_AbstractPhysicalObject.cs" />
+    <Compile Remove="Patches\Entities\patch_BodyChunk.cs" />
+    <Compile Remove="Patches\Entities\patch_Creature.cs" />
+    <Compile Remove="Patches\Entities\patch_PhysicalObject.cs" />
+    <Compile Remove="Patches\Entities\patch_Player.cs" />
+    <Compile Remove="Patches\Entities\patch_PlayerGraphics.cs" />
+    <Compile Remove="Patches\Entities\patch_Rock.cs" />
+    <Compile Remove="Patches\Entities\patch_Room.cs" />
+    <Compile Remove="Patches\Entities\patch_Spear.cs" />
+    <Compile Remove="Patches\Entities\patch_Weapon.cs" />
+    <Compile Remove="Patches\Menus\patch_EndgameTokens.cs" />
+    <Compile Remove="Patches\Menus\patch_FoodMeter.cs" />
+    <Compile Remove="Patches\Menus\patch_HUD.cs" />
+    <Compile Remove="Patches\Menus\patch_MainMenu.cs" />
+    <Compile Remove="Patches\Menus\patch_RainMeter.cs" />
+    <Compile Remove="Patches\Menus\patch_Slider.cs" />
+    <Compile Remove="Patches\OverWorld\patch_AbstractRoom.cs" />
+    <Compile Remove="Patches\OverWorld\patch_OverWorld.cs" />
+    <Compile Remove="Patches\OverWorld\patch_ShortcutHandler.cs" />
+    <Compile Remove="Patches\OverWorld\SS_E08GradientGravity.cs" />
+    <Compile Remove="Patches\patch_ProcessManager.cs" />
+    <Compile Remove="Patches\patch_Rainworld.cs" />
+    <Compile Remove="Patches\patch_RainWorldGame.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>Resources\Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -14,11 +40,20 @@
     <Reference Include="GoKit">
       <HintPath>Resources\GoKit.dll</HintPath>
     </Reference>
+    <Reference Include="HOOKS-Assembly-CSharp">
+      <HintPath>Resources\HOOKS-Assembly-CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Security">
       <HintPath>Resources\Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod">
       <HintPath>Resources\MonoMod.exe</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>Resources\MonoMod.RuntimeDetour.dll</HintPath>
+    </Reference>
+    <Reference Include="Partiality">
+      <HintPath>Resources\Partiality.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>Resources\UnityEngine.dll</HintPath>
@@ -30,6 +65,33 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+    <None Include="Patches\Entities\patch_AbstractPhysicalObject.cs" />
+    <None Include="Patches\Entities\patch_BodyChunk.cs" />
+    <None Include="Patches\Entities\patch_Creature.cs" />
+    <None Include="Patches\Entities\patch_PhysicalObject.cs" />
+    <None Include="Patches\Entities\patch_Player.cs" />
+    <None Include="Patches\Entities\patch_PlayerGraphics.cs" />
+    <None Include="Patches\Entities\patch_Rock.cs" />
+    <None Include="Patches\Entities\patch_Room.cs" />
+    <None Include="Patches\Entities\patch_Spear.cs" />
+    <None Include="Patches\Entities\patch_Weapon.cs" />
+    <None Include="Patches\Menus\patch_EndgameTokens.cs" />
+    <None Include="Patches\Menus\patch_FoodMeter.cs" />
+    <None Include="Patches\Menus\patch_HUD.cs" />
+    <None Include="Patches\Menus\patch_MainMenu.cs" />
+    <None Include="Patches\Menus\patch_RainMeter.cs" />
+    <None Include="Patches\Menus\patch_Slider.cs" />
+    <None Include="Patches\OverWorld\patch_AbstractRoom.cs" />
+    <None Include="Patches\OverWorld\patch_OverWorld.cs" />
+    <None Include="Patches\OverWorld\patch_ShortcutHandler.cs" />
+    <None Include="Patches\OverWorld\SS_E08GradientGravity.cs" />
+    <None Include="Patches\patch_ProcessManager.cs" />
+    <None Include="Patches\patch_Rainworld.cs" />
+    <None Include="Patches\patch_RainWorldGame.cs" />
   </ItemGroup>
 
 </Project>

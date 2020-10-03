@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using Monkland.Hooks.Entities;
 using RWCustom;
-using UnityEngine;
+using System.IO;
 
 namespace Monkland.SteamManagement
 {
-    class PlayerHandler
+    internal class PlayerHandler
     {
         public static Player Read(Player player, ref BinaryReader reader)
         {
@@ -23,7 +20,7 @@ namespace Monkland.SteamManagement
             int corridorTurnCounter = reader.ReadInt32();
             IntVector2? corridorTurnDir = IntVector2NHandler.Read(ref reader);
             int crawlTurnDelay = reader.ReadInt32();
-            (player as Patches.patch_Player).Sync(corridorDrop, corridorTurnCounter, corridorTurnDir, crawlTurnDelay);
+            PlayerHK.Sync(player, corridorDrop, corridorTurnCounter, corridorTurnDir, crawlTurnDelay);
             player.drown = reader.ReadSingle();
             player.exhausted = reader.ReadBoolean();
             player.glowing = reader.ReadBoolean();
@@ -52,7 +49,7 @@ namespace Monkland.SteamManagement
             writer.Write((int)player.bodyMode);
             writer.Write(player.circuitSwimResistance);
             writer.Write(player.consistentDownDiagonal);
-            (player as Patches.patch_Player).Write(ref writer);
+            PlayerHK.Write(player, ref writer);
             writer.Write(player.drown);
             writer.Write(player.exhausted);
             writer.Write(player.glowing);

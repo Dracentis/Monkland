@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using RWCustom;
 using System.IO;
-using System.Text;
-using RWCustom;
 
 namespace Monkland.SteamManagement
 {
-    static class IntVector2NHandler
+    internal static class IntVector2NHandler
     {
         public static IntVector2? Read(ref BinaryReader reader)
         {
@@ -17,8 +14,8 @@ namespace Monkland.SteamManagement
             {
                 return null;
             }
-            else 
-            { 
+            else
+            {
                 intVector2.x = x;
                 intVector2.y = y;
             }
@@ -39,6 +36,5 @@ namespace Monkland.SteamManagement
                 writer.Write(vec.y);
             }
         }
-
     }
 }

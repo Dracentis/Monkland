@@ -8,26 +8,28 @@
     ".NETFramework,Version=v3.5": []
   },
   "packageFolders": {
-    "C:\\Users\\kaedo\\.nuget\\packages\\": {}
+    "C:\\Users\\User\\.nuget\\packages\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kaedo\\Downloads\\Dracentis\\Monkland\\MonkLand\\Monkland.csproj",
+      "projectUniqueName": "D:\\Drive\\Repo\\Garrakx\\Monkland\\MonkLand\\Monkland.csproj",
       "projectName": "Monkland",
-      "projectPath": "C:\\Users\\kaedo\\Downloads\\Dracentis\\Monkland\\MonkLand\\Monkland.csproj",
-      "packagesPath": "C:\\Users\\kaedo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kaedo\\Downloads\\Dracentis\\Monkland\\MonkLand\\obj\\",
+      "projectPath": "D:\\Drive\\Repo\\Garrakx\\Monkland\\MonkLand\\Monkland.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "D:\\Drive\\Repo\\Garrakx\\Monkland\\MonkLand\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
       "configFilePaths": [
-        "C:\\Users\\kaedo\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net35"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -43,7 +45,7 @@
     },
     "frameworks": {
       "net35": {
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.301\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
       }
     }
   }
