@@ -22,28 +22,28 @@ namespace Monkland.Hooks.Menus
             if (!MonklandSteamManager.isInGame || MonklandSteamManager.WorldManager == null)
             {
                 isMulti = false;
-                if (hud.owner != null) 
-                { 
-                    orig(self, hud, fContainer); 
+                if (hud.owner != null && hud.owner is Player p && p.room?.world != null)
+                {
+                    orig(self, hud, fContainer);
                 }
-                else 
-                { 
+                else
+                {
                     noOrigCtor(self, isMulti, hud, fContainer);
                 }
             }
-            else if (hud.owner != null && hud.owner is Player)
+            else if (hud.owner != null && hud.owner is Player p && p.room?.world != null)
             {
                 orig(self, hud, fContainer);
-                for (int i = 0; i < self.circles.Length; i++) 
-                { 
+                for (int i = 0; i < self.circles.Length; i++)
+                {
                     // Remove Old Circles
-                    self.circles[i].ClearSprite(); 
-                } 
+                    self.circles[i].ClearSprite();
+                }
 
                 self.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
                 for (int i = 0; i < self.circles.Length; i++)
-                { 
-                    self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0); 
+                {
+                    self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0);
                 }
             }
             else
