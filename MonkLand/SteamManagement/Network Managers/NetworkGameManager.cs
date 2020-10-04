@@ -228,11 +228,12 @@ namespace Monkland.SteamManagement
             // Source Template
             CreatureTemplate.Type sourceTemplate = (CreatureTemplate.Type)br.ReadByte();
             // Source ID
-            ulong sourceID = (ulong)br.ReadByte();
+            ulong sourceID = (ulong)br.ReadUInt64();
 
             if (lethal)
             {
                 string message = MonklandUI.BuildDeathMessage(sentPlayer, type, sourceTemplate, sourceID);
+                Debug.Log(message);
                 MonklandUI.AddMessage(message, 10);
             }
 
@@ -321,10 +322,10 @@ namespace Monkland.SteamManagement
             catch (Exception e) {/*Debug.Log()*/}
 
             // SourceID
-            byte sourceID = byte.MaxValue - 1;
+            ulong sourceID = 0;
             try
             {
-                sourceID = (byte)(AbstractPhysicalObjectHK.GetField(source.owner.abstractPhysicalObject).owner);
+                sourceID = (AbstractPhysicalObjectHK.GetField(source.owner.abstractPhysicalObject).owner);
             }
             catch (Exception e) {/*Debug.Log()*/}
 

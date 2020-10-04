@@ -75,7 +75,7 @@ namespace Monkland.UI
                     killerName = "Player";
                 }
             }
-            // TO DO  When creatures are synced
+            // TO DO -- When creatures are synced  --
             else
             {
                 switch(killerType)
@@ -94,6 +94,7 @@ namespace Monkland.UI
                     message = $"{deadPlayerName} was stabbed to death by {killerName}";
                     break;
                 case Creature.DamageType.Bite:
+                    message = $"{deadPlayerName} was bitten to death by {killerName}";
                     break;
                 case Creature.DamageType.Water:
                     message = $"{deadPlayerName} drowned.";
@@ -103,6 +104,12 @@ namespace Monkland.UI
                     break;
                 case Creature.DamageType.Electric:
                     break;
+            }
+
+            // Generic death message
+            if(message.Equals(string.Empty))
+            {
+                message = $"{deadPlayerName} was killed by {killerName}";
             }
 
             return message;

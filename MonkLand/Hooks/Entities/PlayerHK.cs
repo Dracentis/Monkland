@@ -353,7 +353,7 @@ namespace Monkland.Hooks.Entities
             // DEBUG VIOLENCE
             try
             {
-                if (MonklandSteamManager.DEBUG && Input.GetKeyDown("k"))
+                if (/*MonklandSteamManager.DEBUG && */Input.GetKeyDown("k"))
                 {
                     self.Violence(self.mainBodyChunk, new Vector2(1, 0) * 8f, self.mainBodyChunk, null, Creature.DamageType.Bite, 1, 1);
                 }

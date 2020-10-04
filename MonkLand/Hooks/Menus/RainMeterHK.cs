@@ -22,22 +22,39 @@ namespace Monkland.Hooks.Menus
             if (!MonklandSteamManager.isInGame || MonklandSteamManager.WorldManager == null)
             {
                 isMulti = false;
-                if (hud.owner != null) { orig.Invoke(self, hud, fContainer); }
-                else { goto noOrigCtor; }
-                return;
+                if (hud.owner != null) 
+                { 
+                    orig(self, hud, fContainer); 
+                }
+                else 
+                { 
+                    noOrigCtor(self, isMulti, hud, fContainer);
+                }
             }
-            if (hud.owner != null && hud.owner is Player)
+            else if (hud.owner != null && hud.owner is Player)
             {
-                orig.Invoke(self, hud, fContainer);
-                for (int i = 0; i < self.circles.Length; i++) { self.circles[i].ClearSprite(); } // Remove Old Circles
+                orig(self, hud, fContainer);
+                for (int i = 0; i < self.circles.Length; i++) 
+                { 
+                    // Remove Old Circles
+                    self.circles[i].ClearSprite(); 
+                } 
 
                 self.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
                 for (int i = 0; i < self.circles.Length; i++)
-                { self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0); }
-                return;
+                { 
+                    self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0); 
+                }
             }
+            else
+            {
+                //orig ctor will cause NullRef
+                noOrigCtor(self, isMulti, hud, fContainer);
+            }
+        }
 
-        noOrigCtor: //orig ctor will cause NullRef
+        public static void noOrigCtor(RainMeter self, bool isMulti, HUD.HUD hud, FContainer fContainer)
+        {
             Type[] constructorSignature = new Type[1];
             constructorSignature[0] = typeof(HUD.HUD);
             RuntimeMethodHandle handle = typeof(HudPart).GetConstructor(constructorSignature).MethodHandle;
