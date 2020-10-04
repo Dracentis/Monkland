@@ -615,7 +615,9 @@ namespace Monkland.SteamManagement
             {
                 queuedPackets.Clear();
                 foreach (Queue<DataPacket> packs in priorityQueues.Values)
+                {
                     packs.Clear();
+                }
                 priorityQueues.Clear();
             }
 
@@ -629,7 +631,9 @@ namespace Monkland.SteamManagement
                     {
                         //If the last packet we got has a higher ID than this one, then we're
                         if (lastPacketID.ContainsKey(packet.sentPlayer.m_SteamID) && lastPacketID[packet.sentPlayer.m_SteamID] > packet.packetID)
+                        {
                             return true;
+                        }
                         lastPacketID[packet.sentPlayer.m_SteamID] = packet.packetID;
                     }
 

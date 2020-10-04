@@ -6,7 +6,7 @@ namespace Monkland.Hooks.Entities
 {
     internal static class CreatureHK
     {
-        public static void SubPatch()
+        public static void ApplyHook()
         {
             On.Creature.SwitchGrasps += new On.Creature.hook_SwitchGrasps(SwitchGraspsHK);
             On.Creature.ReleaseGrasp += new On.Creature.hook_ReleaseGrasp(ReleaseGraspHK);
@@ -21,31 +21,51 @@ namespace Monkland.Hooks.Entities
 
         private static bool CheckNet(params int[] flags)
         {
-            foreach (int i in flags) { if (i < 0) { return true; } }
+            foreach (int i in flags)
+            {
+                if (i < 0)
+                {
+                    return true;
+                }
+            }
             return false;
         }
 
         private static void SwitchGraspsHK(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
         {
-            if (CheckNet(fromGrasp, toGrasp)) { orig.Invoke(self, Math.Abs(fromGrasp), Math.Abs(toGrasp)); return; }
+            if (CheckNet(fromGrasp, toGrasp)) 
+            { 
+                orig(self, Math.Abs(fromGrasp), Math.Abs(toGrasp));
+                return; 
+            }
             if (MonklandSteamManager.isInGame)
-            { MonklandSteamManager.EntityManager.SendSwitch(self, fromGrasp, toGrasp); }
-            orig.Invoke(self, fromGrasp, toGrasp);
+            { 
+                MonklandSteamManager.EntityManager.SendSwitch(self, fromGrasp, toGrasp); 
+            }
+            orig(self, fromGrasp, toGrasp);
         }
 
         private static void ReleaseGraspHK(On.Creature.orig_ReleaseGrasp orig, Creature self, int grasp)
         {
-            if (CheckNet(grasp)) { orig.Invoke(self, Math.Abs(grasp)); return; }
+            if (CheckNet(grasp)) 
+            { 
+                orig(self, Math.Abs(grasp)); return; 
+            }
             if (self.grasps[grasp] != null && MonklandSteamManager.isInGame)
-            { MonklandSteamManager.EntityManager.SendRelease(self.grasps[grasp]); }
-            orig.Invoke(self, grasp);
+            { 
+                MonklandSteamManager.EntityManager.SendRelease(self.grasps[grasp]); 
+            }
+            orig(self, grasp);
         }
 
         private static bool GrabHK(On.Creature.orig_Grab orig, Creature self, PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
         {
-            if (self is Player && AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).networkObject) { return false; }
+            if (self is Player && AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject) 
+            {
+                return false; 
+            }
 
-            APOMonkSub objs = AbstractPhysicalObjectHK.GetSub(obj.abstractPhysicalObject);
+            APOFields objs = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
             if (CheckNet(graspUsed, chunkGrabbed))
             {
                 graspUsed = Math.Abs(graspUsed); chunkGrabbed = Math.Abs(chunkGrabbed);
@@ -69,13 +89,21 @@ namespace Monkland.Hooks.Entities
             }
 
             if (MonklandSteamManager.isInGame && objs.networkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name].Contains(objs.owner))
-            { return false; }
-            if (orig.Invoke(self, obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying))
+            { 
+                return false; 
+            }
+            if (orig(self, obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying))
             {
-                if (MonklandSteamManager.isInGame) { MonklandSteamManager.EntityManager.SendGrab(self.grasps[graspUsed]); }
+                if (MonklandSteamManager.isInGame) 
+                { 
+                    MonklandSteamManager.EntityManager.SendGrab(self.grasps[graspUsed]); 
+                }
                 return true;
             }
-            else { return false; }
+            else 
+            {
+                return false;
+            }
         }
     }
 }

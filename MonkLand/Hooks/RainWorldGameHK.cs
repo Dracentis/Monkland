@@ -1,4 +1,5 @@
 ﻿using Monkland.SteamManagement;
+using Monkland.UI;
 using System;
 using UnityEngine;
 
@@ -6,7 +7,9 @@ namespace Monkland.Hooks
 {
     internal static class RainWorldGameHK
     {
-        public static void SubPatch()
+        public static bool lastMultiPauseButton;
+
+        public static void ApplyHook()
         {
             On.RainWorldGame.ctor += new On.RainWorldGame.hook_ctor(CtorHK);
             On.RainWorldGame.Update += new On.RainWorldGame.hook_Update(UpdateHK);
@@ -19,27 +22,38 @@ namespace Monkland.Hooks
 
         private static void CtorHK(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
-            orig.Invoke(self, manager);
+            orig(self, manager);
+
+            lastMultiPauseButton = false;
 
             if (MonklandSteamManager.isInGame)
             {
                 if (self.rainWorld.buildType == RainWorld.BuildType.Development)
-                { self.devToolsActive = MonklandSteamManager.DEBUG; }
+                { 
+                    self.devToolsActive = MonklandSteamManager.DEBUG; 
+                }
                 MonklandSteamManager.monklandUI = new UI.MonklandUI(Futile.stage);
             }
-            if (mainGame == null) { mainGame = self; }
+            if (mainGame == null) 
+            { 
+                mainGame = self; 
+            }
         }
 
         private static void UpdateHK(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
-            if (mainGame == null) { mainGame = self; }
+            if (mainGame == null) 
+            { 
+                mainGame = self; 
+            }
 
             if (!self.lastPauseButton)
-            { self.lastPauseButton = MonklandSteamManager.isInGame; }
+            { 
+                self.lastPauseButton = MonklandSteamManager.isInGame; 
+            }
 
-            orig.Invoke(self);
+            orig(self);
 
-            //New Code:
             try
             {
                 if (MonklandSteamManager.isInGame)
@@ -49,7 +63,17 @@ namespace Monkland.Hooks
                     MonklandSteamManager.WorldManager.TickCycle();
                 }
             }
-            catch (Exception e) { Debug.LogError(e); }
+            catch (Exception e)
+            {
+                Debug.LogError(e); 
+            }
+
+            bool flag = Input.GetKey(self.rainWorld.options.controls[0].KeyboardPause) || Input.GetKey(self.rainWorld.options.controls[0].GamePadPause) || Input.GetKey(KeyCode.Escape);
+            if (flag && !lastMultiPauseButton && (self.cameras[0].hud != null || self.cameras[0].hud.map.fade < 0.1f) && !self.cameras[0].hud.textPrompt.gameOverMode)
+            {
+                (self.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).ShowMultiPauseMenu();
+            }
+            lastMultiPauseButton = flag;
         }
 
         private static void ShutDownProcessHK(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
@@ -61,14 +85,16 @@ namespace Monkland.Hooks
                 MonklandSteamManager.WorldManager.GameEnd();
                 mainGame = null;
             }
-            orig.Invoke(self);
+            orig(self);
         }
 
         private static EntityID GetNewIDSwap(On.RainWorldGame.orig_GetNewID orig, RainWorldGame self)
         {
             int newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             while (newID >= -1 && newID <= 15000)
-            { newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue); }
+            { 
+                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue); 
+            }
             return new EntityID(-1, newID);
         }
 
@@ -76,7 +102,9 @@ namespace Monkland.Hooks
         {
             int newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             while (newID >= -1 && newID <= 15000)
-            { newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue); }
+            { 
+                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue); 
+            }
             return new EntityID(spawner, newID);
         }
     }

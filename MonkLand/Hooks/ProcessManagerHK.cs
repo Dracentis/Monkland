@@ -9,15 +9,15 @@ namespace Monkland.Hooks
 {
     internal static class ProcessManagerHK
     {
-        public static void SubPatch()
+        public static void ApplyHook()
         {
             On.ProcessManager.SwitchMainProcess += new On.ProcessManager.hook_SwitchMainProcess(SwitchMainProcessHK);
         }
 
         private static void InGameClear()
         {
-            AbstractPhysicalObjectHK.ClearSub();
-            AbstractRoomHK.ClearSub();
+            AbstractPhysicalObjectHK.ClearFields();
+            AbstractRoomHK.ClearField();
         }
 
         public static void ImmediateSwitchCustom(ProcessManager self, MainLoopProcess newProcess)
@@ -60,8 +60,15 @@ namespace Monkland.Hooks
 
         private static void SwitchMainProcessHK(On.ProcessManager.orig_SwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
-            if (self.currentMainLoop?.ID == ProcessManager.ProcessID.Game && ID != ProcessManager.ProcessID.Game) { InGameClear(); }
-            if (!MonklandSteamManager.isInGame) { orig.Invoke(self, ID); return; }
+            if (self.currentMainLoop?.ID == ProcessManager.ProcessID.Game && ID != ProcessManager.ProcessID.Game) 
+            { 
+                InGameClear(); 
+            }
+            if (!MonklandSteamManager.isInGame) 
+            { 
+                orig(self, ID); 
+                return; 
+            }
 
             ProcessManager.ProcessID newID = ID;
 
@@ -82,7 +89,7 @@ namespace Monkland.Hooks
                     newID = ProcessManager.ProcessID.SleepScreen;
                     break;
 
-                default: orig.Invoke(self, ID); return;
+                default: orig(self, ID); return;
             }
 
             MainLoopProcess mainLoopProcess = self.currentMainLoop;
@@ -107,13 +114,18 @@ namespace Monkland.Hooks
                 GC.Collect();
                 Resources.UnloadUnusedAssets();
             }
-            if (ID != ProcessManager.ProcessID.SleepScreen && ID != ProcessManager.ProcessID.GhostScreen && ID != ProcessManager.ProcessID.DeathScreen && ID != ProcessManager.ProcessID.KarmaToMaxScreen)
-            { self.rainWorld.progression.Revert(); }
+            if (ID != ProcessManager.ProcessID.SleepScreen && ID != ProcessManager.ProcessID.GhostScreen 
+                && ID != ProcessManager.ProcessID.DeathScreen && ID != ProcessManager.ProcessID.KarmaToMaxScreen)
+            { 
+                self.rainWorld.progression.Revert(); 
+            }
 
             self.currentMainLoop = new MultiplayerSleepAndDeathScreen(self, newID);
 
             if (mainLoopProcess != null)
-            { mainLoopProcess.CommunicateWithUpcomingProcess(self.currentMainLoop); }
+            { 
+                mainLoopProcess.CommunicateWithUpcomingProcess(self.currentMainLoop); 
+            }
             self.blackFadeTime = self.currentMainLoop.FadeInTime;
             self.blackDelay = self.currentMainLoop.InitialBlackSeconds;
             if (self.fadeSprite != null)
@@ -127,7 +139,9 @@ namespace Monkland.Hooks
                 Futile.stage.AddChild(self.loadingLabel);
             }
             if (self.musicPlayer != null)
-            { self.musicPlayer.UpdateMusicContext(self.currentMainLoop); }
+            { 
+                self.musicPlayer.UpdateMusicContext(self.currentMainLoop); 
+            }
             self.pauseFadeUpdate = true;
         }
     }

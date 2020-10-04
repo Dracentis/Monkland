@@ -6,7 +6,7 @@ namespace Monkland.Hooks.Entities
 {
     internal static class PlayerGraphicsHK
     {
-        public static void SubPatch()
+        public static void ApplyHook()
         {
             On.PlayerGraphics.ApplyPalette += new On.PlayerGraphics.hook_ApplyPalette(ApplyPaletteHK);
         }
@@ -14,13 +14,17 @@ namespace Monkland.Hooks.Entities
         private static void ApplyPaletteHK(On.PlayerGraphics.orig_ApplyPalette orig, PlayerGraphics self,
             RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
-            orig.Invoke(self, sLeaser, rCam, palette);
+            orig(self, sLeaser, rCam, palette);
             Color body;
-            APOMonkSub sub = AbstractPhysicalObjectHK.GetSub(self.owner.abstractPhysicalObject);
+            APOFields field = AbstractPhysicalObjectHK.GetField(self.owner.abstractPhysicalObject);
             if (!MonklandSteamManager.isInGame)
-            { body = PlayerGraphics.SlugcatColor(self.player.playerState.slugcatCharacter); }
+            { 
+                body = PlayerGraphics.SlugcatColor(self.player.playerState.slugcatCharacter); 
+            }
             else
-            { body = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sub.owner)]; }
+            { 
+                body = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)]; 
+            }
             Color eyes = palette.blackColor;
             if (self.malnourished > 0f)
             {
@@ -37,9 +41,9 @@ namespace Monkland.Hooks.Entities
             { sLeaser.sprites[i].color = body; }
             if (MonklandSteamManager.isInGame)
             {
-                sLeaser.sprites[11].color = Color.Lerp(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sub.owner)], Color.white, 0.3f);
-                sLeaser.sprites[10].color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sub.owner)];
-                sLeaser.sprites[9].color = MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sub.owner)];
+                sLeaser.sprites[11].color = Color.Lerp(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)], Color.white, 0.3f);
+                sLeaser.sprites[10].color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)];
+                sLeaser.sprites[9].color = MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)];
             }
             else
             {

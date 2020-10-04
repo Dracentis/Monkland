@@ -231,42 +231,42 @@ namespace Monkland
                 if (slider == this.bodyRed)
                 {
                     MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
-                    MonklandSteamManager.GameManager.SendColor(0);
+                    MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorR);
                     MonklandSteamManager.bodyColor = new Color(f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                     return;
                 }
                 if (slider == this.bodyGreen)
                 {
                     MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
-                    MonklandSteamManager.GameManager.SendColor(1);
+                    MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorG);
                     MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                     return;
                 }
                 if (slider == this.bodyBlue)
                 {
                     MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
-                    MonklandSteamManager.GameManager.SendColor(2);
+                    MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorB);
                     MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
                     return;
                 }
                 if (slider == this.eyesRed)
                 {
                     MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
-                    MonklandSteamManager.GameManager.SendColor(3);
+                    MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorR);
                     MonklandSteamManager.eyeColor = new Color(f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                     return;
                 }
                 if (slider == this.eyesGreen)
                 {
                     MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
-                    MonklandSteamManager.GameManager.SendColor(4);
+                    MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorG);
                     MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, f, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
                     return;
                 }
                 if (slider == this.eyesBlue)
                 {
                     MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)] = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
-                    MonklandSteamManager.GameManager.SendColor(5);
+                    MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorB);
                     MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r, MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g, f);
                 }
                 return;
@@ -396,12 +396,12 @@ namespace Monkland
             }
             else if (message == "READYUP")
             {
-                MonklandSteamManager.GameManager.SendColor(0);
-                MonklandSteamManager.GameManager.SendColor(1);
-                MonklandSteamManager.GameManager.SendColor(2);
-                MonklandSteamManager.GameManager.SendColor(3);
-                MonklandSteamManager.GameManager.SendColor(4);
-                MonklandSteamManager.GameManager.SendColor(5);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorR);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorG);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorB);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorR);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorG);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorB);
                 MonklandSteamManager.GameManager.ToggleReady();
             }
             else if (message == "STARTGAME")

@@ -10,14 +10,8 @@ namespace Monkland.Hooks
 {
     public static class RainWorldHK
     {
-        public static void Patch()
+        public static void ApplyHook()
         {
-            AbstractPhysicalObjectHK.Patch();
-            MainMenuHK.Patch();
-            OverWorldHK.Patch();
-
-            ProcessManagerHK.SubPatch();
-            RainWorldGameHK.SubPatch();
             On.RainWorld.Start += new On.RainWorld.hook_Start(StartHK);
         }
 
@@ -28,11 +22,18 @@ namespace Monkland.Hooks
             mainRW = self;
             try
             {
-                if (MonklandSteamManager.instance == null) { MonklandSteamManager.CreateManager(); }
+                if (MonklandSteamManager.instance == null) 
+                { 
+                    MonklandSteamManager.CreateManager(); 
+                }
             }
-            catch (Exception e) { Debug.Log(e); }
+            catch (Exception e) 
+            { 
+                Debug.Log(e);
+            }
 
-            orig.Invoke(self);
+            orig(self);
+
             if (MonklandSteamManager.DEBUG)
             {
                 self.buildType = BuildType.Development;

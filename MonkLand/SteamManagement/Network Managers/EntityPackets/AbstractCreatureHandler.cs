@@ -29,7 +29,7 @@ namespace Monkland.SteamManagement
             writer.Write(creature.InDen);
             writer.Write(creature.timeSpentHere);
             //writer.Write((byte)creature.type);
-            writer.Write(AbstractPhysicalObjectHK.GetSub(creature).dist);
+            writer.Write(AbstractPhysicalObjectHK.GetField(creature).dist);
             //AbstractCreatureAIHandler.Write(creature.abstractAI, ref writer);
             //Additional personality and relationship traits should be synced here!
             writer.Write(creature.remainInDenCounter);

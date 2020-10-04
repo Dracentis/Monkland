@@ -225,13 +225,17 @@ namespace Monkland.SteamManagement
             {
                 AbstractRoom abstractRoom = RainWorldGameHK.mainGame.world.GetAbstractRoom(roomName);
                 if (abstractRoom != null && abstractRoom.realizedRoom != null)
-                { RoomHK.MultiplayerNewToRoom(abstractRoom.realizedRoom, commonRooms[roomName]); }
+                { 
+                    RoomHK.MultiplayerNewToRoom(abstractRoom.realizedRoom, commonRooms[roomName]); 
+                }
             }
             if (MonklandSteamManager.DEBUG)
             {
                 string roomlist = "";
                 foreach (string room in commonRooms.Keys)
-                { roomlist = roomlist + room + ", "; }
+                { 
+                    roomlist = roomlist + room + ", "; 
+                }
                 MonklandSteamManager.Log("[World] Room Packet: Player shares " + roomlist + " rooms with other players.");
             }
         }

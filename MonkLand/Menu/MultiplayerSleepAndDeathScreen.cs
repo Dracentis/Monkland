@@ -66,12 +66,12 @@ namespace Menu
             }
             else if (message == "READYUP")
             {
-                MonklandSteamManager.GameManager.SendColor(0);
-                MonklandSteamManager.GameManager.SendColor(1);
-                MonklandSteamManager.GameManager.SendColor(2);
-                MonklandSteamManager.GameManager.SendColor(3);
-                MonklandSteamManager.GameManager.SendColor(4);
-                MonklandSteamManager.GameManager.SendColor(5);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorR);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorG);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.BodyColorB);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorR);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorG);
+                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.UtilMessageType.EyeColorB);
                 MonklandSteamManager.GameManager.ToggleReady();
             }
             else if (message == "CONTINUE")

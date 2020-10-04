@@ -5,12 +5,10 @@ namespace Monkland.Hooks.Menus
 {
     public static class MainMenuHK
     {
-        public static void Patch()
+        public static void ApplyHook()
         {
             // EndgameTokensHK.SubPatch(); // These are not needed
             // FoodMeterHK.SubPatch();
-            HUDHK.SubPatch();
-            RainMeterHK.SubPatch();
 
             On.Menu.MainMenu.ctor += new On.Menu.MainMenu.hook_ctor(CtorHK);
             On.Menu.MainMenu.Singal += new On.Menu.MainMenu.hook_Singal(SingalHK);
@@ -18,7 +16,7 @@ namespace Monkland.Hooks.Menus
 
         private static void CtorHK(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
-            orig.Invoke(self, manager, showRegionSpecificBkg);
+            orig(self, manager, showRegionSpecificBkg);
 
             // Move these
             SimpleButton sb = null;
@@ -44,7 +42,7 @@ namespace Monkland.Hooks.Menus
                 ProcessManagerHK.ImmediateSwitchCustom(self.manager, new LobbyFinderMenu(self.manager)); //opens lobby finder menu menu
                 return;
             }
-            orig.Invoke(self, sender, message);
+            orig(self, sender, message);
         }
     }
 }

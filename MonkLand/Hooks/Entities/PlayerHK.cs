@@ -11,7 +11,7 @@ namespace Monkland.Hooks.Entities
 {
     internal static class PlayerHK
     {
-        public static void SubPatch()
+        public static void ApplyHook()
         {
             IDetour hkMDA = new Hook(typeof(Player).GetProperty("MapDiscoveryActive", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(),
                 typeof(PlayerHK).GetMethod("MapDiscoveryActiveHK", BindingFlags.Static | BindingFlags.Public));
@@ -25,7 +25,7 @@ namespace Monkland.Hooks.Entities
         public static void Sync(Player self, bool dead)
         {
             self.dead = dead;
-            APOMonkSub sub = AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject);
+            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             sub.networkLife = Math.Max(100, sub.networkLife);
         }
 
@@ -35,7 +35,7 @@ namespace Monkland.Hooks.Entities
             self.corridorTurnCounter = corridorTurnCounter;
             self.corridorTurnDir = corridorTurnDir;
             self.crawlTurnDelay = crawlTurnDelay;
-            APOMonkSub sub = AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject);
+            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             sub.networkLife = Math.Max(100, sub.networkLife);
         }
 
@@ -52,45 +52,59 @@ namespace Monkland.Hooks.Entities
         public static bool MapDiscoveryActiveHK(MapDiscoveryActive orig, Player self)
         {
             if (MonklandSteamManager.isInGame)
-            { return orig.Invoke(self) && AbstractPhysicalObjectHK.GetSub(self.abstractCreature).owner == NetworkGameManager.playerID; }
+            { return orig(self) && AbstractPhysicalObjectHK.GetField(self.abstractCreature).owner == NetworkGameManager.playerID; }
             else
-            { return orig.Invoke(self); }
+            { return orig(self); }
         }
 
         private static void CtorHK(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
         {
-            orig.Invoke(self, abstractCreature, world);
-            AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).networkLife = 500;
+            orig(self, abstractCreature, world);
+            AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 500;
         }
 
         private static Color ShortCutColorHK(On.Player.orig_ShortCutColor orig, Player self)
         {
             if (MonklandSteamManager.isInGame)
-            { return MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).owner)]; }
-            return orig.Invoke(self);
+            { 
+                return MonklandSteamManager.GameManager.playerColors[
+                    MonklandSteamManager.connectedPlayers.IndexOf(AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner)
+                    ]; 
+            }
+            return orig(self);
         }
 
         private static void DieHK(On.Player.orig_Die orig, Player self)
         {
-            if (AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).networkObject) { return; }
-            orig.Invoke(self);
+            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject) 
+            {
+                MonklandSteamManager.GameManager.PlayerKilled(AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner);
+                return; 
+            }
+            orig(self);
         }
 
         private static void UpdateHK(On.Player.orig_Update orig, Player self, bool eu)
         {
-            APOMonkSub sub = AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject);
+            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             if (sub.networkObject)
             {
                 if (self.lungsExhausted)
-                { self.aerobicLevel = 1f; }
+                { 
+                    self.aerobicLevel = 1f; 
+                }
                 else
                 {
                     self.aerobicLevel = Mathf.Max(1f - self.airInLungs, self.aerobicLevel - ((!self.slugcatStats.malnourished) ? 1f : 1.2f) / (((self.input[0].x != 0 || self.input[0].y != 0) ? 1100f : 400f) * (1f + 3f * Mathf.InverseLerp(0.9f, 1f, self.aerobicLevel))));
                 }
                 if (self.cantBeGrabbedCounter > 0)
-                { self.cantBeGrabbedCounter--; }
+                { 
+                    self.cantBeGrabbedCounter--; 
+                }
                 if (self.poleSkipPenalty > 0)
-                { self.poleSkipPenalty--; }
+                { 
+                    self.poleSkipPenalty--; 
+                }
                 if (self.shootUpCounter > 0)
                 {
                     self.noGrabCounter = Math.Max(self.noGrabCounter, 2);
@@ -330,12 +344,12 @@ namespace Monkland.Hooks.Entities
                     self.Destroy();
                 }
             }
-            else { orig.Invoke(self, eu); }
+            else { orig(self, eu); }
         }
 
         private static void GrabUpdateHK(On.Player.orig_GrabUpdate orig, Player self, bool eu)
         {
-            APOMonkSub sub = AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject);
+            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             if (sub.networkObject)
             {
                 if (self.spearOnBack != null) { self.spearOnBack.Update(eu); }
@@ -670,7 +684,7 @@ namespace Monkland.Hooks.Entities
                     }
                 }
             }
-            else { orig.Invoke(self, eu); }
+            else { orig(self, eu); }
         }
     }
 }

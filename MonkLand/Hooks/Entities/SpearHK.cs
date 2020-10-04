@@ -7,7 +7,7 @@ namespace Monkland.Hooks.Entities
 {
     internal static class SpearHK
     {
-        public static void SubPatch()
+        public static void ApplyHook()
         {
             On.Spear.ctor += new On.Spear.hook_ctor(CtorHK);
             On.Spear.Update += new On.Spear.hook_Update(UpdateHK);
@@ -25,12 +25,12 @@ namespace Monkland.Hooks.Entities
             return false;
         }
 
-        public static void Sync(Spear self) => AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).networkLife = 60;
+        public static void Sync(Spear self) => AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
 
         private static void CtorHK(On.Spear.orig_ctor orig, Spear self, AbstractPhysicalObject abstractPhysicalObject, World world)
         {
-            orig.Invoke(self, abstractPhysicalObject, world);
-            AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).networkLife = 60;
+            orig(self, abstractPhysicalObject, world);
+            AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
         }
 
         private static void NoChunkUpdate(Spear self, bool eu)
@@ -171,8 +171,8 @@ namespace Monkland.Hooks.Entities
             if (self.stuckInObject == null && self.mode == Weapon.Mode.StuckInCreature)
             { NoChunkUpdate(self, eu); }
             else
-            { orig.Invoke(self, eu); }
-            APOMonkSub sub = AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject);
+            { orig(self, eu); }
+            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             if (sub.networkObject)
             {
                 if (sub.networkLife > 0) { sub.networkLife--; }
@@ -194,9 +194,9 @@ namespace Monkland.Hooks.Entities
 
         private static bool HitSomethingHK(On.Spear.orig_HitSomething orig, Spear self, SharedPhysics.CollisionResult result, bool eu)
         {
-            bool hit = orig.Invoke(self, result, eu);
+            bool hit = orig(self, result, eu);
             if (CheckNet()) { return hit; }
-            if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
+            if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
                 MonklandSteamManager.EntityManager.SendHit(self, result.obj, result.chunk);
                 MonklandSteamManager.EntityManager.Send(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);
@@ -207,9 +207,9 @@ namespace Monkland.Hooks.Entities
         private static void ThrownHK(On.Spear.orig_Thrown orig, Spear self,
             Creature thrownBy, Vector2 thrownPos, Vector2? firstFrameTraceFromPos, IntVector2 throwDir, float frc, bool eu)
         {
-            orig.Invoke(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
+            orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
             if (CheckNet()) { return; }
-            if (MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetSub(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
+            if (MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
                 MonklandSteamManager.EntityManager.SendThrow(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc);
                 MonklandSteamManager.EntityManager.Send(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);

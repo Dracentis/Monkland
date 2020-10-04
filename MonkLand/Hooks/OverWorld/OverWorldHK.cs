@@ -4,19 +4,19 @@ namespace Monkland.Hooks.OverWorld
 {
     public static class OverWorldHK
     {
-        public static void Patch()
+        public static void ApplyHook()
         {
-            AbstractRoomHK.SubPatch();
-            ShortcutHandlerHK.SubPatch();
-
             On.OverWorld.LoadFirstWorld += new On.OverWorld.hook_LoadFirstWorld(LoadFirstWorldHK);
         }
 
         private static void LoadFirstWorldHK(On.OverWorld.orig_LoadFirstWorld orig, global::OverWorld self)
         {
-            orig.Invoke(self);
+            orig(self);
+
             if (MonklandSteamManager.isInGame)
-            { MonklandSteamManager.WorldManager.GameStart(); }
+            { 
+                MonklandSteamManager.WorldManager.GameStart(); 
+            }
         }
     }
 }

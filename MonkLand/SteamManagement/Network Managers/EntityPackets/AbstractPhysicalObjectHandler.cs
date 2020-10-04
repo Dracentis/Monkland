@@ -24,7 +24,7 @@ namespace Monkland.SteamManagement
             writer.Write(physicalObject.InDen);
             writer.Write(physicalObject.timeSpentHere);
             writer.Write((byte)physicalObject.type);
-            writer.Write(AbstractPhysicalObjectHK.GetSub(physicalObject).dist);
+            writer.Write(AbstractPhysicalObjectHK.GetField(physicalObject).dist);
         }
     }
 }

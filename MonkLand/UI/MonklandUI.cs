@@ -1,4 +1,7 @@
-﻿using Monkland.SteamManagement;
+﻿using Monkland.Hooks.Entities;
+using Monkland.SteamManagement;
+using Steamworks;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -63,6 +66,7 @@ namespace Monkland.UI
         {
             FindPlayer(game);
             DisplayQuickMessages();
+            DisplayPlayerNames(game);
         }
 
         private void FindPlayer(RainWorldGame game)
@@ -73,6 +77,34 @@ namespace Monkland.UI
                 if (trackedPlayer != null)
                 {
                     currentRoom = trackedPlayer.Room.realizedRoom;
+                }
+            }
+        }
+
+        private void DisplayPlayerNames(RainWorldGame game)
+        {
+            if (trackedPlayer != null && currentRoom != null)
+            {
+                foreach (AbstractCreature cr in trackedPlayer.Room.creatures)
+                {
+                    try
+                    {
+                        // Player in the same room
+                        if (cr.realizedCreature is Player p)
+                        {
+                            AbstractPhysicalObject player = cr.realizedCreature.abstractPhysicalObject;
+                            string playerName = SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(player).owner);
+                            Color color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(AbstractPhysicalObjectHK.GetField(player).owner)];
+                            (currentRoom.game.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).AddLabel(player, playerName, color);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Throw exception
+                        //Debug.LogException(e);
+                        Debug.Log($"Error when trying to add label for Player"+e);
+
+                    }
                 }
             }
         }
@@ -92,7 +124,7 @@ namespace Monkland.UI
                 }
             }
 
-            if (!MonklandSteamManager.DEBUG || !MonklandSteamManager.isInGame)
+            if (/*!MonklandSteamManager.DEBUG ||*/ !MonklandSteamManager.isInGame)
             {
                 return;
             }
@@ -144,7 +176,9 @@ namespace Monkland.UI
         public static void UpdateStatus(string message)
         {
             if (statusLabel != null)
-            { statusLabel.text = message; }
+            { 
+                statusLabel.text = message; 
+            }
         }
 
         public static void AddMessage(string message, float time = 3)

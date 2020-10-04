@@ -4,7 +4,7 @@ namespace Monkland.Hooks.Entities
 {
     internal static class WeaponHK
     {
-        public static void SubPatch()
+        public static void ApplyHook()
         {
             On.Weapon.HitThisObject += new On.Weapon.hook_HitThisObject(HitThisObjectHK);
         }
