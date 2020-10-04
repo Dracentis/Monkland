@@ -22,7 +22,7 @@ namespace Monkland.Hooks.Menus
             if (!MonklandSteamManager.isInGame || MonklandSteamManager.WorldManager == null)
             {
                 isMulti = false;
-                if (hud.owner != null && hud.owner is Player p && p.room?.world != null)
+                if (hud.owner != null && hud.owner is Player p && p.room != null)
                 {
                     orig(self, hud, fContainer);
                 }
@@ -31,7 +31,7 @@ namespace Monkland.Hooks.Menus
                     noOrigCtor(self, isMulti, hud, fContainer);
                 }
             }
-            else if (hud.owner != null && hud.owner is Player p && p.room?.world != null)
+            else if (hud.owner != null && hud.owner is Player p && p.room != null)
             {
                 orig(self, hud, fContainer);
                 for (int i = 0; i < self.circles.Length; i++)
@@ -110,17 +110,36 @@ namespace Monkland.Hooks.Menus
 
         private static void UpdateHK(On.HUD.RainMeter.orig_Update orig, RainMeter self)
         {
-            int oldHalfTimeBlink = self.halfTimeBlink;
-            CircleBak[] cbk = new CircleBak[self.circles.Length];
-            for (int i = 0; i < self.circles.Length; i++) { cbk[i] = new CircleBak(self.circles[i]); } // backup circles
+            if (self.hud.owner != null && self.hud.owner is Player)
+            {
+                int oldHalfTimeBlink = self.halfTimeBlink;
+                CircleBak[] cbk = new CircleBak[self.circles.Length];
+                for (int i = 0; i < self.circles.Length; i++) { cbk[i] = new CircleBak(self.circles[i]); } // backup circles
 
-            orig.Invoke(self);
+                orig.Invoke(self);
 
-            for (int i = 0; i < self.circles.Length; i++) { cbk[i].Apply(self.circles[i]); } // revert circles
+                for (int i = 0; i < self.circles.Length; i++) { cbk[i].Apply(self.circles[i]); } // revert circles
 
-            // update fade
-            self.halfTimeBlink = oldHalfTimeBlink;
-            self.fade = self.lastFade;
+                // update fade
+                self.halfTimeBlink = oldHalfTimeBlink;
+                self.fade = self.lastFade;
+            }
+            else
+            { // orig_Update
+                self.lastPos = self.pos;
+                self.pos = self.hud.karmaMeter.pos;
+                if (!self.halfTimeShown && RainWorldGameHK.mainGame.world.rainCycle.AmountLeft < 0.5f)
+                {
+                    self.halfTimeBlink = 220;
+                    self.halfTimeShown = true;
+                }
+                self.lastFade = self.fade;
+                if (self.remainVisibleCounter > 0) { self.remainVisibleCounter--; }
+                self.lastPlop = self.plop;
+                if (self.fade >= 0.7f) { self.plop = Mathf.Min(1f, self.plop + 0.05f); }
+                else { self.plop = 0f; }
+            }
+
             if (!NextCycleMeter(self))
             {
                 if (self.halfTimeBlink > 0)
@@ -136,9 +155,9 @@ namespace Monkland.Hooks.Menus
             }
 
             // replace fRain
-            if (!NextCycleMeter(self) && (self.hud.owner as Player).room != null)
+            if (!NextCycleMeter(self))
             {
-                self.fRain = (self.hud.owner as Player).room.world.rainCycle.AmountLeft;
+                self.fRain = RainWorldGameHK.mainGame.world.rainCycle.AmountLeft;
             }
             else if (NextCycleMeter(self) && MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null)
             {
