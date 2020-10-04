@@ -13,13 +13,14 @@ namespace Monkland.UI
 {
     public class MultiplayerHUD : HudPart
     {
-        private int counter;
         //private FNode inFrontContainer;
+        // public HUD.HUD hud;
+
+        private int counter;
         private FSprite backgroundBlack;
         public Dictionary<ulong, MUIPlayerTag> playerLabels;
-        List<ulong> elementsToBeRemoved;
+        private List<ulong> elementsToBeRemoved;
         public bool overLayActive;
-        public HUD.HUD hud;
         public Vector2 lastMousePos;
         public Vector2 mousePos;
         public bool mouseDown;
@@ -40,7 +41,6 @@ namespace Monkland.UI
             overLayActive = false;
             frontContainer = new FContainer();
 
-
             this.backgroundBlack = new FSprite("Futile_White", true);
             this.backgroundBlack.color = new Color(0f, 0f, 0f);
             this.container.AddChild(this.backgroundBlack);
@@ -57,7 +57,6 @@ namespace Monkland.UI
             muiElements.Add(new MUIPlayerList(this, new Vector2(this.hud.rainWorld.options.ScreenSize.x / 2f, this.hud.rainWorld.options.ScreenSize.y / 2f)));
             Futile.stage.AddChild(frontContainer);
         }
-
 
         public FContainer container
         {
@@ -76,10 +75,10 @@ namespace Monkland.UI
                     playerLabels.Add(AbstractPhysicalObjectHK.GetField(player).owner, new MUIPlayerTag(player, name, color, this));
                 }
             }
-            catch (Exception e)
+            catch //(Exception e)
             {
                 // Exception
-               // Debug.Log("Playerlabel " + e);
+                // Debug.Log("Playerlabel " + e);
             }
         }
 
@@ -136,14 +135,11 @@ namespace Monkland.UI
 
             base.Update();
 
-
             foreach (MUIHUD item in muiElements)
             {
                 item.isVisible = overLayActive;
                 item.Update();
             }
-
-
 
             elementsToBeRemoved.Clear();
             foreach (KeyValuePair<ulong, MUIPlayerTag> label in playerLabels)
@@ -160,17 +156,6 @@ namespace Monkland.UI
             {
                 playerLabels.Remove(key);
             }
-
-
         }
-
-       
-
-       
-
-  
-
-
-   
     }
 }

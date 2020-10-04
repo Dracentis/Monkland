@@ -11,8 +11,8 @@ namespace Monkland.UI
         public FLabel label;
         public Color color;
         public MultiplayerHUD owner;
-        public Vector2 pos;
         public float alpha;
+        //public Vector2 pos;
 
         public MUILabel(MultiplayerHUD owner, string labelName, Color color, Vector2 pos)
         {
@@ -24,7 +24,6 @@ namespace Monkland.UI
             this.label.alpha = 0f;
             this.label.x = -1000f;
             this.pos = pos;
-
         }
 
         public RoomCamera Camera
@@ -37,7 +36,6 @@ namespace Monkland.UI
 
         public override void Update()
         {
-
         }
 
         public override void Draw(float timeStacker)

@@ -32,7 +32,7 @@ namespace Monkland.Hooks.Menus
                 for (int i = 0; i < self.circles.Length; i++)
                 { self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0); }
             }
-            else if (hud.owner is MultiplayerSleepAndDeathScreen) //hud.owner is MultiplayerSleepAndDeathScreen; Replace ctor
+            else //hud.owner is MultiplayerSleepAndDeathScreen; Replace ctor
             {
                 Type[] constructorSignature = new Type[1];
                 constructorSignature[0] = typeof(HUD.HUD);

@@ -10,8 +10,9 @@ namespace Monkland.UI
 {
     public class MUIPlayerTag : MUIHUD
     {
-        private int room;
-        private Vector2 pos;
+        // private int room; //unused
+        // private Vector2 pos;
+
         private FSprite gradient;
         private AbstractPhysicalObject player;
         private string labelName;
