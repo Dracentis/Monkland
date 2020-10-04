@@ -21,7 +21,7 @@ namespace Monkland.UI
             Debug.Log("Added MUIPlayer list");
 
             float longestSteamName = 0;
-            int yPos = 25;
+            int yPos = 20;
             foreach (ulong s in MonklandSteamManager.connectedPlayers)
             {
                 string steamName = SteamFriends.GetFriendPersonaName((CSteamID)s);
@@ -41,7 +41,7 @@ namespace Monkland.UI
                 {
                     longestSteamName = newLabel.label.textRect.xMax;
                 }
-                yPos += 13;
+                yPos += 10;
             }
 
             box = new MUIBox(owner, pos, (int)longestSteamName, playerLabels.Count);

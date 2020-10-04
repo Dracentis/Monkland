@@ -35,14 +35,14 @@ namespace Monkland.Hooks.Entities
         private static void UpdateHK(On.Rock.orig_Update orig, Rock self, bool eu)
         {
             orig(self, eu);
-            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            if (sub.networkObject)
+            APOFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            if (field.networkObject)
             {
-                if (sub.networkLife > 0)
-                { sub.networkLife--; }
+                if (field.networkLife > 0)
+                { field.networkLife--; }
                 else
                 {
-                    sub.networkLife = 60;
+                    field.networkLife = 60;
                     for (int i = 0; i < self.grabbedBy.Count; i++)
                     {
                         if (self.grabbedBy[i] != null)

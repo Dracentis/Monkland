@@ -62,6 +62,52 @@ namespace Monkland.UI
             return cpos;
         }
 
+        public static string BuildDeathMessage(CSteamID deadPlayerID, Creature.DamageType damageType, CreatureTemplate.Type killerType, ulong killerID)
+        {
+            string deadPlayerName = SteamFriends.GetFriendPersonaName(deadPlayerID);
+            string killerName = string.Empty;
+
+            if (killerType == CreatureTemplate.Type.Slugcat)
+            {
+                killerName = SteamFriends.GetFriendPersonaName((CSteamID)killerID);
+                if (killerName.Equals(string.Empty))
+                {
+                    killerName = "Player";
+                }
+            }
+            // TO DO  When creatures are synced
+            else
+            {
+                switch(killerType)
+                {
+                    //case CreatureTemplate.Type.
+                }
+            }
+            string message = string.Empty;
+
+            switch (damageType)
+            {
+                case Creature.DamageType.Blunt:
+                    message = $"{deadPlayerName} was killed using blunt force by {killerName}";
+                    break;
+                case Creature.DamageType.Stab:
+                    message = $"{deadPlayerName} was stabbed to death by {killerName}";
+                    break;
+                case Creature.DamageType.Bite:
+                    break;
+                case Creature.DamageType.Water:
+                    message = $"{deadPlayerName} drowned.";
+                    break;
+                case Creature.DamageType.Explosion:
+                    message = $"{deadPlayerName} was blown up by {killerName}";
+                    break;
+                case Creature.DamageType.Electric:
+                    break;
+            }
+
+            return message;
+        }
+
         public void Update(RainWorldGame game)
         {
             FindPlayer(game);

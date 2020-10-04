@@ -17,9 +17,9 @@ namespace Monkland.Hooks.Entities
                 typeof(PlayerHK).GetMethod("MapDiscoveryActiveHK", BindingFlags.Static | BindingFlags.Public));
             On.Player.ctor += new On.Player.hook_ctor(CtorHK);
             On.Player.ShortCutColor += new On.Player.hook_ShortCutColor(ShortCutColorHK);
-            On.Player.Die += new On.Player.hook_Die(DieHK);
             On.Player.Update += new On.Player.hook_Update(UpdateHK);
             On.Player.GrabUpdate += new On.Player.hook_GrabUpdate(GrabUpdateHK);
+            On.Player.Die += new On.Player.hook_Die(DieHK);
         }
 
         public static void Sync(Player self, bool dead)
@@ -78,9 +78,13 @@ namespace Monkland.Hooks.Entities
         {
             if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject) 
             {
-                MonklandSteamManager.GameManager.PlayerKilled(AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner);
                 return; 
             }
+
+            //Send packet each player that dies (not network object)
+            //MonklandSteamManager.GameManager.PlayerKilled(AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner);
+            //MonklandSteamManager.GameManager.SendViolence(self, )
+
             orig(self);
         }
 
@@ -345,6 +349,19 @@ namespace Monkland.Hooks.Entities
                 }
             }
             else { orig(self, eu); }
+
+            // DEBUG VIOLENCE
+            try
+            {
+                if (MonklandSteamManager.DEBUG && Input.GetKeyDown("k"))
+                {
+                    self.Violence(self.mainBodyChunk, new Vector2(1, 0) * 8f, self.mainBodyChunk, null, Creature.DamageType.Bite, 1, 1);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Error violence" + e);
+            }
         }
 
         private static void GrabUpdateHK(On.Player.orig_GrabUpdate orig, Player self, bool eu)

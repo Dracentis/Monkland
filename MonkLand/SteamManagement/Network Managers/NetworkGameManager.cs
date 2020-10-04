@@ -1,4 +1,5 @@
 ﻿using Monkland.Hooks;
+using Monkland.Hooks.Entities;
 using Monkland.UI;
 using Steamworks;
 using System;
@@ -44,7 +45,7 @@ namespace Monkland.SteamManagement
             EyeColorR,
             EyeColorG,
             EyeColorB,
-            PlayerDead,
+            PlayerViolence,
         }
 
         public override void Update()
@@ -203,14 +204,39 @@ namespace Monkland.SteamManagement
                             playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g, 
                             ((float)br.ReadByte()) / 255f);
                     return;
-                case UtilMessageType.PlayerDead:
+                case UtilMessageType.PlayerViolence:
+                    /*
                     ulong packetReceived = br.ReadUInt64();
                     MonklandUI.AddMessage($"{SteamFriends.GetFriendPersonaName((CSteamID)packetReceived)} was killed."); 
                     Debug.Log($"{SteamFriends.GetFriendPersonaName((CSteamID)packetReceived)} was killed. Data in packet [{packetReceived}]. " +
                         $"Sent by [{SteamFriends.GetFriendPersonaName((CSteamID)sentPlayer.m_SteamID)}]");
+                        */
+                    ReadViolence(br, sentPlayer);
                     break;
 
             }
+        }
+
+        private void ReadViolence(BinaryReader br, CSteamID sentPlayer)
+        {
+            // Message type
+
+            // Damage type
+            Creature.DamageType type = (Creature.DamageType)br.ReadByte();
+            // Lethal
+            bool lethal = br.ReadBoolean();
+            // Source Template
+            CreatureTemplate.Type sourceTemplate = (CreatureTemplate.Type)br.ReadByte();
+            // Source ID
+            ulong sourceID = (ulong)br.ReadByte();
+
+            if (lethal)
+            {
+                string message = MonklandUI.BuildDeathMessage(sentPlayer, type, sourceTemplate, sourceID);
+                MonklandUI.AddMessage(message, 10);
+            }
+
+            MonklandSteamManager.Log($"[GameMNG] Reading Player Violence: Damage type {type}, Source Template {sourceTemplate}, Source ID {sourceID}");
         }
 
         #endregion Packet Handler
@@ -250,6 +276,7 @@ namespace Monkland.SteamManagement
             MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
         }
 
+        /*
         public void PlayerKilled(ulong playerDead)
         {
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
@@ -263,6 +290,59 @@ namespace Monkland.SteamManagement
             MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
 
             Debug.Log($"Writing packet: {packet.data}");
+        }
+        */
+
+        public void SendViolence(Creature self, BodyChunk source, Creature.DamageType type, float damage)
+        {
+            /* 
+            * Violence packet
+            * packetType
+            * damageType
+            * sourceType (player/scav/lizard)
+            * source ID
+            */
+
+            if (self == null || AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner != NetworkGameManager.playerID)
+            {
+                return;
+            }
+            
+            // Source ID field
+            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
+            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
+            // SourceTemplate
+            byte sourceTemplate = byte.MaxValue - 1;
+            try
+            {
+                sourceTemplate = (byte)(source.owner.abstractPhysicalObject as AbstractCreature).creatureTemplate.type;
+            }
+            catch (Exception e) {/*Debug.Log()*/}
+
+            // SourceID
+            byte sourceID = byte.MaxValue - 1;
+            try
+            {
+                sourceID = (byte)(AbstractPhysicalObjectHK.GetField(source.owner.abstractPhysicalObject).owner);
+            }
+            catch (Exception e) {/*Debug.Log()*/}
+
+            // Message type
+            writer.Write((byte)UtilMessageType.PlayerViolence);
+            // Damage type
+            writer.Write((byte)type);
+            // Damage
+            writer.Write((bool)(damage >= 1f));
+            // Source Template
+            writer.Write(sourceTemplate);
+            // Source ID
+            writer.Write(sourceID);
+
+            MonklandSteamManager.Log($"[GameMNG] Sending Player Violence: Type {type}, damage {damage} Source Template {(CreatureTemplate.Type)sourceTemplate}, Source ID {sourceID}");
+            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+            MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
+
         }
 
         public void SendReady()

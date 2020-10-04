@@ -118,6 +118,7 @@ namespace Monkland.SteamManagement
             }
         }
 
+
         #endregion Packet Handler
 
         public bool isSynced(PhysicalObject obj)
@@ -221,30 +222,38 @@ namespace Monkland.SteamManagement
             }
         }
 
+
         #region Grasps and Sticks
 
         public void SendGrab(Creature.Grasp grasp)
         {
             if (grasp == null || grasp.grabber == null || grasp.grabbed == null || !isSynced(grasp.grabber) || !isSynced(grasp.grabbed))
             { return; }
+
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(grasp.grabber.room.abstractRoom.name)) { return; }
-            APOFields grabberSub = AbstractPhysicalObjectHK.GetField(grasp.grabber.abstractPhysicalObject);
-            if (grabberSub.owner != NetworkGameManager.playerID) { return; }
+
+            APOFields grabberField = AbstractPhysicalObjectHK.GetField(grasp.grabber.abstractPhysicalObject);
+
+            if (grabberField.owner != NetworkGameManager.playerID) { return; }
+
             APOFields grabbedSub = AbstractPhysicalObjectHK.GetField(grasp.grabbed.abstractPhysicalObject);
 
-            MonklandSteamManager.Log($"[Entity] Sending Grab: {grabberSub.dist} grabbed {grabbedSub.dist}");
+            MonklandSteamManager.Log($"[Entity] Sending Grab: {grabberField.dist} grabbed {grabbedSub.dist}");
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
             writer.Write((byte)PacketType.EstablishGrasp);
             writer.Write(grasp.grabber.room.abstractRoom.name);
-            writer.Write(grabberSub.dist);
+            writer.Write(grabberField.dist);
             writer.Write(grabbedSub.dist);
             writer.Write(grasp.graspUsed);
             writer.Write(grasp.grabbedChunk.index);
             writer.Write((int)grasp.shareability);
             writer.Write(grasp.dominance);
             writer.Write(grasp.pacifying);
+
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grasp.grabber.room.abstractRoom.name])
             {
                 if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
@@ -254,11 +263,11 @@ namespace Monkland.SteamManagement
             }
             if ((grasp.grabbed is Player) && !(grasp.grabber is Player))//One of our creatures is grabbing another player so the grabber should belong to the grabbed
             {
-                grabberSub.owner = grabbedSub.owner;
+                grabberField.owner = grabbedSub.owner;
             }
             else if (!(grasp.grabbed is Player))//One of our creatures is the grabber so we should take ownership of the grabbed
             {
-                grabbedSub.owner = grabberSub.owner;
+                grabbedSub.owner = grabberField.owner;
             }
         }
 
@@ -318,25 +327,34 @@ namespace Monkland.SteamManagement
         {
             if (hit == null || obj == null || !isSynced(obj) || !isSynced(hit)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(obj.room.abstractRoom.name)) { return; }
-            APOFields objSub = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
-            APOFields hitSub = AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject);
-            if (objSub.owner != NetworkGameManager.playerID) { return; }
+
+            APOFields objField = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
+            APOFields hitField = AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject);
+
+            if (objField.owner != NetworkGameManager.playerID) { return; }
+
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
             writer.Write((byte)PacketType.Hit);
             writer.Write(obj.room.abstractRoom.name);
-            writer.Write(objSub.dist);
-            writer.Write(hitSub.dist);
+            writer.Write(objField.dist);
+            writer.Write(hitField.dist);
+
             if (chunk != null) { writer.Write(chunk.index); }
             else { writer.Write(-1); }
-            MonklandSteamManager.Log($"[Entity] Sending Hit: {objSub.dist} hit {hitSub.dist}");
+
+            MonklandSteamManager.Log($"[Entity] Sending Hit: {objField.dist} hit {hitField.dist}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name])
             {
                 if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
                 {
                     if (target != playerID)
-                    { MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); }
+                    { 
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); 
+                    }
                 }
             }
         }
@@ -345,27 +363,36 @@ namespace Monkland.SteamManagement
         {
             if (thrownBy == null || thrown == null || !isSynced(thrownBy) || !isSynced(thrown)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(thrown.room.abstractRoom.name)) { return; }
-            APOFields thrownSub = AbstractPhysicalObjectHK.GetField(thrown.abstractPhysicalObject);
-            if (thrownSub.owner != NetworkGameManager.playerID) { return; }
+
+            APOFields thrownField = AbstractPhysicalObjectHK.GetField(thrown.abstractPhysicalObject);
+
+            if (thrownField.owner != NetworkGameManager.playerID) { return; }
+
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
             APOFields thrownBySub = AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject);
+
             writer.Write((byte)PacketType.Throw);
             writer.Write(thrown.room.abstractRoom.name);
-            writer.Write(thrownSub.dist);
+            writer.Write(thrownField.dist);
             writer.Write(thrownBySub.dist);
             Vector2Handler.Write(thrownPos, ref writer);
             Vector2NHandler.Write(firstFrameTraceFromPos, ref writer);
             IntVector2Handler.Write(throwDir, ref writer);
             writer.Write(frc);
-            MonklandSteamManager.Log($"[Entity] Sending Throw: {thrownSub.dist} thrown by {thrownBySub.dist}");
+
+            MonklandSteamManager.Log($"[Entity] Sending Throw: {thrownField.dist} thrown by {thrownBySub.dist}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[thrown.room.abstractRoom.name])
+
             {
                 if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
                 {
                     if (target != playerID)
-                    { MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); }
+                    { 
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); 
+                    }
                 }
             }
         }
@@ -374,27 +401,35 @@ namespace Monkland.SteamManagement
         {
             if (A == null || B == null || room == null || !isSynced(A) || !isSynced(B)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(room.name)) { return; }
-            APOFields ASub = AbstractPhysicalObjectHK.GetField(A);
-            APOFields BSub = AbstractPhysicalObjectHK.GetField(B);
-            if (ASub.owner != NetworkGameManager.playerID && BSub.owner != NetworkGameManager.playerID) { return; }
+
+            APOFields AField = AbstractPhysicalObjectHK.GetField(A);
+            APOFields BField = AbstractPhysicalObjectHK.GetField(B);
+
+            if (AField.owner != NetworkGameManager.playerID && BField.owner != NetworkGameManager.playerID) { return; }
+
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
             writer.Write((byte)PacketType.Stick);
             writer.Write((byte)StickType.Spear);
             writer.Write(room.name);
-            writer.Write(ASub.dist);
-            writer.Write(BSub.dist);
+            writer.Write(AField.dist);
+            writer.Write(BField.dist);
             writer.Write(chunk);
             writer.Write(bodyPart);
             writer.Write(angle);
-            MonklandSteamManager.Log($"[Entity] Sending Spear Stick: {ASub.dist}, {BSub.dist}");
+
+            MonklandSteamManager.Log($"[Entity] Sending Spear Stick: {AField.dist}, {BField.dist}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[room.name])
             {
                 if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
                 {
                     if (target != playerID)
-                    { MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); }
+                    { 
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); 
+                    }
                 }
             }
         }
@@ -403,29 +438,36 @@ namespace Monkland.SteamManagement
         {
             if (A == null || B == null || room == null || !isSynced(A) || !isSynced(B)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(room.name)) { return; }
-            APOFields ASub = AbstractPhysicalObjectHK.GetField(A);
-            APOFields BSub = AbstractPhysicalObjectHK.GetField(B);
-            if (ASub.owner != NetworkGameManager.playerID && BSub.owner != NetworkGameManager.playerID) { return; }
+
+            APOFields AField = AbstractPhysicalObjectHK.GetField(A);
+            APOFields BField = AbstractPhysicalObjectHK.GetField(B);
+
+            if (AField.owner != NetworkGameManager.playerID && BField.owner != NetworkGameManager.playerID) { return; }
+
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             writer.Write((byte)PacketType.Stick);
             writer.Write((byte)StickType.SpearAppendage);
             writer.Write(room.name);
-            writer.Write(ASub.dist);
-            writer.Write(BSub.dist);
+            writer.Write(AField.dist);
+            writer.Write(BField.dist);
             writer.Write(appendage);
             writer.Write(prevSeg);
             writer.Write(distanceToNext);
             writer.Write(angle);
-            MonklandSteamManager.Log($"[Entity] Sending Spear Appendage Stick: {ASub.dist}, {BSub.dist}");
+
+            MonklandSteamManager.Log($"[Entity] Sending Spear Appendage Stick: {AField.dist}, {BField.dist}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[room.name])
             {
                 if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
                 {
                     if (target != playerID)
-                    { MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); }
+                    { 
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); 
+                    }
                 }
             }
         }
@@ -434,26 +476,34 @@ namespace Monkland.SteamManagement
         {
             if (A == null || B == null || room == null || !isSynced(A) || !isSynced(B)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(room.name)) { return; }
-            APOFields ASub = AbstractPhysicalObjectHK.GetField(A);
-            APOFields BSub = AbstractPhysicalObjectHK.GetField(B);
-            if (ASub.owner != NetworkGameManager.playerID && BSub.owner != NetworkGameManager.playerID) { return; }
+
+            APOFields AField = AbstractPhysicalObjectHK.GetField(A);
+            APOFields BField = AbstractPhysicalObjectHK.GetField(B);
+
+            if (AField.owner != NetworkGameManager.playerID && BField.owner != NetworkGameManager.playerID) { return; }
+
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+
             writer.Write((byte)PacketType.Stick);
             writer.Write((byte)StickType.SpearImpaled);
             writer.Write(room.name);
-            writer.Write(ASub.dist);
-            writer.Write(BSub.dist);
+            writer.Write(AField.dist);
+            writer.Write(BField.dist);
             writer.Write(chunk);
             writer.Write(onSpearPosition);
-            MonklandSteamManager.Log($"[Entity] Sending Spear Impaled Stick: {ASub.dist}, {BSub.dist}");
+
+            MonklandSteamManager.Log($"[Entity] Sending Spear Impaled Stick: {AField.dist}, {BField.dist}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
+
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[room.name])
             {
                 if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target))
                 {
                     if (target != playerID)
-                    { MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); }
+                    { 
+                        MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable); 
+                    }
                 }
             }
         }
@@ -496,7 +546,8 @@ namespace Monkland.SteamManagement
             Throw,
             Stick,
             Deactivate,
-            Spear
+            Spear,
+            Violence
         }
 
         #endregion Outgoing Packets
@@ -553,18 +604,22 @@ namespace Monkland.SteamManagement
             AbstractRoom abstractRoom = RainWorldGameHK.mainGame.world.GetAbstractRoom(roomName);
             if (abstractRoom == null || abstractRoom.realizedRoom == null)
                 return;
-            WorldCoordinate startPos = WorldCoordinateHandler.Read(ref br);// Read World Coordinate
-            EntityID ID = EntityIDHandler.Read(ref br);// Read EntityID
+
+            // Read World Coordinate
+            WorldCoordinate startPos = WorldCoordinateHandler.Read(ref br);
+            // Read EntityID
+            EntityID ID = EntityIDHandler.Read(ref br);
             int dist = ID.number;
+
             for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
             {
                 for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
                 {
                     if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null)
                     {
-                        APOFields sub = AbstractPhysicalObjectHK.GetField(abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject);
-                        if (sub.dist != dist) { continue; }
-                        if (sub.owner == sentPlayer.m_SteamID)
+                        APOFields field = AbstractPhysicalObjectHK.GetField(abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject);
+                        if (field.dist != dist) { continue; }
+                        if (field.owner == sentPlayer.m_SteamID)
                         {
                             RockHK.Sync(abstractRoom.realizedRoom.physicalObjects[i][j] as Rock);
                             abstractRoom.realizedRoom.physicalObjects[i][j] = WeaponHandler.Read((abstractRoom.realizedRoom.physicalObjects[i][j] as Rock), ref br);// Read Rock

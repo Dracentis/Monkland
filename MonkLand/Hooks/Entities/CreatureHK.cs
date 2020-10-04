@@ -11,7 +11,10 @@ namespace Monkland.Hooks.Entities
             On.Creature.SwitchGrasps += new On.Creature.hook_SwitchGrasps(SwitchGraspsHK);
             On.Creature.ReleaseGrasp += new On.Creature.hook_ReleaseGrasp(ReleaseGraspHK);
             On.Creature.Grab += new On.Creature.hook_Grab(GrabHK);
+
+            On.Creature.Violence += Creature_Violence;
         }
+
 
         public static void SyncBodyChunk(BodyChunk self, IntVector2 contactPoint) => self.contactPoint = contactPoint;
 
@@ -29,6 +32,26 @@ namespace Monkland.Hooks.Entities
                 }
             }
             return false;
+        }
+
+        private static void Creature_Violence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, UnityEngine.Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus)
+        {
+            if (self is Player && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject)
+            {
+                /* 
+                 * #Violence packet#
+                 * packetType
+                 * source
+                 * damageType
+                 */
+
+                if (MonklandSteamManager.isInGame)
+                {
+                    MonklandSteamManager.GameManager.SendViolence(self, source, type, damage);
+                }
+            }
+
+            orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
         }
 
         private static void SwitchGraspsHK(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
