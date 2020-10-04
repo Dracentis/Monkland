@@ -3,11 +3,7 @@ MonkLand/Resources/Assembly-CSharp.dll
 MonkLand/obj/Debug/
 MonkLand/obj/
 MonkLand/bin/Release/net35/
-.vs/MonkLand/v16/.suo
-.vs/MonkLand/DesignTimeBuild/.dtbcache.v2
-MonkLand/obj/Release/net35/Monkland.assets.cache
-MonkLand/obj/project.nuget.cache
-MonkLand/obj/project.assets.json
+.vs/MonkLand/
 
 
 ## Ignore Visual Studio temporary files, build results, and
@@ -384,3 +380,4 @@ API
 Training
 Blog
 About
+MonkLand/obj/Release/net35/Monkland.AssemblyInfo.cs
