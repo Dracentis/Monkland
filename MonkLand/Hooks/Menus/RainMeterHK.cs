@@ -3,6 +3,7 @@ using Menu;
 using Monkland.SteamManagement;
 using RWCustom;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Monkland.Hooks.Menus
@@ -17,15 +18,36 @@ namespace Monkland.Hooks.Menus
 
         private static void CtorHK(On.HUD.RainMeter.orig_ctor orig, RainMeter self, HUD.HUD hud, FContainer fContainer)
         {
-            orig.Invoke(self, hud, fContainer);
-
-            if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null && hud.owner != null && (hud.owner is Player || hud.owner is MultiplayerSleepAndDeathScreen))
+            if (!MonklandSteamManager.isInGame || MonklandSteamManager.WorldManager == null || hud.owner == null)
             {
+                orig.Invoke(self, hud, fContainer);
+                return;
+            }
+            if (hud.owner is Player)
+            {
+                orig.Invoke(self, hud, fContainer);
                 for (int i = 0; i < self.circles.Length; i++) { self.circles[i].ClearSprite(); } // Remove Old Circles
 
                 self.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
                 for (int i = 0; i < self.circles.Length; i++)
                 { self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0); }
+            }
+            else if (hud.owner is MultiplayerSleepAndDeathScreen) //hud.owner is MultiplayerSleepAndDeathScreen; Replace ctor
+            {
+                Type[] constructorSignature = new Type[1];
+                constructorSignature[0] = typeof(HUD.HUD);
+                RuntimeMethodHandle handle = typeof(HudPart).GetConstructor(constructorSignature).MethodHandle;
+                RuntimeHelpers.PrepareMethod(handle);
+                IntPtr ptr = handle.GetFunctionPointer();
+                Action<HUD.HUD> funct = (Action<HUD.HUD>)Activator.CreateInstance(typeof(Action<HUD.HUD>), self, ptr);
+                funct(hud); //HudPart Constructor
+
+                self.lastPos = self.pos;
+                self.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
+                for (int i = 0; i < self.circles.Length; i++)
+                {
+                    self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0);
+                }
             }
         }
 
