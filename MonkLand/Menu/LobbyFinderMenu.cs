@@ -28,7 +28,7 @@ namespace Monkland
         public float lobbynum = 0;
         public SimpleButton refreshButton;
 
-        public FLabel namesLabel, versionsLabel, playersLabel, maxLabel, myVersion; //myVersion is not being used???
+        public FLabel namesLabel, versionsLabel, playersLabel, maxLabel; // myVersion; //myVersion is not being used???
         public FLabel[] lobbynames, lobbyVersions, lobbyPlayerCounts, lobbyPlayerMaxs;
         public SimpleButton[] joinButtons;
 

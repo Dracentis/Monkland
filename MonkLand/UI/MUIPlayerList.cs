@@ -10,11 +10,10 @@ namespace Monkland.UI
 {
     public class MUIPlayerList : MUIHUD
     {
-
         public HashSet<ulong> playerHash = new HashSet<ulong>();
         public static Dictionary<ulong, MUILabel> playerLabels = new Dictionary<ulong, MUILabel>();
-        private Vector2 size;
         public MUIBox box;
+        // private Vector2 size;
 
         public MUIPlayerList(MultiplayerHUD owner, Vector2 pos)
         {
@@ -33,7 +32,7 @@ namespace Monkland.UI
                 }
                 catch (Exception e)
                 {
-                    Debug.Log("Error while trying to get color");
+                    Debug.Log($"Error while trying to get color: {e.Message}");
                 }
                 MUILabel newLabel = new MUILabel(owner, steamName, bodyColor, pos + new Vector2(0, -yPos));
                 playerLabels.Add(s, newLabel);
@@ -46,7 +45,6 @@ namespace Monkland.UI
 
             box = new MUIBox(owner, pos, (int)longestSteamName, playerLabels.Count);
 
-
             foreach (KeyValuePair<ulong, MUILabel> kvp in playerLabels)
             {
                 MUILabel item = kvp.Value;
@@ -56,7 +54,6 @@ namespace Monkland.UI
                 //i++;
             }
         }
-
 
         public void ClearList()
         {
@@ -71,12 +68,12 @@ namespace Monkland.UI
             //Update stuff
             {
                 //The total height in pixels that the players take up on the scroll menu
-                float messagePixelHeight = 5 + (playerLabels.Count * 25);
+                // float messagePixelHeight = 5 + (playerLabels.Count * 25);
                 //The max height the scrollbar can display
-                float maxDisplayHeight = this.size.y - 30;
-                float maxDisplayTransition = this.size.y - 40;
+                // float maxDisplayHeight = this.size.y - 30;
+                // float maxDisplayTransition = this.size.y - 40;
 
-                float difference = messagePixelHeight - maxDisplayHeight;
+                // float difference = messagePixelHeight - maxDisplayHeight;
 
                 //this.pos = Input.mousePosition;
 
@@ -101,7 +98,6 @@ namespace Monkland.UI
                     //i++;
                 }
             }
-
         }
 
         public override void Draw(float timeStacker)
