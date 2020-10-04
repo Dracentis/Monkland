@@ -10,7 +10,7 @@ namespace Monkland.Hooks.Menus
 {
     internal static class RainMeterHK
     {
-        public static void SubPatch()
+        public static void ApplyHook()
         {
             On.HUD.RainMeter.ctor += new On.HUD.RainMeter.hook_ctor(CtorHK);
             On.HUD.RainMeter.Update += new On.HUD.RainMeter.hook_Update(UpdateHK);
