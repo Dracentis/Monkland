@@ -23,7 +23,8 @@ namespace Monkland.Hooks.Menus
         private static void InitSleepHudHK(On.HUD.HUD.orig_InitSleepHud orig, HUD.HUD self, SleepAndDeathScreen sleepAndDeathScreen, Map.MapData mapData, SlugcatStats charStats)
         {
             if (!(sleepAndDeathScreen is MultiplayerSleepAndDeathScreen)) 
-            { 
+            {
+                Debug.Log("Calling orig ctor Sleeping Screen");
                 orig(self, sleepAndDeathScreen, mapData, charStats); 
                 return; 
             }
@@ -36,10 +37,9 @@ namespace Monkland.Hooks.Menus
             self.foodMeter.pos = new Vector2(sleepAndDeathScreen.FoodMeterXPos((sleepAndDeathScreen.ID != ProcessManager.ProcessID.SleepScreen) ? 1f : 0f), 0f);
             self.foodMeter.lastPos = self.foodMeter.pos;
 
-            self.AddPart(new RainMeter(self, self.fContainers[1]));
-            self.rainMeter.pos = new Vector2(self.rainWorld.options.ScreenSize.x - 335f, self.rainWorld.options.ScreenSize.y - 70f);
-            self.rainMeter.lastPos = self.rainMeter.pos;
-            self.rainMeter.fade = 1f;
+            RainMeterMultiplayer rainMeter = new RainMeterMultiplayer(self, self.fContainers[1]);
+            rainMeter.pos = new Vector2(100, 100);//(self.rainWorld.options.ScreenSize.x - 335f, self.rainWorld.options.ScreenSize.y - 70f);
+            self.AddPart(rainMeter);
         }
     }
 }

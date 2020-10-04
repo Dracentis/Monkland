@@ -3,8 +3,10 @@ using Menu;
 using Monkland.SteamManagement;
 using RWCustom;
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Monkland.Hooks.Menus
 {
@@ -12,8 +14,171 @@ namespace Monkland.Hooks.Menus
     {
         public static void ApplyHook()
         {
+            /* TOPICULAR's
             On.HUD.RainMeter.ctor += new On.HUD.RainMeter.hook_ctor(CtorHK);
             On.HUD.RainMeter.Update += new On.HUD.RainMeter.hook_Update(UpdateHK);
+            */
+
+           // On.HUD.RainMeter.ctor += RainMeter_ctor;
+           // On.HUD.RainMeter.Update += RainMeter_Update;
+
+        }
+
+
+        private static void RainMeter_Update(On.HUD.RainMeter.orig_Update orig, RainMeter self)
+        {
+            int halfTimeBlinkBackUp = self.halfTimeBlink;
+            bool halfTimeShownBackUp = self.halfTimeShown;
+            int forceBisibleCounterBackUp = self.hud.karmaMeter.forceVisibleCounter;
+            float fadeBackUp = self.fade;
+            float fRainBackUp = self.fRain;
+
+            orig(self);
+
+            //self.lastPos = self.pos;
+            if (NextCycleMeter(self))
+            {
+                //self.pos = self.hud.karmaMeter.pos;
+                if (!self.halfTimeShown && (self.hud.owner as Player).room != null && (self.hud.owner as Player).room.world.rainCycle.AmountLeft < 0.5f && (self.hud.owner as Player).room.roomSettings.DangerType != RoomRain.DangerType.None)
+                {
+                    self.halfTimeBlink = halfTimeBlinkBackUp;
+                    self.halfTimeShown = halfTimeShownBackUp;
+                }
+            }
+            /*self.lastFade = self.fade;
+            if (self.remainVisibleCounter > 0)
+            {
+                self.remainVisibleCounter--;
+            }
+            */
+            if (NextCycleMeter(self))
+            {
+                if (self.halfTimeBlink > 0)
+                {
+                    self.halfTimeBlink = halfTimeBlinkBackUp;
+                    self.hud.karmaMeter.forceVisibleCounter = forceBisibleCounterBackUp;
+                }
+                /*
+                if ((self.hud.karmaMeter.fade > 0f && self.Show) || self.remainVisibleCounter > 0)
+                {*/
+                    self.fade = fadeBackUp;
+                    /*
+                }
+                else
+                {
+                    self.fade = fadeBackUp;
+                }
+                if (self.hud.HideGeneralHud)
+                {
+                    self.fade = fadeBackUp;
+                }
+                */
+            }
+            /*
+            self.lastPlop = self.plop;
+            if (self.fade >= 0.7f)
+            {
+                self.plop = Mathf.Min(1f, self.plop + 0.05f);
+            }
+            else
+            {
+                self.plop = 0f;
+            }
+            */
+            if (NextCycleMeter(self) && (self.hud.owner as Player).room != null)
+            {
+                self.fRain = fRainBackUp;
+            }
+            else if (NextCycleMeter(self) && MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null)
+            {
+                self.fRain = (float)(MonklandSteamManager.WorldManager.cycleLength - MonklandSteamManager.WorldManager.timer) / (float)MonklandSteamManager.WorldManager.cycleLength;
+                self.fade = 1f;
+            }
+            for (int i = 0; i < self.circles.Length; i++)
+            {
+
+               // self.circles[i].Update();
+                if (self.fade > 0f || self.lastFade > 0f)
+                {
+                    float num = (float)i / (float)(self.circles.Length - 1);
+                    float value = Mathf.InverseLerp((float)i / (float)self.circles.Length, (float)(i + 1) / (float)self.circles.Length, self.fRain);
+                    float num2 = Mathf.InverseLerp(0.5f, 0.475f, Mathf.Abs(0.5f - Mathf.InverseLerp(0.0333333351f, 1f, value)));
+                    if (self.halfTimeBlink > 0)
+                    {
+                        num2 = Mathf.Max(num2, (self.halfTimeBlink % 15 >= 7) ? 1f : 0f);
+                    }
+                    //self.circles[i].rad = ((2f + num2) * Mathf.Pow(self.fade, 2f) + Mathf.InverseLerp(0.075f, 0f, Mathf.Abs(1f - num - Mathf.Lerp((1f - self.fRain) * self.fade - 0.075f, 1.075f, Mathf.Pow(self.plop, 0.85f)))) * 2f * self.fade) * Mathf.InverseLerp(0f, 0.0333333351f, value);
+                   /* if (num2 == 0f)
+                    {
+                        self.circles[i].thickness = -1f;
+                        self.circles[i].snapGraphic = HUDCircle.SnapToGraphic.Circle4;
+                        self.circles[i].snapRad = 2f;
+                        self.circles[i].snapThickness = -1f;
+                    }
+                    else
+                    {
+                        self.circles[i].thickness = Mathf.Lerp(3.5f, 1f, num2);
+                        self.circles[i].snapGraphic = HUDCircle.SnapToGraphic.smallEmptyCircle;
+                        self.circles[i].snapRad = 3f;
+                        self.circles[i].snapThickness = 1f;
+                    }*/
+
+                    if (NextCycleMeter(self))
+                    {
+                        self.circles[i].pos = self.pos + Custom.DegToVec((1f - (float)i / (float)self.circles.Length) * 360f * Custom.SCurve(Mathf.Pow(self.fade, 1.5f - num), 0.6f)) * (22.5f + 8.5f + num2);
+                    }
+                    /*
+                    else
+                    {
+                        self.circles[i].pos = self.pos + Custom.DegToVec((1f - (float)i / (float)self.circles.Length) * 360f * Custom.SCurve(Mathf.Pow(self.fade, 1.5f - num), 0.6f)) * (self.hud.karmaMeter.Radius + 8.5f + num2);
+                    }
+                    */
+
+                }
+                /*
+                else
+                {
+                    self.circles[i].rad = 0f;
+                }
+                */
+            }
+            
+        }
+
+        private static void RainMeter_ctor(On.HUD.RainMeter.orig_ctor orig, RainMeter self, HUD.HUD hud, FContainer fContainer)
+        {
+            try
+            {
+                orig(self, hud, fContainer);
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Error in Rainmeter ctor " + e.Message);
+            }
+
+            if (hud.owner != null & hud.owner is Player)
+            {
+                if (MonklandSteamManager.isInGame)
+                {
+                    self.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
+                }
+                else
+                {
+
+                    //self.circles = new HUDCircle[(hud.owner as Player).room.world.rainCycle.cycleLength / 1200];
+                }
+
+            }
+            else if (hud.owner != null & (hud.owner is MultiplayerSleepAndDeathScreen) && MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null)
+            {
+                self.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
+            }
+
+            for (int i = 0; i < self.circles.Length; i++)
+            {
+                self.circles[i] = new HUDCircle(hud, HUDCircle.SnapToGraphic.smallEmptyCircle, fContainer, 0);
+            }
+
         }
 
         private static void CtorHK(On.HUD.RainMeter.orig_ctor orig, RainMeter self, HUD.HUD hud, FContainer fContainer)
