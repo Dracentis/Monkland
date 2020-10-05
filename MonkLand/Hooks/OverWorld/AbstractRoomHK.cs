@@ -42,7 +42,7 @@ namespace Monkland.Hooks.OverWorld
 
             if (MonklandSteamManager.isInGame) 
             { 
-                MonklandSteamManager.WorldManager.ActivateRoom(self.name); 
+                MonklandSteamManager.WorldManager.ActivateRoom(self.index); 
             }
         }
 
@@ -52,7 +52,7 @@ namespace Monkland.Hooks.OverWorld
 
             if (MonklandSteamManager.isInGame) 
             {
-                MonklandSteamManager.WorldManager.DeactivateRoom(self.name); 
+                MonklandSteamManager.WorldManager.DeactivateRoom(self.index); 
             }
         }
     }

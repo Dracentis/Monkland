@@ -111,7 +111,7 @@ namespace Monkland.Hooks.Entities
                 return true;
             }
 
-            if (MonklandSteamManager.isInGame && objs.networkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name].Contains(objs.owner))
+            if (MonklandSteamManager.isInGame && objs.networkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.index].Contains(objs.owner))
             { 
                 return false; 
             }
