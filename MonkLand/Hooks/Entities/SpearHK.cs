@@ -172,7 +172,7 @@ namespace Monkland.Hooks.Entities
             { NoChunkUpdate(self, eu); }
             else
             { orig(self, eu); }
-            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             if (sub.networkObject)
             {
                 if (sub.networkLife > 0) { sub.networkLife--; }

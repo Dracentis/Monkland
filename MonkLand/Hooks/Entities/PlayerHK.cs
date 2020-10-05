@@ -25,7 +25,7 @@ namespace Monkland.Hooks.Entities
         public static void Sync(Player self, bool dead)
         {
             self.dead = dead;
-            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             sub.networkLife = Math.Max(100, sub.networkLife);
         }
 
@@ -35,7 +35,7 @@ namespace Monkland.Hooks.Entities
             self.corridorTurnCounter = corridorTurnCounter;
             self.corridorTurnDir = corridorTurnDir;
             self.crawlTurnDelay = crawlTurnDelay;
-            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             sub.networkLife = Math.Max(100, sub.networkLife);
         }
 
@@ -90,7 +90,7 @@ namespace Monkland.Hooks.Entities
 
         private static void UpdateHK(On.Player.orig_Update orig, Player self, bool eu)
         {
-            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             if (sub.networkObject)
             {
                 if (self.lungsExhausted)
@@ -353,7 +353,7 @@ namespace Monkland.Hooks.Entities
             // DEBUG VIOLENCE
             try
             {
-                if (/*MonklandSteamManager.DEBUG && */Input.GetKeyDown("k"))
+                if (MonklandSteamManager.DEBUG && Input.GetKeyDown("k"))
                 {
                     self.Violence(self.mainBodyChunk, new Vector2(1, 0) * 8f, self.mainBodyChunk, null, Creature.DamageType.Bite, 1, 1);
                 }
@@ -366,7 +366,7 @@ namespace Monkland.Hooks.Entities
 
         private static void GrabUpdateHK(On.Player.orig_GrabUpdate orig, Player self, bool eu)
         {
-            APOFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             if (sub.networkObject)
             {
                 if (self.spearOnBack != null) { self.spearOnBack.Update(eu); }

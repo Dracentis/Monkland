@@ -65,53 +65,61 @@ namespace Monkland.UI
         public static string BuildDeathMessage(CSteamID deadPlayerID, Creature.DamageType damageType, CreatureTemplate.Type killerType, ulong killerID)
         {
             string deadPlayerName = SteamFriends.GetFriendPersonaName(deadPlayerID);
-            string killerName = string.Empty;
 
-            if (killerType == CreatureTemplate.Type.Slugcat)
-            {
-                killerName = SteamFriends.GetFriendPersonaName((CSteamID)killerID);
-                if (killerName.Equals(string.Empty))
-                {
-                    killerName = "Player";
-                }
-            }
-            // TO DO -- When creatures are synced  --
-            else
-            {
-                switch(killerType)
-                {
-                    //case CreatureTemplate.Type.
-                }
-            }
+
             string message = string.Empty;
 
             switch (damageType)
             {
                 case Creature.DamageType.Blunt:
-                    message = $"{deadPlayerName} was killed using blunt force by {killerName}";
+                    message = $"{deadPlayerName} was killed using blunt force";
                     break;
                 case Creature.DamageType.Stab:
-                    message = $"{deadPlayerName} was stabbed to death by {killerName}";
+                    message = $"{deadPlayerName} was stabbed to death";
                     break;
                 case Creature.DamageType.Bite:
-                    message = $"{deadPlayerName} was bitten to death by {killerName}";
+                    message = $"{deadPlayerName} was bitten to death";
                     break;
                 case Creature.DamageType.Water:
-                    message = $"{deadPlayerName} drowned.";
+                    message = $"{deadPlayerName} drowned";
                     break;
                 case Creature.DamageType.Explosion:
-                    message = $"{deadPlayerName} was blown up by {killerName}";
+                    message = $"{deadPlayerName} was blown up";
                     break;
                 case Creature.DamageType.Electric:
+                    message = $"{deadPlayerName} was shocked to death";
                     break;
             }
-
             // Generic death message
             if(message.Equals(string.Empty))
             {
-                message = $"{deadPlayerName} was killed by {killerName}";
+                message = $"{deadPlayerName} was killed";
             }
 
+            string killerName = SteamFriends.GetFriendPersonaName((CSteamID)killerID);
+
+            if (killerName.Equals(string.Empty))
+            {
+                killerName = "Player";
+            }
+
+            // TO DO -- When creatures are synced  --
+            /*
+            else
+            {
+                switch (killerType)
+                {
+                    //case CreatureTemplate.Type.
+                }
+            }
+            */
+
+            if (killerName != string.Empty && damageType != Creature.DamageType.Water && damageType != Creature.DamageType.Electric)
+            {
+                message += $"by {killerName}";
+            }
+
+            Debug.Log($"Debug {message}");
             return message;
         }
 

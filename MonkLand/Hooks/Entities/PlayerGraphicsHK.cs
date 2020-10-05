@@ -16,7 +16,7 @@ namespace Monkland.Hooks.Entities
         {
             orig(self, sLeaser, rCam, palette);
             Color body;
-            APOFields field = AbstractPhysicalObjectHK.GetField(self.owner.abstractPhysicalObject);
+            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.owner.abstractPhysicalObject);
             if (!MonklandSteamManager.isInGame)
             { 
                 body = PlayerGraphics.SlugcatColor(self.player.playerState.slugcatCharacter); 

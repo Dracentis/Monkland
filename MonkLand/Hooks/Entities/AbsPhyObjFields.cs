@@ -2,9 +2,9 @@
 
 namespace Monkland.Hooks.Entities
 {
-    public class APOFields
+    public class AbsPhyObjFields
     {
-        public APOFields(AbstractPhysicalObject self)
+        public AbsPhyObjFields(AbstractPhysicalObject self)
         {
             this.self = self;
 
@@ -15,7 +15,6 @@ namespace Monkland.Hooks.Entities
             }
         }
 
-#pragma warning disable IDE1006
         public int dist => self.ID.number == 0 ? playerdist : self.ID.number;
         public bool networkObject => (MonklandSteamManager.isInGame && owner != NetworkGameManager.playerID);
 

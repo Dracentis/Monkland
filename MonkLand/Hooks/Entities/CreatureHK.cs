@@ -36,7 +36,7 @@ namespace Monkland.Hooks.Entities
 
         private static void Creature_Violence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, UnityEngine.Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus)
         {
-            if (self is Player && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject)
+            if (self is Player && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && !self.dead)
             {
                 /* 
                  * #Violence packet#
@@ -88,7 +88,7 @@ namespace Monkland.Hooks.Entities
                 return false; 
             }
 
-            APOFields objs = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
+            AbsPhyObjFields objs = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
             if (CheckNet(graspUsed, chunkGrabbed))
             {
                 graspUsed = Math.Abs(graspUsed); chunkGrabbed = Math.Abs(chunkGrabbed);

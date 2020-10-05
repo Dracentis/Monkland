@@ -7,7 +7,7 @@ namespace Monkland.Hooks.Entities
     {
         public static void ApplyHook()
         {
-            fields = new Dictionary<AbstractPhysicalObject, APOFields>();
+            fields = new Dictionary<AbstractPhysicalObject, AbsPhyObjFields>();
 
             On.AbstractPhysicalObject.ctor += new On.AbstractPhysicalObject.hook_ctor(CtorHK);
             On.AbstractPhysicalObject.AbstractObjectStick.Deactivate += new On.AbstractPhysicalObject.AbstractObjectStick.hook_Deactivate(StickDeactiveHK);
@@ -16,18 +16,18 @@ namespace Monkland.Hooks.Entities
             On.AbstractPhysicalObject.ImpaledOnSpearStick.ctor += new On.AbstractPhysicalObject.ImpaledOnSpearStick.hook_ctor(SpearImpStickCtorHK);
         }
 
-        private static Dictionary<AbstractPhysicalObject, APOFields> fields;
+        private static Dictionary<AbstractPhysicalObject, AbsPhyObjFields> fields;
 
         public static void ClearFields() => fields.Clear();
 
-        public static APOFields GetField(AbstractPhysicalObject self)
+        public static AbsPhyObjFields GetField(AbstractPhysicalObject self)
         {
-            if (self != null && fields.TryGetValue(self, out APOFields field))
+            if (fields.TryGetValue(self, out AbsPhyObjFields field))
             {
                 return field;
             }
 
-            field = new APOFields(self);
+            field = new AbsPhyObjFields(self);
             fields.Add(self, field);
             return field;
         }
@@ -51,8 +51,8 @@ namespace Monkland.Hooks.Entities
         {
             if (MonklandSteamManager.isInGame && self.A != null && self.B != null && self.A.Room != null)
             {
-                APOFields As = GetField(self.A);
-                APOFields Bs = GetField(self.B);
+                AbsPhyObjFields As = GetField(self.A);
+                AbsPhyObjFields Bs = GetField(self.B);
                 if (As.networkObject || Bs.networkObject)
                 { 
                     MonklandSteamManager.EntityManager.SendDeactivate(self.A, self.B, self.A.Room); 
@@ -66,8 +66,8 @@ namespace Monkland.Hooks.Entities
         {
             if (MonklandSteamManager.isInGame && spear != null && stuckIn != null && spear.Room != null && self.A != null && self.B != null)
             {
-                APOFields As = GetField(self.A);
-                APOFields Bs = GetField(self.B);
+                AbsPhyObjFields As = GetField(self.A);
+                AbsPhyObjFields Bs = GetField(self.B);
                 if (As.networkObject || Bs.networkObject)
                 { 
                     MonklandSteamManager.EntityManager.SendSpearStick(self.A, self.B, self.A.Room, chunk, bodyPart, angle);
@@ -79,10 +79,10 @@ namespace Monkland.Hooks.Entities
         private static void SpearAppStickCtorHK(On.AbstractPhysicalObject.AbstractSpearAppendageStick.orig_ctor orig, AbstractPhysicalObject.AbstractSpearAppendageStick self,
             AbstractPhysicalObject spear, AbstractPhysicalObject stuckIn, int appendage, int prevSeg, float distanceToNext, float angle)
         {
-            if (MonklandSteamManager.isInGame && spear != null && stuckIn != null && spear.Room != null)
+            if (MonklandSteamManager.isInGame && spear != null && stuckIn != null && spear.Room != null && self.A != null && self.B != null)
             {
-                APOFields As = GetField(self.A);
-                APOFields Bs = GetField(self.B);
+                AbsPhyObjFields As = GetField(self.A);
+                AbsPhyObjFields Bs = GetField(self.B);
                 if (As.networkObject || Bs.networkObject)
                 { 
                     MonklandSteamManager.EntityManager.SendSpearAppendageStick(self.A, self.B, self.A.Room, appendage, prevSeg, distanceToNext, angle); 
@@ -94,10 +94,11 @@ namespace Monkland.Hooks.Entities
         private static void SpearImpStickCtorHK(On.AbstractPhysicalObject.ImpaledOnSpearStick.orig_ctor orig, AbstractPhysicalObject.ImpaledOnSpearStick self,
             AbstractPhysicalObject spear, AbstractPhysicalObject stuckIn, int chunk, int onSpearPosition)
         {
-            if (MonklandSteamManager.isInGame && spear != null && stuckIn != null && spear.Room != null)
+            if (MonklandSteamManager.isInGame && spear != null && stuckIn != null && spear.Room != null && self.A != null && self.B != null)
             {
-                APOFields As = GetField(self.A);
-                APOFields Bs = GetField(self.B);
+                AbsPhyObjFields As = GetField(self.A);
+                AbsPhyObjFields Bs = GetField(self.B);
+
                 if (As.networkObject || Bs.networkObject)
                 { 
                     MonklandSteamManager.EntityManager.SendSpearImpaledStick(self.A, self.B, self.A.Room, chunk, onSpearPosition); 

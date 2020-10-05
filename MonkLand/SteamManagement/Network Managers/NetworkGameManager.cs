@@ -304,7 +304,7 @@ namespace Monkland.SteamManagement
             * source ID
             */
 
-            if (self == null || AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner != NetworkGameManager.playerID)
+            if (self == null || AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject)
             {
                 return;
             }
@@ -317,9 +317,10 @@ namespace Monkland.SteamManagement
             byte sourceTemplate = byte.MaxValue - 1;
             try
             {
-                sourceTemplate = (byte)(source.owner.abstractPhysicalObject as AbstractCreature).creatureTemplate.type;
+                sourceTemplate = (byte)(source.owner as Creature).abstractCreature.creatureTemplate.type;
+                AbstractPhysicalObjectHK.GetField(stick.A).dist == AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).dist
             }
-            catch (Exception e) {/*Debug.Log()*/}
+            catch (Exception e) { Debug.Log("Error getting source type " + e.Message); }
 
             // SourceID
             ulong sourceID = 0;
