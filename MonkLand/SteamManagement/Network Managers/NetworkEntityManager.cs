@@ -177,6 +177,7 @@ namespace Monkland.SteamManagement
                 {
                     writer.Write((byte)PacketType.Rock);
                     writer.Write(physicalObject.room.abstractRoom.name);
+                    // Dist
                     WorldCoordinateHandler.Write(physicalObject.abstractPhysicalObject.pos, ref writer);
                     EntityIDHandler.Write(physicalObject.abstractPhysicalObject.ID, ref writer);
                     WeaponHandler.Write(physicalObject as Rock, ref writer);
@@ -190,6 +191,7 @@ namespace Monkland.SteamManagement
                 {
                     writer.Write((byte)PacketType.Spear);
                     writer.Write(physicalObject.room.abstractRoom.name);
+                    // Dist
                     WorldCoordinateHandler.Write(physicalObject.abstractPhysicalObject.pos, ref writer);
                     EntityIDHandler.Write(physicalObject.abstractPhysicalObject.ID, ref writer);
                     SpearHandler.Write(physicalObject as Spear, ref writer);
@@ -223,7 +225,6 @@ namespace Monkland.SteamManagement
                 Debug.LogError(e);
             }
         }
-
 
         #region Grasps and Sticks
 
@@ -568,25 +569,32 @@ namespace Monkland.SteamManagement
         public void ReadPlayer(BinaryReader br, CSteamID sentPlayer)
         {
             if (!MonklandSteamManager.WorldManager.gameRunning)
-                return;
-            string roomName = br.ReadString();//Read Room Name
+            { return; }
+            //Read Room Name
+            string roomName = br.ReadString();
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(roomName))
-                return;
+            { return; }
+              
             AbstractRoom abstractRoom = RainWorldGameHK.mainGame.world.GetAbstractRoom(roomName);
             if (abstractRoom == null || abstractRoom.realizedRoom == null)
-                return;
-            int dist = br.ReadInt32();// Read Disinguisher
-            WorldCoordinate startPos = WorldCoordinateHandler.Read(ref br);// Read World Coordinate
+            { return; }
+
+            // Read Distinguisher
+            int dist = br.ReadInt32();
+
+            // Read World Coordinate
+            WorldCoordinate startPos = WorldCoordinateHandler.Read(ref br);
             foreach (AbstractCreature cr in abstractRoom.creatures)
             {
-                AbsPhyObjFields crs = AbstractPhysicalObjectHK.GetField(cr);
-                if (crs.dist == dist && cr.realizedCreature != null)
+                AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(cr);
+                if (field.dist == dist && cr.realizedCreature != null)
                 {
-                    if (crs.owner == sentPlayer.m_SteamID)
+                    if (field.owner == sentPlayer.m_SteamID)
                     {
-                        cr.realizedCreature = PlayerHandler.Read((cr.realizedCreature as Player), ref br);// Read Player
+                        // Read Player
+                        cr.realizedCreature = PlayerHandler.Read((cr.realizedCreature as Player), ref br);
                         if (MonklandSteamManager.DEBUG)
-                            MonklandUI.UpdateMessage($"{SteamFriends.GetFriendPersonaName(sentPlayer)}\nOwner: {sentPlayer.m_SteamID}\nID: {dist}", 1, cr.realizedCreature.bodyChunks[0].pos, dist, abstractRoom.index, (cr.realizedCreature as Player).ShortCutColor());
+                        { MonklandUI.UpdateMessage($"{SteamFriends.GetFriendPersonaName(sentPlayer)}\nOwner: {sentPlayer.m_SteamID}\nID: {dist}", 1, cr.realizedCreature.bodyChunks[0].pos, dist, abstractRoom.index, (cr.realizedCreature as Player).ShortCutColor()); }
                         cr.pos.room = abstractRoom.index;
                     }
                     return;
@@ -601,7 +609,8 @@ namespace Monkland.SteamManagement
             abstractCreature.pos.room = abstractRoom.index;
             RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
             abstractCreature.RealizeInRoom();
-            abstractCreature.realizedCreature = PlayerHandler.Read((abstractCreature.realizedCreature as Player), ref br);// Read Player
+            // Read Player
+            abstractCreature.realizedCreature = PlayerHandler.Read((abstractCreature.realizedCreature as Player), ref br);
             abstractCreature.pos.room = abstractRoom.index;
         }
 

@@ -25,8 +25,8 @@ namespace Monkland.Hooks.Entities
         public static void Sync(Player self, bool dead)
         {
             self.dead = dead;
-            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            sub.networkLife = Math.Max(100, sub.networkLife);
+            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            field.networkLife = Math.Max(100, field.networkLife);
         }
 
         public static void Sync(Player self, bool corridorDrop, int corridorTurnCounter, IntVector2? corridorTurnDir, int crawlTurnDelay)
@@ -35,8 +35,8 @@ namespace Monkland.Hooks.Entities
             self.corridorTurnCounter = corridorTurnCounter;
             self.corridorTurnDir = corridorTurnDir;
             self.crawlTurnDelay = crawlTurnDelay;
-            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            sub.networkLife = Math.Max(100, sub.networkLife);
+            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            field.networkLife = Math.Max(100, field.networkLife);
         }
 
         public static void Write(Player self, ref BinaryWriter writer)
@@ -52,9 +52,13 @@ namespace Monkland.Hooks.Entities
         public static bool MapDiscoveryActiveHK(MapDiscoveryActive orig, Player self)
         {
             if (MonklandSteamManager.isInGame)
-            { return orig(self) && AbstractPhysicalObjectHK.GetField(self.abstractCreature).owner == NetworkGameManager.playerID; }
+            { 
+                return orig(self) && AbstractPhysicalObjectHK.GetField(self.abstractCreature).owner == NetworkGameManager.playerID; 
+            }
             else
-            { return orig(self); }
+            { 
+                return orig(self); 
+            }
         }
 
         private static void CtorHK(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
@@ -66,10 +70,9 @@ namespace Monkland.Hooks.Entities
         private static Color ShortCutColorHK(On.Player.orig_ShortCutColor orig, Player self)
         {
             if (MonklandSteamManager.isInGame)
-            { 
-                return MonklandSteamManager.GameManager.playerColors[
-                    MonklandSteamManager.connectedPlayers.IndexOf(AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner)
-                    ]; 
+            {
+                return MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(
+                    AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner)];
             }
             return orig(self);
         }
@@ -80,18 +83,13 @@ namespace Monkland.Hooks.Entities
             {
                 return; 
             }
-
-            //Send packet each player that dies (not network object)
-            //MonklandSteamManager.GameManager.PlayerKilled(AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner);
-            //MonklandSteamManager.GameManager.SendViolence(self, )
-
             orig(self);
         }
 
         private static void UpdateHK(On.Player.orig_Update orig, Player self, bool eu)
         {
-            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            if (sub.networkObject)
+            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            if (field.networkObject)
             {
                 if (self.lungsExhausted)
                 { 
@@ -339,7 +337,7 @@ namespace Monkland.Hooks.Entities
                 }
                 self.wiggle = Mathf.Clamp(self.wiggle, 0f, 1f);
 
-                if (sub.networkLife > 0) { sub.networkLife--; }
+                if (field.networkLife > 0) { field.networkLife--; }
                 else
                 {
                     self.RemoveFromRoom();
@@ -366,8 +364,8 @@ namespace Monkland.Hooks.Entities
 
         private static void GrabUpdateHK(On.Player.orig_GrabUpdate orig, Player self, bool eu)
         {
-            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            if (sub.networkObject)
+            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            if (field.networkObject)
             {
                 if (self.spearOnBack != null) { self.spearOnBack.Update(eu); }
                 bool flag = self.input[0].x == 0 && self.input[0].y == 0 && !self.input[0].jmp && !self.input[0].thrw && self.mainBodyChunk.submersion < 0.5f;

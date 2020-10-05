@@ -20,7 +20,7 @@ namespace Monkland.Hooks.Entities
             orig(self);
             if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.name) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
             {
-                ARMonkFields sub = AbstractRoomHK.GetSub(self.abstractRoom);
+                ARMonkFields field = AbstractRoomHK.GetSub(self.abstractRoom);
                 MonklandSteamManager.EntityManager.Send(self.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name]);
                 for (int i = 0; i < self.physicalObjects.Length; i++)
                 {
@@ -30,14 +30,14 @@ namespace Monkland.Hooks.Entities
                         {
                             if (self.physicalObjects[i][j] is Rock)
                             {
-                                if (sub.syncDelay == 0)
+                                if (field.syncDelay == 0)
                                 { 
                                     MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name], true); 
                                 }
                             }
                             else if (self.physicalObjects[i][j] is Spear)
                             {
-                                if (sub.syncDelay == 0)
+                                if (field.syncDelay == 0)
                                 { 
                                     MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name], true); 
                                 }
@@ -45,13 +45,13 @@ namespace Monkland.Hooks.Entities
                         }
                     }
                 }
-                if (sub.syncDelay <= 0) 
+                if (field.syncDelay <= 0) 
                 { 
-                    sub.syncDelay = 20; 
+                    field.syncDelay = 20; 
                 }
                 else 
                 { 
-                    sub.syncDelay--; 
+                    field.syncDelay--; 
                 }
             }
         }

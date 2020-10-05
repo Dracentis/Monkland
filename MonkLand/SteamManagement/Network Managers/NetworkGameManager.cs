@@ -317,8 +317,7 @@ namespace Monkland.SteamManagement
             byte sourceTemplate = byte.MaxValue - 1;
             try
             {
-                sourceTemplate = (byte)(source.owner as Creature).abstractCreature.creatureTemplate.type;
-                AbstractPhysicalObjectHK.GetField(stick.A).dist == AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).dist
+                sourceTemplate = (byte)((source.owner as Creature).abstractCreature.creatureTemplate.type);
             }
             catch (Exception e) { Debug.Log("Error getting source type " + e.Message); }
 
