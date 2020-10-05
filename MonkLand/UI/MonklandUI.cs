@@ -116,7 +116,7 @@ namespace Monkland.UI
 
             if (killerName != string.Empty && damageType != Creature.DamageType.Water && damageType != Creature.DamageType.Electric)
             {
-                message += $"by {killerName}";
+                message += $" by {killerName}";
             }
 
             Debug.Log($"Debug {message}");

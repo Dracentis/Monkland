@@ -18,10 +18,10 @@ namespace Monkland.Hooks.Entities
         private static void UpdateHK(On.Room.orig_Update orig, Room self)
         {
             orig(self);
-            if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.name) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
+            if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.index) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
             {
                 ARMonkFields field = AbstractRoomHK.GetSub(self.abstractRoom);
-                MonklandSteamManager.EntityManager.Send(self.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name]);
+                MonklandSteamManager.EntityManager.Send(self.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index]);
                 for (int i = 0; i < self.physicalObjects.Length; i++)
                 {
                     for (int j = 0; j < self.physicalObjects[i].Count; j++)
@@ -32,14 +32,14 @@ namespace Monkland.Hooks.Entities
                             {
                                 if (field.syncDelay == 0)
                                 { 
-                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name], true); 
+                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true); 
                                 }
                             }
                             else if (self.physicalObjects[i][j] is Spear)
                             {
                                 if (field.syncDelay == 0)
                                 { 
-                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name], true); 
+                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true); 
                                 }
                             }
                         }
