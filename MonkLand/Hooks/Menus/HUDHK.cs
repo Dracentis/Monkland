@@ -38,7 +38,7 @@ namespace Monkland.Hooks.Menus
             self.foodMeter.lastPos = self.foodMeter.pos;
 
             RainMeterMultiplayer rainMeter = new RainMeterMultiplayer(self, self.fContainers[1]);
-            rainMeter.pos = new Vector2(100, 100);//(self.rainWorld.options.ScreenSize.x - 335f, self.rainWorld.options.ScreenSize.y - 70f);
+            rainMeter.pos = new Vector2(self.rainWorld.options.ScreenSize.x - 335f, self.rainWorld.options.ScreenSize.y - 70f);
             self.AddPart(rainMeter);
         }
     }

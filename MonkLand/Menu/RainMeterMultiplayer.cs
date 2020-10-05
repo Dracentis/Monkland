@@ -27,18 +27,7 @@ namespace Monkland
 		public RainMeterMultiplayer(HUD.HUD hud, FContainer fContainer) : base(hud)
 		{
             this.lastPos = this.pos;
-			if (hud.owner != null & hud.owner is Player)
-			{
-				if (MonklandSteamManager.isInGame)
-				{
-					this.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
-				}
-                else
-                {
-                    this.circles = new HUDCircle[(hud.owner as Player).room.world.rainCycle.cycleLength / 1200];
-                }
-			}
-			else if (hud.owner != null & (hud.owner is MultiplayerSleepAndDeathScreen) && MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null)
+            if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null)
 			{
 				this.circles = new HUDCircle[MonklandSteamManager.WorldManager.cycleLength / 1200];
 			}
@@ -76,11 +65,13 @@ namespace Monkland
                 this.plop = 0f;
             }
 
-            if ((this.hud.owner as Player).room == null && MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null)
+            
+            if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager != null)
             {
                 this.fRain = (float)(MonklandSteamManager.WorldManager.cycleLength - MonklandSteamManager.WorldManager.timer) / (float)MonklandSteamManager.WorldManager.cycleLength;
                 this.fade = 1f;
             }
+            
 
             for (int i = 0; i < this.circles.Length; i++)
             {
