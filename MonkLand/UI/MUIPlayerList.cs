@@ -19,10 +19,12 @@ namespace Monkland.UI
         {
             Debug.Log("Added MUIPlayer list");
 
-            float longestSteamName = 0;
-            int yPos = 20;
+            float longestSteamNameX = 0;
+            float yPos = -MUIBox.lineHeight;
+
             foreach (ulong s in MonklandSteamManager.connectedPlayers)
             {
+                yPos -= MUIBox.lineHeight;
                 string steamName = SteamFriends.GetFriendPersonaName((CSteamID)s);
 
                 Color bodyColor = Color.white;
@@ -34,16 +36,15 @@ namespace Monkland.UI
                 {
                     Debug.Log($"Error while trying to get color: {e.Message}");
                 }
-                MUILabel newLabel = new MUILabel(owner, steamName, bodyColor, pos + new Vector2(0, -yPos));
+                MUILabel newLabel = new MUILabel(owner, steamName, bodyColor, pos + new Vector2(0, yPos));
                 playerLabels.Add(s, newLabel);
-                if (newLabel.label.textRect.xMax >= longestSteamName)
+                if (newLabel.label.textRect.xMax >= longestSteamNameX)
                 {
-                    longestSteamName = newLabel.label.textRect.xMax;
+                    longestSteamNameX = newLabel.label.textRect.xMax;
                 }
-                yPos += 10;
             }
 
-            box = new MUIBox(owner, pos, (int)longestSteamName, playerLabels.Count);
+            box = new MUIBox(owner, pos, (int)longestSteamNameX, playerLabels.Count);
 
             foreach (KeyValuePair<ulong, MUILabel> kvp in playerLabels)
             {

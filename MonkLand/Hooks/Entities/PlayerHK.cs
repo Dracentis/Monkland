@@ -1,4 +1,5 @@
 ﻿using Monkland.SteamManagement;
+using Monkland.UI;
 using MonoMod.RuntimeDetour;
 using RWCustom;
 using System;
@@ -347,6 +348,12 @@ namespace Monkland.Hooks.Entities
                 }
             }
             else { orig(self, eu); }
+
+
+            if (self.input[0].mp && self.input[1].mp && NetworkGameManager.isManager)
+            {
+                (self.room.game.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).ExitButton();
+            }
 
             // DEBUG VIOLENCE
             try

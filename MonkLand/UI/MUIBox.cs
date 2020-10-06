@@ -8,22 +8,23 @@ namespace Monkland.UI
 {
     public class MUIBox : MUIHUD
     {
-        private static float meanCharWidth;
-        private static float lineHeight;
-        private static float heightMargin;
-        private static float widthMargin;
-        private FSprite[] sprites;
+        public static float meanCharWidth;
+        public static float lineHeight;
+        public static float heightMargin;
+        public static float widthMargin;
+        public FSprite[] sprites;
+
         MultiplayerHUD owner;
 
-        private int longestLine;
+        private int longestLineX;
         private int numberLines;
 
-        public MUIBox(MultiplayerHUD owner, Vector2 pos, int longestLine, int numberLines)
+        public MUIBox(MultiplayerHUD owner, Vector2 pos, int longestLineX, int numberLines)
         {
             //this.messages = new List<DialogBox.Message>();
             this.pos = pos;
             this.owner = owner;
-            this.longestLine = longestLine;
+            this.longestLineX = longestLineX;
             this.numberLines = numberLines;
             this.InitiateSprites();
         }
@@ -144,7 +145,7 @@ namespace Monkland.UI
             Vector2 vecPos = pos;
             Vector2 drawSize = new Vector2(0f, 0);//DialogBox.heightMargin + DialogBox.lineHeight * (float)this.CurrentMessage.lines);
 
-            drawSize.x = MUIBox.widthMargin + (float)this.longestLine * MUIBox.meanCharWidth;
+            drawSize.x = MUIBox.widthMargin + (float)this.longestLineX + MUIBox.widthMargin;  //* MUIBox.meanCharWidth;
             drawSize.y = MUIBox.heightMargin + MUIBox.lineHeight * (float)this.numberLines;
 
             //drawSize.x = Mathf.Lerp(40f, drawSize.x, Mathf.Pow(Mathf.Lerp(this.lastSizeFac, this.sizeFac, timeStacker), 0.5f));

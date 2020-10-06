@@ -73,6 +73,7 @@ namespace Monkland.Hooks
             {
                 (self.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).ShowMultiPauseMenu();
             }
+
             lastMultiPauseButton = flag;
         }
 

@@ -30,6 +30,8 @@ namespace Monkland.UI
 
         public List<MUIHUD> muiElements;
         public FContainer frontContainer;
+        private bool exitButton;
+        private bool exitting;
 
         public MultiplayerHUD(HUD.HUD hud) : base(hud)
         {
@@ -39,6 +41,7 @@ namespace Monkland.UI
             playerLabels = new Dictionary<ulong, MUIPlayerTag>();
             elementsToBeRemoved = new List<ulong>();
             overLayActive = false;
+            exitting = false;
             frontContainer = new FContainer();
 
             this.backgroundBlack = new FSprite("Futile_White", true);
@@ -53,6 +56,8 @@ namespace Monkland.UI
             this.backgroundBlack.alpha = 0.3f;
             this.backgroundBlack.isVisible = false;
             muiElements = new List<MUIHUD>();
+
+            exitButton = false;
 
             muiElements.Add(new MUIPlayerList(this, new Vector2(this.hud.rainWorld.options.ScreenSize.x / 2f, this.hud.rainWorld.options.ScreenSize.y / 2f)));
             Futile.stage.AddChild(frontContainer);
@@ -86,6 +91,11 @@ namespace Monkland.UI
         {
             overLayActive = !overLayActive;
             Debug.Log("Requested multi pause menu");
+        }
+
+        public void ExitButton()
+        {
+            exitButton = !exitButton;
         }
 
         public override void ClearSprites()
@@ -122,11 +132,53 @@ namespace Monkland.UI
             }
         }
 
+        public void ExitGame(ProcessManager manager)
+        {
+            if (!exitting)
+            {
+                try
+                {
+                    if (manager.musicPlayer != null)
+                    {
+                        manager.musicPlayer.FadeOutAllSongs(5f);
+                        manager.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
+                    }
+                    exitting = true;
+                    manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                    MonklandSteamManager.instance.OnGameExit();
+
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.Message);
+                }
+            }
+        }
+
         public override void Update()
         {
-            this.counter++;
+            // Make items visible
             this.backgroundBlack.isVisible = overLayActive;
+            foreach (MUIHUD item in muiElements)
+            {
+                item.isVisible = overLayActive;
+                item.Update();
+            }
+            Screen.showCursor = overLayActive;
 
+            if (this.overLayActive && exitButton)
+            {
+                try
+                {
+                    if (hud.owner != null && hud.owner is Player)
+                    {
+                        ExitGame((hud.owner as Player).room.game.manager);
+                    }
+                }
+                catch (Exception e) { Debug.Log(e.Message); }
+            }
+
+            this.counter++;
             this.lastMousePos = this.mousePos;
             this.mousePos = Input.mousePosition;
             this.mouseDown = Input.GetMouseButton(0);
@@ -135,11 +187,6 @@ namespace Monkland.UI
 
             base.Update();
 
-            foreach (MUIHUD item in muiElements)
-            {
-                item.isVisible = overLayActive;
-                item.Update();
-            }
 
             elementsToBeRemoved.Clear();
             foreach (KeyValuePair<ulong, MUIPlayerTag> label in playerLabels)
