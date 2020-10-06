@@ -6,7 +6,7 @@ namespace Monkland.SteamManagement
     {
         public static Weapon Read(Weapon weapon, ref BinaryReader reader)
         {
-            weapon = PhysicalObjectHandler.Read(weapon, ref reader);
+            weapon = PhysicalObjectHandler.Read(weapon, ref reader) as Weapon;
             weapon.changeDirCounter = reader.ReadInt32();
             weapon.closestCritDist = reader.ReadSingle();
             weapon.exitThrownModeSpeed = reader.ReadSingle();
@@ -33,6 +33,7 @@ namespace Monkland.SteamManagement
             return weapon;
         }
 
+        /*
         public static Rock Read(Rock weapon, ref BinaryReader reader)
         {
             weapon = PhysicalObjectHandler.Read(weapon, ref reader);
@@ -61,6 +62,7 @@ namespace Monkland.SteamManagement
             weapon.thrownPos = Vector2Handler.Read(ref reader);
             return weapon;
         }
+        
 
         public static Spear Read(Spear weapon, ref BinaryReader reader)
         {
@@ -90,6 +92,7 @@ namespace Monkland.SteamManagement
             weapon.thrownPos = Vector2Handler.Read(ref reader);
             return weapon;
         }
+        */
 
         public static void Write(Weapon weapon, ref BinaryWriter writer)
         {

@@ -20,7 +20,6 @@ namespace Monkland.Hooks.Entities
 
         public static void Sync(Creature self, bool dead) => self.dead = dead;
 
-        public static void SyncPhysicalObject(PhysicalObject self, BodyChunk[] bodyChunks) => self.bodyChunks = bodyChunks;
 
         private static bool CheckNet(params int[] flags)
         {

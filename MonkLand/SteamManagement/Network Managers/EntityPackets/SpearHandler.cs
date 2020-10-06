@@ -7,7 +7,7 @@ namespace Monkland.SteamManagement
         public static Spear Read(Spear spear, ref BinaryReader reader)
         {
             spear.stuckInWall = Vector2NHandler.Read(ref reader);
-            spear = WeaponHandler.Read(spear, ref reader);
+            spear = WeaponHandler.Read(spear, ref reader) as Spear;
             spear.alwaysStickInWalls = reader.ReadBoolean();
             spear.pinToWallCounter = reader.ReadInt32();
             spear.spearDamageBonus = reader.ReadSingle();

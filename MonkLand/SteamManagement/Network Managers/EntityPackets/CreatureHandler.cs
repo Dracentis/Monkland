@@ -8,7 +8,7 @@ namespace Monkland.SteamManagement
         public static Creature Read(Creature creature, ref BinaryReader reader)
         {
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
-            creature = PhysicalObjectHandler.Read(creature, ref reader);
+            creature = PhysicalObjectHandler.Read(creature, ref reader) as Creature;
             //creature.blind = reader.ReadInt32();
             CreatureHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
@@ -23,7 +23,7 @@ namespace Monkland.SteamManagement
         public static Player Read(Player creature, ref BinaryReader reader)
         {
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
-            creature = PhysicalObjectHandler.Read(creature, ref reader);
+            creature = PhysicalObjectHandler.Read(creature, ref reader) as Player;
             //creature.blind = reader.ReadInt32();
             PlayerHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
