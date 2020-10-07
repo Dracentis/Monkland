@@ -29,27 +29,21 @@ namespace Monkland.Hooks
             if (MonklandSteamManager.isInGame)
             {
                 if (self.rainWorld.buildType == RainWorld.BuildType.Development)
-                { 
-                    self.devToolsActive = MonklandSteamManager.DEBUG; 
+                {
+                    self.devToolsActive = MonklandSteamManager.DEBUG;
                 }
                 MonklandSteamManager.monklandUI = new UI.MonklandUI(Futile.stage);
             }
-            if (mainGame == null) 
-            { 
-                mainGame = self; 
-            }
+            if (mainGame == null) { mainGame = self; }
         }
 
         private static void UpdateHK(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
-            if (mainGame == null) 
-            { 
-                mainGame = self; 
-            }
+            if (mainGame == null) { mainGame = self; }
 
             if (!self.lastPauseButton)
-            { 
-                self.lastPauseButton = MonklandSteamManager.isInGame; 
+            {
+                self.lastPauseButton = MonklandSteamManager.isInGame;
             }
 
             orig(self);
@@ -65,7 +59,7 @@ namespace Monkland.Hooks
             }
             catch (Exception e)
             {
-                Debug.LogError(e); 
+                Debug.LogError(e);
             }
 
             bool flag = Input.GetKey(self.rainWorld.options.controls[0].KeyboardPause) || Input.GetKey(self.rainWorld.options.controls[0].GamePadPause) || Input.GetKey(KeyCode.Escape);
@@ -93,8 +87,8 @@ namespace Monkland.Hooks
         {
             int newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             while (newID >= -1 && newID <= 15000)
-            { 
-                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue); 
+            {
+                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             }
             return new EntityID(-1, newID);
         }
@@ -103,8 +97,8 @@ namespace Monkland.Hooks
         {
             int newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             while (newID >= -1 && newID <= 15000)
-            { 
-                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue); 
+            {
+                newID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             }
             return new EntityID(spawner, newID);
         }

@@ -7,24 +7,24 @@ namespace Monkland.Hooks.OverWorld
     {
         public static void ApplyHook()
         {
-            fields = new Dictionary<AbstractRoom, ARMonkFields>();
+            fields = new Dictionary<AbstractRoom, AbsRoomFields>();
 
             On.AbstractRoom.ctor += new On.AbstractRoom.hook_ctor(CtorHK);
             On.AbstractRoom.RealizeRoom += new On.AbstractRoom.hook_RealizeRoom(RealizeRoomHK);
             On.AbstractRoom.Abstractize += new On.AbstractRoom.hook_Abstractize(AbstractizeHK);
         }
 
-        private static Dictionary<AbstractRoom, ARMonkFields> fields;
+        private static Dictionary<AbstractRoom, AbsRoomFields> fields;
 
         public static void ClearField() => fields.Clear();
 
-        public static ARMonkFields GetSub(AbstractRoom self)
+        public static AbsRoomFields GetSub(AbstractRoom self)
         {
-            if (fields.TryGetValue(self, out ARMonkFields field)) 
-            { 
-                return field; 
+            if (fields.TryGetValue(self, out AbsRoomFields field))
+            {
+                return field;
             }
-            field = new ARMonkFields(self);
+            field = new AbsRoomFields(self);
             fields.Add(self, field);
             return field;
         }
@@ -40,9 +40,9 @@ namespace Monkland.Hooks.OverWorld
         {
             orig(self, world, game);
 
-            if (MonklandSteamManager.isInGame) 
-            { 
-                MonklandSteamManager.WorldManager.ActivateRoom(self.index); 
+            if (MonklandSteamManager.isInGame)
+            {
+                MonklandSteamManager.WorldManager.ActivateRoom(self.index);
             }
         }
 
@@ -50,9 +50,9 @@ namespace Monkland.Hooks.OverWorld
         {
             orig(self);
 
-            if (MonklandSteamManager.isInGame) 
+            if (MonklandSteamManager.isInGame)
             {
-                MonklandSteamManager.WorldManager.DeactivateRoom(self.index); 
+                MonklandSteamManager.WorldManager.DeactivateRoom(self.index);
             }
         }
     }

@@ -2,7 +2,6 @@
 using Monkland.Hooks.Entities;
 using Monkland.Hooks.Menus;
 using Monkland.Hooks.OverWorld;
-using Monkland.UI;
 using Partiality.Modloader;
 using UnityEngine;
 
@@ -12,9 +11,11 @@ namespace Monkland
     {
         public Monkland()
         {
-            this.Version = MonklandUI.VERSION;
+            this.Version = VERSION;
             this.ModID = "Monkland";
         }
+
+        public const string VERSION = "0.3.1";
 
         // public static Monkland instance;
 
@@ -22,15 +23,13 @@ namespace Monkland
         {
             base.OnEnable();
             ApplyAllHooks();
-
         }
 
-        public static void ApplyAllHooks()
+        private static void ApplyAllHooks()
         {
             Debug.Log("Applying monkland");
-            /*
-             * Entities
-             */
+
+            #region Entities
             AbstractPhysicalObjectHK.ApplyHook();
             CreatureHK.ApplyHook();
             PlayerGraphicsHK.ApplyHook();
@@ -39,27 +38,25 @@ namespace Monkland
             RoomHK.ApplyHook();
             SpearHK.ApplyHook();
             WeaponHK.ApplyHook();
+            #endregion Entities
 
-            /*
-             * Menus
-             */
+            #region Menus
             MainMenuHK.ApplyHook();
             HUDHK.ApplyHook();
-            RainMeterHK.ApplyHook();
+            //RainMeterHK.ApplyHook();
+            #endregion Menus
 
-            /*
-             * OverWorld
-             */
+            #region OverWorld
             AbstractRoomHK.ApplyHook();
             OverWorldHK.ApplyHook();
             ShortcutHandlerHK.ApplyHook();
+            #endregion OverWorld
 
-            /*
-             * Other
-             */
+            #region Others
             ProcessManagerHK.ApplyHook();
             RainWorldGameHK.ApplyHook();
             RainWorldHK.ApplyHook();
+            #endregion Others
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Monkland.SteamManagement
             return input;
         }
 
-        public static Player Read(Player player, ref BinaryReader reader)
+        public static void Read(Player player, ref BinaryReader reader)
         {
             for (int i = player.input.Length - 1; i > 0; i--)
             {
@@ -35,7 +35,6 @@ namespace Monkland.SteamManagement
             player.input[0].crouchToggle = reader.ReadBoolean();
             player.input[0].analogueDir = Vector2Handler.Read(ref reader);
             player.input[0].downDiagonal = reader.ReadInt32();
-            return player;
         }
 
         public static void Write(Player.InputPackage input, ref BinaryWriter writer)

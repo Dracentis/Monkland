@@ -5,10 +5,10 @@ namespace Monkland.SteamManagement
 {
     internal class CreatureHandler
     {
-        public static Creature Read(Creature creature, ref BinaryReader reader)
+        public static void Read(Creature creature, ref BinaryReader reader)
         {
-            creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
-            creature = PhysicalObjectHandler.Read(creature, ref reader) as Creature;
+            AbstractCreatureHandler.Read(creature, ref reader);
+            PhysicalObjectHandler.Read(creature, ref reader);
             //creature.blind = reader.ReadInt32();
             CreatureHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
@@ -17,9 +17,10 @@ namespace Monkland.SteamManagement
             creature.newToRoomInvinsibility = reader.ReadInt32();
             creature.NPCTransportationDestination = WorldCoordinateHandler.Read(ref reader);
             creature.shortcutDelay = reader.ReadInt32();
-            return creature;
+            // return creature;
         }
 
+        /*
         public static Player Read(Player creature, ref BinaryReader reader)
         {
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
@@ -58,8 +59,8 @@ namespace Monkland.SteamManagement
                     }
                 }
             }*/
-            return creature;
-        }
+        //return creature;
+        //}
 
         public static void Write(Creature creature, ref BinaryWriter writer)
         {

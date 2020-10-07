@@ -5,7 +5,7 @@ namespace Monkland.SteamManagement
 {
     internal static class AbstractCreatureHandler
     {
-        public static AbstractCreature Read(AbstractCreature creature, ref BinaryReader reader)
+        public static void Read(AbstractCreature creature, ref BinaryReader reader)
         {
             creature.ID = EntityIDHandler.Read(ref reader);
             creature.pos = WorldCoordinateHandler.Read(ref reader);
@@ -19,7 +19,25 @@ namespace Monkland.SteamManagement
             creature.remainInDenCounter = reader.ReadInt32();
             creature.spawnDen = WorldCoordinateHandler.Read(ref reader);
             //creature state should also be synced here!!
-            return creature;
+            //return creature;
+        }
+
+        public static void Read(Creature creature, ref BinaryReader reader)
+        {
+            if (creature.abstractCreature == null) { return; }
+            creature.abstractCreature.ID = EntityIDHandler.Read(ref reader);
+            creature.abstractCreature.pos = WorldCoordinateHandler.Read(ref reader);
+            creature.abstractCreature.InDen = reader.ReadBoolean();
+            creature.abstractCreature.timeSpentHere = reader.ReadInt32();
+            //creature.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+            creature.abstractCreature.ID.number = reader.ReadInt32();
+            creature.abstractCreature.destroyOnAbstraction = true;
+            //creature.abstractAI = AbstractCreatureAIHandler.Read(creature.abstractAI, ref reader);
+            //Additional personality and relationship traits should be synced here!
+            creature.abstractCreature.remainInDenCounter = reader.ReadInt32();
+            creature.abstractCreature.spawnDen = WorldCoordinateHandler.Read(ref reader);
+            //creature state should also be synced here!!
+            //return creature;
         }
 
         public static void Write(AbstractCreature creature, ref BinaryWriter writer)

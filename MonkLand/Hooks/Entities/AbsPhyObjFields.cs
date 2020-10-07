@@ -10,11 +10,14 @@ namespace Monkland.Hooks.Entities
 
             playerdist = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             if (MonklandSteamManager.isInGame)
-            { 
+            {
                 owner = NetworkGameManager.playerID;
             }
         }
 
+        /// <summary>
+        /// distinguisher
+        /// </summary>
         public int dist => self.ID.number == 0 ? playerdist : self.ID.number;
         public bool networkObject => (MonklandSteamManager.isInGame && owner != NetworkGameManager.playerID);
 

@@ -15,21 +15,17 @@ namespace Monkland.Hooks.Entities
             On.Creature.Violence += Creature_Violence;
         }
 
-
         public static void SyncBodyChunk(BodyChunk self, IntVector2 contactPoint) => self.contactPoint = contactPoint;
 
         public static void Sync(Creature self, bool dead) => self.dead = dead;
 
+        private static bool isNet = false;
 
-        private static bool CheckNet(params int[] flags)
+        public static void SetNet() => isNet = true;
+
+        private static bool CheckNet()
         {
-            foreach (int i in flags)
-            {
-                if (i < 0)
-                {
-                    return true;
-                }
-            }
+            if (isNet) { isNet = false; return true; }
             return false;
         }
 
@@ -37,7 +33,7 @@ namespace Monkland.Hooks.Entities
         {
             if (self is Player && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && !self.dead)
             {
-                /* 
+                /*
                  * #Violence packet#
                  * packetType
                  * source
@@ -55,42 +51,34 @@ namespace Monkland.Hooks.Entities
 
         private static void SwitchGraspsHK(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
         {
-            if (CheckNet(fromGrasp, toGrasp)) 
-            { 
-                orig(self, Math.Abs(fromGrasp), Math.Abs(toGrasp));
-                return; 
-            }
+            if (CheckNet()) { orig(self, fromGrasp, toGrasp); return; }
             if (MonklandSteamManager.isInGame)
-            { 
-                MonklandSteamManager.EntityManager.SendSwitch(self, fromGrasp, toGrasp); 
+            {
+                MonklandSteamManager.EntityManager.SendSwitch(self, fromGrasp, toGrasp);
             }
             orig(self, fromGrasp, toGrasp);
         }
 
         private static void ReleaseGraspHK(On.Creature.orig_ReleaseGrasp orig, Creature self, int grasp)
         {
-            if (CheckNet(grasp)) 
-            { 
-                orig(self, Math.Abs(grasp)); return; 
-            }
+            if (CheckNet()) { orig(self, grasp); return; }
             if (self.grasps[grasp] != null && MonklandSteamManager.isInGame)
-            { 
-                MonklandSteamManager.EntityManager.SendRelease(self.grasps[grasp]); 
+            {
+                MonklandSteamManager.EntityManager.SendRelease(self.grasps[grasp]);
             }
             orig(self, grasp);
         }
 
         private static bool GrabHK(On.Creature.orig_Grab orig, Creature self, PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
         {
-            if (self is Player && AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject) 
+            if (self is Player && AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject)
             {
-                return false; 
+                return false;
             }
 
             AbsPhyObjFields objs = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
-            if (CheckNet(graspUsed, chunkGrabbed))
+            if (CheckNet())
             {
-                graspUsed = Math.Abs(graspUsed); chunkGrabbed = Math.Abs(chunkGrabbed);
                 if (self.grasps[graspUsed] != null && self.grasps[graspUsed].grabbed == obj)
                 {
                     self.ReleaseGrasp(-graspUsed); // NetReleaseGrasp
@@ -111,18 +99,18 @@ namespace Monkland.Hooks.Entities
             }
 
             if (MonklandSteamManager.isInGame && objs.networkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.index].Contains(objs.owner))
-            { 
-                return false; 
+            {
+                return false;
             }
             if (orig(self, obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying))
             {
-                if (MonklandSteamManager.isInGame) 
-                { 
-                    MonklandSteamManager.EntityManager.SendGrab(self.grasps[graspUsed]); 
+                if (MonklandSteamManager.isInGame)
+                {
+                    MonklandSteamManager.EntityManager.SendGrab(self.grasps[graspUsed]);
                 }
                 return true;
             }
-            else 
+            else
             {
                 return false;
             }

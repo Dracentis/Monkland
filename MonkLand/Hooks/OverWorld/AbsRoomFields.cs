@@ -1,8 +1,8 @@
 ﻿namespace Monkland.Hooks.OverWorld
 {
-    public class ARMonkFields
+    public class AbsRoomFields
     {
-        public ARMonkFields(AbstractRoom self)
+        public AbsRoomFields(AbstractRoom self)
         {
             this.self = self;
         }

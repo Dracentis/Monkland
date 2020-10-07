@@ -20,7 +20,7 @@ namespace Monkland.Hooks.Entities
             orig(self);
             if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.index) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
             {
-                ARMonkFields field = AbstractRoomHK.GetSub(self.abstractRoom);
+                AbsRoomFields sub = AbstractRoomHK.GetSub(self.abstractRoom);
                 MonklandSteamManager.EntityManager.Send(self.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index]);
                 for (int i = 0; i < self.physicalObjects.Length; i++)
                 {
@@ -30,28 +30,28 @@ namespace Monkland.Hooks.Entities
                         {
                             if (self.physicalObjects[i][j] is Rock)
                             {
-                                if (field.syncDelay == 0)
-                                { 
-                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true); 
+                                if (sub.syncDelay == 0)
+                                {
+                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true);
                                 }
                             }
                             else if (self.physicalObjects[i][j] is Spear)
                             {
-                                if (field.syncDelay == 0)
-                                { 
-                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true); 
+                                if (sub.syncDelay == 0)
+                                {
+                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true);
                                 }
                             }
                         }
                     }
                 }
-                if (field.syncDelay <= 0) 
-                { 
-                    field.syncDelay = 20; 
+                if (sub.syncDelay <= 0)
+                {
+                    sub.syncDelay = 20;
                 }
-                else 
-                { 
-                    field.syncDelay--; 
+                else
+                {
+                    sub.syncDelay--;
                 }
             }
         }
@@ -64,7 +64,7 @@ namespace Monkland.Hooks.Entities
             if (MonklandSteamManager.isInGame && self.abstractRoom != null && self.physicalObjects != null)
             {
                 if (self.game.Players[0].realizedObject != null)
-                { 
+                {
                     MonklandSteamManager.EntityManager.Send(self.game.Players[0].realizedObject, players, true);
                 }
                 for (int i = 0; i < self.physicalObjects.Length; i++)
@@ -74,12 +74,12 @@ namespace Monkland.Hooks.Entities
                         if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && (AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).owner == NetworkGameManager.playerID))
                         {
                             if (self.physicalObjects[i][j] is Rock)
-                            { 
+                            {
                                 MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, players, true);
                             }
                             else if (self.physicalObjects[i][j] is Spear)
-                            { 
-                                MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, players, true); 
+                            {
+                                MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, players, true);
                             }
                         }
                     }
@@ -100,16 +100,16 @@ namespace Monkland.Hooks.Entities
                                 if (AbstractPhysicalObjectHK.GetField(stick.A).dist == AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).dist)
                                 {
                                     if (stick is AbstractPhysicalObject.AbstractSpearStick)
-                                    { 
-                                        MonklandSteamManager.EntityManager.SendSpearStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearStick).chunk, (stick as AbstractPhysicalObject.AbstractSpearStick).bodyPart, (stick as AbstractPhysicalObject.AbstractSpearStick).angle); 
+                                    {
+                                        MonklandSteamManager.EntityManager.SendSpearStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearStick).chunk, (stick as AbstractPhysicalObject.AbstractSpearStick).bodyPart, (stick as AbstractPhysicalObject.AbstractSpearStick).angle);
                                     }
                                     else if (stick is AbstractPhysicalObject.AbstractSpearAppendageStick)
-                                    { 
-                                        MonklandSteamManager.EntityManager.SendSpearAppendageStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).appendage, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).prevSeg, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).distanceToNext, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).angle); 
+                                    {
+                                        MonklandSteamManager.EntityManager.SendSpearAppendageStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).appendage, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).prevSeg, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).distanceToNext, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).angle);
                                     }
                                     else if (stick is AbstractPhysicalObject.ImpaledOnSpearStick)
-                                    { 
-                                        MonklandSteamManager.EntityManager.SendSpearImpaledStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).chunk, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).onSpearPosition); 
+                                    {
+                                        MonklandSteamManager.EntityManager.SendSpearImpaledStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).chunk, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).onSpearPosition);
                                     }
                                 }
                             }

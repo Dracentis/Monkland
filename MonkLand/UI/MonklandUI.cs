@@ -13,7 +13,6 @@ namespace Monkland.UI
         public static FContainer uiContainer;
 
         private static FLabel statusLabel;
-        public const string VERSION = "0.3.1";
 
         private static List<QuickDisplayMessage> displayMessages = new List<QuickDisplayMessage>();
         private static List<FLabel> uiLabels = new List<FLabel>();
@@ -30,7 +29,7 @@ namespace Monkland.UI
 
             uiContainer = new FContainer();
 
-            string text = "Monkland " + VERSION;
+            string text = "Monkland " + Monkland.VERSION;
             if (!MonklandSteamManager.DEBUG)
             {
                 text = "";
@@ -66,7 +65,6 @@ namespace Monkland.UI
         {
             string deadPlayerName = SteamFriends.GetFriendPersonaName(deadPlayerID);
 
-
             string message = string.Empty;
 
             switch (damageType)
@@ -91,7 +89,7 @@ namespace Monkland.UI
                     break;
             }
             // Generic death message
-            if(message.Equals(string.Empty))
+            if (message.Equals(string.Empty))
             {
                 message = $"{deadPlayerName} was killed";
             }
@@ -163,8 +161,7 @@ namespace Monkland.UI
                     {
                         // Throw exception
                         //Debug.LogException(e);
-                        Debug.Log($"Error when trying to add label for Player"+e);
-
+                        Debug.Log($"Error when trying to add label for Player" + e);
                     }
                 }
             }
@@ -237,8 +234,8 @@ namespace Monkland.UI
         public static void UpdateStatus(string message)
         {
             if (statusLabel != null)
-            { 
-                statusLabel.text = message; 
+            {
+                statusLabel.text = message;
             }
         }
 

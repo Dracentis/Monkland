@@ -212,8 +212,8 @@ namespace Monkland.SteamManagement
             //lobbyInfo.otherStart = otherStart;
             lobbyInfo.memberLimit = lobbyMax;
             lobbyInfo.memberNum = 1;
-            SteamMatchmaking.SetLobbyData((CSteamID)result.m_ulSteamIDLobby, "Version", MonklandUI.VERSION);
-            lobbyInfo.version = MonklandUI.VERSION;
+            SteamMatchmaking.SetLobbyData((CSteamID)result.m_ulSteamIDLobby, "Version", Monkland.VERSION);
+            lobbyInfo.version = Monkland.VERSION;
         }
 
         public void LobbyChatUpdated(LobbyChatUpdate_t update)
@@ -1142,7 +1142,7 @@ namespace Monkland.SteamManagement
             public bool spearsHit = false;
 
             //public bool otherStart = false;
-            public string version = MonklandUI.VERSION;
+            public string version;
 
             public int memberLimit = 10;
             public int memberNum = 10;
@@ -1155,7 +1155,7 @@ namespace Monkland.SteamManagement
                 this.debugAllowed = false;
                 this.spearsHit = false;
                 //this.otherStart = true;
-                this.version = MonklandUI.VERSION;
+                this.version = Monkland.VERSION;
                 this.memberLimit = 10;
                 this.memberNum = 10;
                 this.owner = new CSteamID(0);
@@ -1180,7 +1180,7 @@ namespace Monkland.SteamManagement
                 this.version = SteamMatchmaking.GetLobbyData(lobbyID, "Version");
                 if (string.IsNullOrEmpty(this.version))
                 {
-                    this.version = MonklandUI.VERSION;
+                    this.version = Monkland.VERSION;
                     success = false;
                 }
                 this.memberLimit = SteamMatchmaking.GetLobbyMemberLimit(lobbyID);

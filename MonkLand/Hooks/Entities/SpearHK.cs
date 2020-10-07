@@ -70,6 +70,8 @@ namespace Monkland.Hooks.Entities
                 }
                 self.addPoles = false;
             }
+
+            /*
             switch (self.mode)
             {
                 case Weapon.Mode.Free:
@@ -143,7 +145,19 @@ namespace Monkland.Hooks.Entities
                     self.firstChunk.pos = self.stuckInWall.Value;
                     self.firstChunk.vel *= 0f;
                     break;
+            } */
+            // This alternative Update is only called when self.mode == Weapon.Mode.StuckInCreature, so removing switch
+            self.setRotation = new Vector2?(Custom.DegToVec(self.stuckRotation));
+            if (self.stuckInWall != null)
+            {
+                if (self.pinToWallCounter > 0)
+                {
+                    self.pinToWallCounter--;
+                }
+                self.firstChunk.vel *= 0f;
+                self.firstChunk.pos = self.stuckInWall.Value;
             }
+
             for (int l = self.abstractPhysicalObject.stuckObjects.Count - 1; l >= 0; l--)
             {
                 if (self.abstractPhysicalObject.stuckObjects[l] is AbstractPhysicalObject.ImpaledOnSpearStick)
@@ -161,13 +175,13 @@ namespace Monkland.Hooks.Entities
 
         private static void UpdateHK(On.Spear.orig_Update orig, Spear self, bool eu)
         {
-            //Sanity check kind of thing, don't know if this actually happens but there's another cause for spear crashes and I want to rule this out
+            // Sanity check kind of thing, don't know if this actually happens but there's another cause for spear crashes and I want to rule this out
             if (self.mode == Weapon.Mode.StuckInWall && !self.stuckInWall.HasValue)
             {
                 Debug.Log("SPEAR STUCK IN WALL WITH NO STUCK POS!");
                 self.mode = Weapon.Mode.Free;
             }
-            //Alt update called if stuck in creature without a stuckobject, prevents clients crashing when someone sticks a spear in a non-synced creature
+            // Alt update called if stuck in creature without a stuckobject, prevents clients crashing when someone sticks a spear in a non-synced creature
             if (self.stuckInObject == null && self.mode == Weapon.Mode.StuckInCreature)
             { NoChunkUpdate(self, eu); }
             else

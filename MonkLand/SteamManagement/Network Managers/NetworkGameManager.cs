@@ -158,62 +158,61 @@ namespace Monkland.SteamManagement
                     return;
                 // Color body R
                 case UtilMessageType.BodyColorR:
-                    playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] = 
+                    playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] =
                         new Color(
-                            ((float)br.ReadByte()) / 255f, 
-                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g, 
+                            ((float)br.ReadByte()) / 255f,
+                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g,
                             playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].b);
                     return;
                 // Color body G
                 case UtilMessageType.BodyColorG:
-                    playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] = 
+                    playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] =
                         new Color(
-                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r, 
-                            ((float)br.ReadByte()) / 255f, 
+                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r,
+                            ((float)br.ReadByte()) / 255f,
                             playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].b);
                     return;
                 // Color body B
                 case UtilMessageType.BodyColorB:
-                    playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] = 
+                    playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] =
                         new Color(
-                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r, 
-                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g, 
+                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r,
+                            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g,
                             ((float)br.ReadByte()) / 255f);
                     return;
                 // Color eye R
                 case UtilMessageType.EyeColorR:
-                    playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] = 
+                    playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] =
                         new Color(
-                            ((float)br.ReadByte()) / 255f, 
-                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g, 
+                            ((float)br.ReadByte()) / 255f,
+                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g,
                             playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].b);
                     return;
                 // Color eye G
                 case UtilMessageType.EyeColorG:
-                    playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] = 
+                    playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] =
                         new Color(
-                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r, 
-                            ((float)br.ReadByte()) / 255f, 
+                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r,
+                            ((float)br.ReadByte()) / 255f,
                             playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].b);
                     return;
                 // Color eye B
                 case UtilMessageType.EyeColorB:
-                    playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] = 
+                    playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)] =
                         new Color(
-                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r, 
-                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g, 
+                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].r,
+                            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sentPlayer.m_SteamID)].g,
                             ((float)br.ReadByte()) / 255f);
                     return;
                 case UtilMessageType.PlayerViolence:
                     /*
                     ulong packetReceived = br.ReadUInt64();
-                    MonklandUI.AddMessage($"{SteamFriends.GetFriendPersonaName((CSteamID)packetReceived)} was killed."); 
+                    MonklandUI.AddMessage($"{SteamFriends.GetFriendPersonaName((CSteamID)packetReceived)} was killed.");
                     Debug.Log($"{SteamFriends.GetFriendPersonaName((CSteamID)packetReceived)} was killed. Data in packet [{packetReceived}]. " +
                         $"Sent by [{SteamFriends.GetFriendPersonaName((CSteamID)sentPlayer.m_SteamID)}]");
                         */
                     ReadViolence(br, sentPlayer);
                     break;
-
             }
         }
 
@@ -296,7 +295,7 @@ namespace Monkland.SteamManagement
 
         public void SendViolence(Creature self, BodyChunk source, Creature.DamageType type, float damage)
         {
-            /* 
+            /*
             * Violence packet
             * packetType
             * damageType
@@ -308,7 +307,7 @@ namespace Monkland.SteamManagement
             {
                 return;
             }
-            
+
             // Source ID field
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -328,7 +327,7 @@ namespace Monkland.SteamManagement
             {
                 sourceID = (AbstractPhysicalObjectHK.GetField(source.owner.abstractPhysicalObject).owner);
             }
-            catch (Exception e) {/*Debug.Log()*/}
+            catch { } //(Exception e) {/*Debug.Log()*/}
 
             // Message type
             writer.Write((byte)UtilMessageType.PlayerViolence);
@@ -344,7 +343,6 @@ namespace Monkland.SteamManagement
             MonklandSteamManager.Log($"[GameMNG] Sending Player Violence: Type {type}, damage {damage} Source Template {(CreatureTemplate.Type)sourceTemplate}, Source ID {sourceID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
-
         }
 
         public void SendReady()
@@ -378,8 +376,6 @@ namespace Monkland.SteamManagement
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
         }
-
-
 
         public void SendColor(UtilMessageType messageType)
         {
@@ -417,16 +413,14 @@ namespace Monkland.SteamManagement
                     break;
                 case UtilMessageType.EyeColorB:
                     //Write blue eye color
-                    writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].b * 255f))); 
+                    writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].b * 255f)));
                     break;
                 default:
                     //Write default color
-                    writer.Write((byte)0); 
+                    writer.Write((byte)0);
                     break;
-
             }
 
-            
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliableWithBuffering);
         }

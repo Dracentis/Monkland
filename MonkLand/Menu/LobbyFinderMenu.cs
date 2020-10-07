@@ -505,7 +505,7 @@ namespace Monkland
                 {
                     this.lobbynames[i].text = SteamFriends.GetFriendPersonaName(MonklandSteamManager.lobbies[i].owner);
                     this.lobbyVersions[i].text = MonklandSteamManager.lobbies[i].version;
-                    if (MonklandSteamManager.lobbies[i].version != MonklandUI.VERSION)
+                    if (MonklandSteamManager.lobbies[i].version != Monkland.VERSION)
                     { this.lobbyVersions[i].color = new Color(1f, 0f, 0f); }
                     else
                     { this.lobbyVersions[i].color = new Color(0f, 1f, 0f); }
@@ -600,7 +600,7 @@ namespace Monkland
             else if (message.Contains("JOIN"))
             {
                 int lobby = int.Parse(message.Substring(4));
-                if (lobby < MonklandSteamManager.lobbies.Count && !MonklandSteamManager.joining && !MonklandSteamManager.searching && MonklandSteamManager.lobbies[lobby].version == MonklandUI.VERSION)
+                if (lobby < MonklandSteamManager.lobbies.Count && !MonklandSteamManager.joining && !MonklandSteamManager.searching && MonklandSteamManager.lobbies[lobby].version == Monkland.VERSION)
                 { MonklandSteamManager.instance.JoinLobby(MonklandSteamManager.lobbies[lobby].ID); }
             }
             else if (message.Contains("REFRESH"))

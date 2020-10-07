@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Hooks\Menus\RainMeterHK.cs" />
     <Compile Remove="Patches\Entities\patch_AbstractPhysicalObject.cs" />
     <Compile Remove="Patches\Entities\patch_BodyChunk.cs" />
     <Compile Remove="Patches\Entities\patch_Creature.cs" />
@@ -69,6 +70,7 @@
 
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
+    <None Include="Hooks\Menus\RainMeterHK.cs" />
     <None Include="Patches\Entities\patch_AbstractPhysicalObject.cs" />
     <None Include="Patches\Entities\patch_BodyChunk.cs" />
     <None Include="Patches\Entities\patch_Creature.cs" />

@@ -5,7 +5,7 @@ namespace Monkland.SteamManagement
 {
     internal class AbstractPhysicalObjectHandler
     {
-        public static AbstractPhysicalObject Read(AbstractPhysicalObject physicalObject, ref BinaryReader reader)
+        /* public static AbstractPhysicalObject Read(AbstractPhysicalObject physicalObject, ref BinaryReader reader)
         {
             physicalObject.ID = EntityIDHandler.Read(ref reader);
             physicalObject.pos = WorldCoordinateHandler.Read(ref reader);
@@ -15,6 +15,17 @@ namespace Monkland.SteamManagement
             physicalObject.ID.number = reader.ReadInt32();
             physicalObject.destroyOnAbstraction = true;
             return physicalObject;
+        } */
+
+        public static void Read(AbstractPhysicalObject physicalObject, ref BinaryReader reader)
+        {
+            physicalObject.ID = EntityIDHandler.Read(ref reader);
+            physicalObject.pos = WorldCoordinateHandler.Read(ref reader);
+            physicalObject.InDen = reader.ReadBoolean();
+            physicalObject.timeSpentHere = reader.ReadInt32();
+            physicalObject.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+            physicalObject.ID.number = reader.ReadInt32();
+            physicalObject.destroyOnAbstraction = true;
         }
 
         public static void Write(AbstractPhysicalObject physicalObject, ref BinaryWriter writer)

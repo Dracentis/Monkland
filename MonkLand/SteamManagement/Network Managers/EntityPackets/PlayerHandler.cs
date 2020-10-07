@@ -6,9 +6,9 @@ namespace Monkland.SteamManagement
 {
     internal class PlayerHandler
     {
-        public static Player Read(Player player, ref BinaryReader reader)
+        public static void Read(Player player, ref BinaryReader reader)
         {
-            player = CreatureHandler.Read(player, ref reader);
+            CreatureHandler.Read(player, ref reader);
             player.aerobicLevel = reader.ReadSingle();
             player.airInLungs = reader.ReadSingle();
             player.allowRoll = reader.ReadInt32();
@@ -35,8 +35,7 @@ namespace Monkland.SteamManagement
             player.standing = reader.ReadBoolean();
             player.swallowAndRegurgitateCounter = reader.ReadInt32();
             player.swimCycle = reader.ReadSingle();
-            player = InputHandler.Read(player, ref reader);
-            return player;
+            InputHandler.Read(player, ref reader);
         }
 
         public static void Write(Player player, ref BinaryWriter writer)
