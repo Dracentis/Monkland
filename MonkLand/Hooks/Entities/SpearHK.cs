@@ -11,15 +11,18 @@ namespace Monkland.Hooks.Entities
         {
             On.Spear.ctor += new On.Spear.hook_ctor(CtorHK);
             On.Spear.Update += new On.Spear.hook_Update(UpdateHK);
-            On.Spear.HitSomething += new On.Spear.hook_HitSomething(HitSomethingHK);
-            On.Spear.Thrown += new On.Spear.hook_Thrown(ThrownHK);
+
+            /* Moved to WeaponHK
+             * On.Spear.HitSomething += new On.Spear.hook_HitSomething(HitSomethingHK);
+             * On.Spear.Thrown += new On.Spear.hook_Thrown(ThrownHK);
+             */
         }
 
         private static bool isNet = false;
 
         public static void SetNet() => isNet = true;
 
-        private static bool CheckNet()
+        public static bool CheckNet()
         {
             if (isNet) { isNet = false; return true; }
             return false;
@@ -181,11 +184,18 @@ namespace Monkland.Hooks.Entities
                 Debug.Log("SPEAR STUCK IN WALL WITH NO STUCK POS!");
                 self.mode = Weapon.Mode.Free;
             }
+
             // Alt update called if stuck in creature without a stuckobject, prevents clients crashing when someone sticks a spear in a non-synced creature
             if (self.stuckInObject == null && self.mode == Weapon.Mode.StuckInCreature)
-            { NoChunkUpdate(self, eu); }
+            { 
+                NoChunkUpdate(self, eu); 
+            }
             else
-            { orig(self, eu); }
+            { 
+                orig(self, eu); 
+            }
+
+            /* Moved to WeaponkHK
             AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             if (sub.networkObject)
             {
@@ -204,8 +214,10 @@ namespace Monkland.Hooks.Entities
                     self.Destroy();
                 }
             }
+            */
         }
 
+        /*
         private static bool HitSomethingHK(On.Spear.orig_HitSomething orig, Spear self, SharedPhysics.CollisionResult result, bool eu)
         {
             bool hit = orig(self, result, eu);
@@ -217,7 +229,9 @@ namespace Monkland.Hooks.Entities
             }
             return hit;
         }
+        */
 
+            /*
         private static void ThrownHK(On.Spear.orig_Thrown orig, Spear self,
             Creature thrownBy, Vector2 thrownPos, Vector2? firstFrameTraceFromPos, IntVector2 throwDir, float frc, bool eu)
         {
@@ -229,5 +243,6 @@ namespace Monkland.Hooks.Entities
                 MonklandSteamManager.EntityManager.Send(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.index], true);
             }
         }
+        */
     }
 }

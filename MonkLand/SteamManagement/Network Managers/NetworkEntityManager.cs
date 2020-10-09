@@ -749,22 +749,28 @@ namespace Monkland.SteamManagement
                     {
                         MonklandSteamManager.Log($"[Entity] Incoming hit: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} hit something");
                     }
-                    if (obj is Rock r)
+                    if (obj is Rock || obj is Spear)
                     {
                         RockHK.SetNet();
                         if (hit != null && chunk != -1)
-                        { r.HitSomething(new SharedPhysics.CollisionResult(hit, hit.bodyChunks[chunk], null, true, default), RainWorldGameHK.mainGame.evenUpdate); }
+                        { 
+                            (obj as Weapon).HitSomething(new SharedPhysics.CollisionResult(hit, hit.bodyChunks[chunk], null, true, default), RainWorldGameHK.mainGame.evenUpdate); 
+                        }
                         else
-                        { r.HitSomething(new SharedPhysics.CollisionResult(hit, hit is Creature ? hit.firstChunk : null, null, true, default), RainWorldGameHK.mainGame.evenUpdate); }
+                        { 
+                            (obj as Weapon).HitSomething(new SharedPhysics.CollisionResult(hit, hit is Creature ? hit.firstChunk : null, null, true, default), RainWorldGameHK.mainGame.evenUpdate); 
+                        }
                     }
+                    /*
                     else if (obj is Spear s)
                     {
-                        SpearHK.SetNet();
+                        WeaponHK.SetNet();
                         if (hit != null && chunk != -1)
                         { s.HitSomething(new SharedPhysics.CollisionResult(hit, hit.bodyChunks[chunk], null, true, default), RainWorldGameHK.mainGame.evenUpdate); }
                         else
                         { s.HitSomething(new SharedPhysics.CollisionResult(hit, hit is Creature ? hit.firstChunk : null, null, true, default), RainWorldGameHK.mainGame.evenUpdate); }
                     }
+                    */
                 }
             }
         }
@@ -780,25 +786,27 @@ namespace Monkland.SteamManagement
 
             if (abstractRoom.realizedRoom != null)
             {
-                PhysicalObject weapon = DistHandler.ReadPhysicalObject(ref br, abstractRoom.realizedRoom);
+                PhysicalObject obj = DistHandler.ReadPhysicalObject(ref br, abstractRoom.realizedRoom);
                 Creature thrownBy = DistHandler.ReadCreature(ref br, abstractRoom.realizedRoom);
                 Vector2 thrownPos = Vector2Handler.Read(ref br);
                 Vector2? firstFrameTraceFromPos = Vector2NHandler.Read(ref br);
                 IntVector2 throwDir = IntVector2Handler.Read(ref br);
                 float frc = br.ReadSingle();
-                if (weapon != null && thrownBy != null)
+                if (obj != null && thrownBy != null)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incoming Throw: {AbstractPhysicalObjectHK.GetField(weapon.abstractPhysicalObject).dist} thrownby {AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject).dist}");
-                    if (weapon is Rock r)
+                    MonklandSteamManager.Log($"[Entity] Incoming Throw: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} thrownby {AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject).dist}");
+                    if (obj is Rock || obj is Spear)
                     {
-                        RockHK.SetNet();
-                        r.Thrown(thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, RainWorldGameHK.mainGame.evenUpdate);
+                        WeaponHK.SetNet();
+                        (obj as Weapon).Thrown(thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, RainWorldGameHK.mainGame.evenUpdate);
                     }
+                    /*
                     else if (weapon is Spear s)
                     {
                         SpearHK.SetNet();
                         s.Thrown(thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, RainWorldGameHK.mainGame.evenUpdate);
                     }
+                    */
                 }
             }
         }
@@ -1061,11 +1069,11 @@ namespace Monkland.SteamManagement
         public void ReadDeactivate(BinaryReader br, CSteamID sentPlayer)
         {
             if (!MonklandSteamManager.WorldManager.gameRunning || RainWorldGameHK.mainGame == null)
-                return;
+            { return; }
             int roomName = br.ReadInt32();//Read Room Name
             AbstractRoom abstractRoom = RainWorldGameHK.mainGame.world.GetAbstractRoom(roomName);
             if (abstractRoom == null)
-                return;
+            { return; }
             int A = br.ReadInt32();//Read Grabber dist
             int B = br.ReadInt32();//Read Grabbed dist
             for (int i = 0; i < abstractRoom.entities.Count; i++)
