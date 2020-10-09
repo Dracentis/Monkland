@@ -24,7 +24,7 @@ namespace Monkland.UI
 
             foreach (ulong s in MonklandSteamManager.connectedPlayers)
             {
-                yPos -= MUIBox.lineHeight;
+                yPos -= MUIBox.lineHeight-5f;
                 string steamName = SteamFriends.GetFriendPersonaName((CSteamID)s);
 
                 Color bodyColor = Color.white;
@@ -89,12 +89,12 @@ namespace Monkland.UI
 
                 foreach (KeyValuePair<ulong, MUILabel> kvp in playerLabels)
                 {
-                    MUILabel item = kvp.Value;
+                    MUILabel label = kvp.Value;
 
                     //item.color = MonklandSteamManager.GameManager.readiedPlayers.Contains(kvp.Key) ? Color.green : Color.red;
-                    item.alpha = this.isVisible ? 1 : 0;
+                    label.isVisible = this.isVisible;
 
-                    item.Update();
+                    label.Update();
 
                     //i++;
                 }

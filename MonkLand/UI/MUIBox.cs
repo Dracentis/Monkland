@@ -13,6 +13,7 @@ namespace Monkland.UI
         public static float heightMargin;
         public static float widthMargin;
         public FSprite[] sprites;
+        public Vector2 drawSize;
 
         MultiplayerHUD owner;
 
@@ -27,6 +28,21 @@ namespace Monkland.UI
             this.longestLineX = longestLineX;
             this.numberLines = numberLines;
             this.InitiateSprites();
+
+            drawSize = new Vector2(0f, 0);
+            drawSize.x = MUIBox.widthMargin + (float)this.longestLineX + MUIBox.widthMargin;  //* MUIBox.meanCharWidth;
+            drawSize.y = MUIBox.heightMargin + MUIBox.lineHeight * (float)this.numberLines;
+        }
+
+        public MUIBox(MultiplayerHUD owner, Vector2 pos, Vector2 size)
+        {
+            this.pos = pos;
+            this.owner = owner;
+            this.longestLineX = (int)size.x;
+            this.numberLines = 1;
+            this.InitiateSprites();
+
+            drawSize = size;
         }
 
         static MUIBox()
@@ -143,10 +159,7 @@ namespace Monkland.UI
             }
             */
             Vector2 vecPos = pos;
-            Vector2 drawSize = new Vector2(0f, 0);//DialogBox.heightMargin + DialogBox.lineHeight * (float)this.CurrentMessage.lines);
 
-            drawSize.x = MUIBox.widthMargin + (float)this.longestLineX + MUIBox.widthMargin;  //* MUIBox.meanCharWidth;
-            drawSize.y = MUIBox.heightMargin + MUIBox.lineHeight * (float)this.numberLines;
 
             //drawSize.x = Mathf.Lerp(40f, drawSize.x, Mathf.Pow(Mathf.Lerp(this.lastSizeFac, this.sizeFac, timeStacker), 0.5f));
 
@@ -172,12 +185,16 @@ namespace Monkland.UI
             this.sprites[this.SideSprite(3)].x = vecPos.x + 6f;
             this.sprites[this.SideSprite(3)].y = vecPos.y + 1f;
             this.sprites[this.SideSprite(3)].scaleX = drawSize.x - 12f;
+
             this.sprites[this.CornerSprite(0)].x = vecPos.x + 3.5f;
             this.sprites[this.CornerSprite(0)].y = vecPos.y + 3.5f;
+
             this.sprites[this.CornerSprite(1)].x = vecPos.x + 3.5f;
             this.sprites[this.CornerSprite(1)].y = vecPos.y + drawSize.y - 3.5f;
+
             this.sprites[this.CornerSprite(2)].x = vecPos.x + drawSize.x - 3.5f;
             this.sprites[this.CornerSprite(2)].y = vecPos.y + drawSize.y - 3.5f;
+
             this.sprites[this.CornerSprite(3)].x = vecPos.x + drawSize.x - 3.5f;
             this.sprites[this.CornerSprite(3)].y = vecPos.y + 3.5f;
             Color color = new Color(1f, 1f, 1f);

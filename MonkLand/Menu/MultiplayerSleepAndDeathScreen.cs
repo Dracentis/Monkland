@@ -17,7 +17,7 @@ namespace Menu
 
             MonklandSteamManager.GameManager.FinishCycle();
             if (!MonklandSteamManager.GameManager.readiedPlayers.Contains(SteamUser.GetSteamID().m_SteamID))
-                MonklandSteamManager.GameManager.readiedPlayers.Add(SteamUser.GetSteamID().m_SteamID);
+            { MonklandSteamManager.GameManager.readiedPlayers.Add(SteamUser.GetSteamID().m_SteamID); }
 
             //Player menu
             playerList = new MultiplayerPlayerList(this, this.pages[0], new Vector2(manager.rainWorld.options.ScreenSize.x - 250f, manager.rainWorld.options.ScreenSize.y - 450f), new Vector2(200, 400), new Vector2(180, 180));

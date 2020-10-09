@@ -33,8 +33,19 @@ namespace Monkland.UI
         private bool exitButton;
         private bool exitting;
 
+        public Vector2 screenSize;
+
         public MultiplayerHUD(HUD.HUD hud) : base(hud)
         {
+            try
+            {
+                this.screenSize = hud.rainWorld.options.ScreenSize;
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.Message);
+                this.screenSize = new Vector2(1280f, 0);
+            }
             //Futile.stage.AddChild(this.inFrontContainer);
             this.hud = hud;
             Debug.Log("Added MultiHUD");
@@ -59,8 +70,11 @@ namespace Monkland.UI
 
             exitButton = false;
 
+
+            muiElements.Add(new MUIButton(this, new Vector2(this.ContinueAndExitButtonsXPos - 320f, 20f), "SHUTDOWN"));
             muiElements.Add(new MUIPlayerList(this, new Vector2(this.hud.rainWorld.options.ScreenSize.x / 2f, this.hud.rainWorld.options.ScreenSize.y / 2f)));
             Futile.stage.AddChild(frontContainer);
+
         }
 
         public FContainer container
@@ -202,6 +216,22 @@ namespace Monkland.UI
             foreach (ulong key in elementsToBeRemoved)
             {
                 playerLabels.Remove(key);
+            }
+        }
+
+        public float ContinueAndExitButtonsXPos
+        {
+            get
+            {
+                if (this.screenSize.x >= 1360f)
+                {
+                    return 1366f;
+                }
+                if (this.screenSize.x == 1280f)
+                {
+                    return 1280f;
+                }
+                return this.screenSize.x + 190f;
             }
         }
     }

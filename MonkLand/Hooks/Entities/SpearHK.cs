@@ -9,32 +9,36 @@ namespace Monkland.Hooks.Entities
     {
         public static void ApplyHook()
         {
-            On.Spear.ctor += new On.Spear.hook_ctor(CtorHK);
+            
             On.Spear.Update += new On.Spear.hook_Update(UpdateHK);
 
             /* Moved to WeaponHK
              * On.Spear.HitSomething += new On.Spear.hook_HitSomething(HitSomethingHK);
              * On.Spear.Thrown += new On.Spear.hook_Thrown(ThrownHK);
+             * On.Spear.ctor += new On.Spear.hook_ctor(CtorHK);
              */
         }
 
-        private static bool isNet = false;
 
-        public static void SetNet() => isNet = true;
-
-        public static bool CheckNet()
-        {
+        /* Moved to WeaponHK
+         * private static bool isNet = false;
+         * public static void SetNet() => isNet = true;
+         * public static bool CheckNet()
+            {
             if (isNet) { isNet = false; return true; }
             return false;
-        }
+            }
+         */
 
         public static void Sync(Spear self) => AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
 
+        /*
         private static void CtorHK(On.Spear.orig_ctor orig, Spear self, AbstractPhysicalObject abstractPhysicalObject, World world)
         {
             orig(self, abstractPhysicalObject, world);
             AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
         }
+        */
 
         private static void NoChunkUpdate(Spear self, bool eu)
         {

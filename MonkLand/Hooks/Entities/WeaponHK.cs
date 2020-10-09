@@ -87,7 +87,7 @@ namespace Monkland.Hooks.Entities
         private static bool Weapon_HitSomething(On.Weapon.orig_HitSomething orig, Weapon self, SharedPhysics.CollisionResult result, bool eu)
         {
             bool hit = orig(self, result, eu);
-            if (WeaponCheckNet(self)) { return hit; }
+            if (CheckNet()) { return hit; }
             if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.index))
             {
                 MonklandSteamManager.EntityManager.SendHit(self, result.obj, result.chunk);
