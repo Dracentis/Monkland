@@ -1,6 +1,8 @@
 ﻿using Monkland.Hooks.OverWorld;
 using Monkland.SteamManagement;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace Monkland.Hooks.Entities
 {
@@ -8,8 +10,26 @@ namespace Monkland.Hooks.Entities
     {
         public static void ApplyHook()
         {
+            // On.Room.ctor += Room_ctor;
+
             On.Room.Update += new On.Room.hook_Update(UpdateHK);
             On.RoomSpecificScript.AddRoomSpecificScript += new On.RoomSpecificScript.hook_AddRoomSpecificScript(AddRoomSpecificScriptHK);
+        }
+
+        private static void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
+        {
+            orig(self, game, world, abstractRoom);
+
+            // Add rain if Battle Royale
+            /* if (MonklandSteamManager.gameMode == MonklandSteamManager.GameMode.BattleRoyale)
+             {
+                 self.
+
+                 if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.index))
+                 {
+
+                 }
+             }*/
         }
 
         /// <summary>
@@ -18,40 +38,58 @@ namespace Monkland.Hooks.Entities
         private static void UpdateHK(On.Room.orig_Update orig, Room self)
         {
             orig(self);
-            if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.index) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
+            if (MonklandSteamManager.isInGame)
             {
-                AbsRoomFields sub = AbstractRoomHK.GetSub(self.abstractRoom);
-                MonklandSteamManager.EntityManager.Send(self.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index]);
-                for (int i = 0; i < self.physicalObjects.Length; i++)
+                //if (MonklandSteamManager.gameMode == MonklandSteamManager.GameMode.BattleRoyale && MonklandSteamManager.WorldManager.sessionTotalCycles > 0)
                 {
-                    for (int j = 0; j < self.physicalObjects[i].Count; j++)
+
+                    if(AbstractRoomHK.GetField(self.abstractRoom).battleRain == null)
                     {
-                        if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).owner == NetworkGameManager.playerID)
+                        AbstractRoomHK.GetField(self.abstractRoom).battleRain = new BattleRoomRain(self);
+                        self.AddObject(AbstractRoomHK.GetField(self.abstractRoom).battleRain);
+                    }
+                    else
+                    {
+                        //AbstractRoomHK.GetField(self.abstractRoom).battleRain.Update();
+                    }
+
+                }
+
+                if (MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.index) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
+                { 
+                    AbsRoomFields field = AbstractRoomHK.GetField(self.abstractRoom);
+                    MonklandSteamManager.EntityManager.Send(self.game.Players[0].realizedObject, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index]);
+                    for (int i = 0; i < self.physicalObjects.Length; i++)
+                    {
+                        for (int j = 0; j < self.physicalObjects[i].Count; j++)
                         {
-                            if (self.physicalObjects[i][j] is Rock)
+                            if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).owner == NetworkGameManager.playerID)
                             {
-                                if (sub.syncDelay == 0)
+                                if (self.physicalObjects[i][j] is Rock)
                                 {
-                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true);
+                                    if (field.syncDelay == 0)
+                                    {
+                                        MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Rock, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true);
+                                    }
                                 }
-                            }
-                            else if (self.physicalObjects[i][j] is Spear)
-                            {
-                                if (sub.syncDelay == 0)
+                                else if (self.physicalObjects[i][j] is Spear)
                                 {
-                                    MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true);
+                                    if (field.syncDelay == 0)
+                                    {
+                                        MonklandSteamManager.EntityManager.Send(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.index], true);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (sub.syncDelay <= 0)
-                {
-                    sub.syncDelay = 20;
-                }
-                else
-                {
-                    sub.syncDelay--;
+                    if (field.syncDelay <= 0)
+                    {
+                        field.syncDelay = 20;
+                    }
+                    else
+                    {
+                        field.syncDelay--;
+                    }
                 }
             }
         }

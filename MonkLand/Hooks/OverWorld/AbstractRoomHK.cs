@@ -18,7 +18,7 @@ namespace Monkland.Hooks.OverWorld
 
         public static void ClearField() => fields.Clear();
 
-        public static AbsRoomFields GetSub(AbstractRoom self)
+        public static AbsRoomFields GetField(AbstractRoom self)
         {
             if (fields.TryGetValue(self, out AbsRoomFields field))
             {
@@ -33,7 +33,7 @@ namespace Monkland.Hooks.OverWorld
             string name, int[] connections, int index, int swarmRoomIndex, int shelterIndex, int gateIndex)
         {
             orig(self, name, connections, index, swarmRoomIndex, shelterIndex, gateIndex);
-            GetSub(self);
+            GetField(self);
         }
 
         private static void RealizeRoomHK(On.AbstractRoom.orig_RealizeRoom orig, AbstractRoom self, World world, RainWorldGame game)

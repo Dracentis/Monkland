@@ -10,5 +10,6 @@
         public readonly AbstractRoom self;
 
         public int syncDelay = 20;
+        public BattleRoomRain battleRain;
     }
 }
