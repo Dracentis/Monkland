@@ -32,6 +32,13 @@ namespace Monkland.SteamManagement
         public static bool DEBUG = false;
         public static Color bodyColor = new Color(1f, 1f, 1f);
         public static Color eyeColor = new Color(0.004f, 0.004f, 0.004f);
+        public static GameMode gameMode;
+
+        public enum GameMode
+        {
+            BattleRoyale,
+            Campaign
+        }
 
         public static void Log(object message)
         {
@@ -91,6 +98,9 @@ namespace Monkland.SteamManagement
             }
             ReadPackets();
             UpdateManagers();
+
+            // Select GameMode
+            gameMode = GameMode.BattleRoyale;
         }
 
         public void CreateLobby()
@@ -113,7 +123,7 @@ namespace Monkland.SteamManagement
         public void LeaveLobby()
         {
             if (lobbyID.m_SteamID != 0)
-                SteamMatchmaking.LeaveLobby(lobbyID);
+            { SteamMatchmaking.LeaveLobby(lobbyID); }
             foreach (ulong player in otherPlayers)
             {
                 foreach (PacketChannel channel in allChannels)

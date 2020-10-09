@@ -357,6 +357,7 @@ namespace Monkland.Hooks.Entities
             */
 
             // DEBUG VIOLENCE
+            /*
             try
             {
                 if (MonklandSteamManager.DEBUG && Input.GetKeyDown("k"))
@@ -368,6 +369,7 @@ namespace Monkland.Hooks.Entities
             {
                 Debug.Log("Error violence" + e);
             }
+            */
         }
 
         private static void GrabUpdateHK(On.Player.orig_GrabUpdate orig, Player self, bool eu)

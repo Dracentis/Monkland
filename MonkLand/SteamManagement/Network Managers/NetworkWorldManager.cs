@@ -10,6 +10,11 @@ namespace Monkland.SteamManagement
 {
     internal class NetworkWorldManager : NetworkManager
     {
+        public NetworkWorldManager()
+        {
+            this.sessionTotalCycles = 0;
+        }
+
         private static ulong playerID
         {
             get
@@ -36,11 +41,14 @@ namespace Monkland.SteamManagement
 
         public bool gameRunning = false;//is my game running
 
-        public int cycleLength = 36000;// cyclelength to sync ingame cycle length with other players
-        public int timer = 0;//Timer to sync ingame time with other players
-        public int joinDelay = -1;//Delay to establish P2P connection before
-        public int syncDelay = 1000;//Cycle periodic sync
-        //public int roomVerify = 1000;
+        public int cycleLength = 36000; // cyclelength to sync ingame cycle length with other players
+        public int timer = 0; //Timer to sync ingame time with other players
+        public int joinDelay = -1; //Delay to establish P2P connection before
+        public int syncDelay = 1000; //Cycle periodic sync
+                                    //public int roomVerify = 1000;
+
+            // Used for BattleRoyale
+        public int sessionTotalCycles = 0;
 
         public const int WORLD_CHANNEL = 1;
         public byte WorldHandler = 0;
@@ -364,6 +372,7 @@ namespace Monkland.SteamManagement
 
         public void GameStart()
         {
+            this.sessionTotalCycles++;
             this.timer = 0;
             if (!ingamePlayers.Contains(playerID))
             { ingamePlayers.Add(playerID); }

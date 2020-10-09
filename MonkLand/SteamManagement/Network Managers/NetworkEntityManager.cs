@@ -600,7 +600,8 @@ namespace Monkland.SteamManagement
                     return;
                 }
             }
-            startPos.room = abstractRoom.index;
+
+                startPos.room = abstractRoom.index;
             startPos.abstractNode = -1;
             AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Slugcat), null, startPos, new EntityID(-1, dist));
             abstractCreature.state = new PlayerState(abstractCreature, 1, 0, false);
@@ -611,7 +612,11 @@ namespace Monkland.SteamManagement
             abstractCreature.RealizeInRoom();
             // Read Player
             PlayerHandler.Read(abstractCreature.realizedCreature as Player, ref br);
-            abstractCreature.pos.room = abstractRoom.index;
+            if (MonklandSteamManager.DEBUG)
+            {
+                Debug.Log($"Spawning main player ID {sentPlayer.m_SteamID} in room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).name}");
+            }
+            //abstractCreature.pos.room = abstractRoom.index; (NOT NEEDED?)
         }
 
         public void ReadRock(BinaryReader br, CSteamID sentPlayer)
@@ -663,7 +668,7 @@ namespace Monkland.SteamManagement
             abstractObject.RealizeInRoom();
             RockHK.Sync(abstractObject.realizedObject as Rock);
             WeaponHandler.Read(abstractObject.realizedObject as Rock, ref br);// Read Rock
-            abstractObject.pos.room = abstractRoom.index;
+            //abstractObject.pos.room = abstractRoom.index;
         }
 
         public void ReadSpear(BinaryReader br, CSteamID sentPlayer)

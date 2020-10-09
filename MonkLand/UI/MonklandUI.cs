@@ -102,15 +102,12 @@ namespace Monkland.UI
             }
 
             // TO DO -- When creatures are synced  --
-            /*
-            else
+            
+            else if (killerType != CreatureTemplate.Type.Slugcat)
             {
-                switch (killerType)
-                {
-                    //case CreatureTemplate.Type.
-                }
+                killerName = killerType.ToString();
             }
-            */
+            
 
             if (killerName != string.Empty && damageType != Creature.DamageType.Water && damageType != Creature.DamageType.Electric)
             {

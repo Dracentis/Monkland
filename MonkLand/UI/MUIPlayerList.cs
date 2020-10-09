@@ -20,11 +20,11 @@ namespace Monkland.UI
             Debug.Log("Added MUIPlayer list");
 
             float longestSteamNameX = 0;
-            float yPos = -MUIBox.lineHeight;
+            float yPos = -MUIBox.lineHeight + 5f;
 
             foreach (ulong s in MonklandSteamManager.connectedPlayers)
             {
-                yPos -= MUIBox.lineHeight-5f;
+                yPos -= MUIBox.lineHeight;
                 string steamName = SteamFriends.GetFriendPersonaName((CSteamID)s);
 
                 Color bodyColor = Color.white;

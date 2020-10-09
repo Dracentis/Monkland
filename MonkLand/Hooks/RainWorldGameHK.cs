@@ -24,10 +24,10 @@ namespace Monkland.Hooks
         {
             orig(self, manager);
 
-            lastMultiPauseButton = false;
 
             if (MonklandSteamManager.isInGame)
             {
+                lastMultiPauseButton = false;
                 if (self.rainWorld.buildType == RainWorld.BuildType.Development)
                 {
                     self.devToolsActive = MonklandSteamManager.DEBUG;
@@ -55,6 +55,14 @@ namespace Monkland.Hooks
                     if (MonklandSteamManager.monklandUI != null)
                     { MonklandSteamManager.monklandUI.Update(self); }
                     MonklandSteamManager.WorldManager.TickCycle();
+
+                    bool flag = Input.GetKey(self.rainWorld.options.controls[0].KeyboardPause) || Input.GetKey(self.rainWorld.options.controls[0].GamePadPause) || Input.GetKey(KeyCode.Escape);
+                    if (flag && !lastMultiPauseButton && (self.cameras[0].hud != null || self.cameras[0].hud.map.fade < 0.1f) && !self.cameras[0].hud.textPrompt.gameOverMode)
+                    {
+                        (self.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).ShowMultiPauseMenu();
+                    }
+
+                    lastMultiPauseButton = flag;
                 }
             }
             catch (Exception e)
@@ -62,13 +70,7 @@ namespace Monkland.Hooks
                 Debug.LogError(e);
             }
 
-            bool flag = Input.GetKey(self.rainWorld.options.controls[0].KeyboardPause) || Input.GetKey(self.rainWorld.options.controls[0].GamePadPause) || Input.GetKey(KeyCode.Escape);
-            if (flag && !lastMultiPauseButton && (self.cameras[0].hud != null || self.cameras[0].hud.map.fade < 0.1f) && !self.cameras[0].hud.textPrompt.gameOverMode)
-            {
-                (self.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).ShowMultiPauseMenu();
-            }
 
-            lastMultiPauseButton = flag;
         }
 
         private static void ShutDownProcessHK(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)

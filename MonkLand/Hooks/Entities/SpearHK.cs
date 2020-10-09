@@ -196,7 +196,15 @@ namespace Monkland.Hooks.Entities
             }
             else
             { 
-                orig(self, eu); 
+                try
+                {
+                    orig(self, eu); 
+                } 
+                catch (Exception e)
+                {
+                    self.slatedForDeletetion = true;
+                    Debug.Log($"Destroying spear, found error {e.Message}");
+                }
             }
 
             /* Moved to WeaponkHK
