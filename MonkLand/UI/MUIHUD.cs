@@ -10,11 +10,11 @@ namespace Monkland.UI
     {
         public Vector2 pos;
         public bool isVisible;
+
         public abstract void Update();
 
         public abstract void Draw(float timeStacker);
 
         public abstract void ClearSprites();
-
     }
 }

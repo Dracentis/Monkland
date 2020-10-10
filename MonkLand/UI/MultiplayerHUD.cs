@@ -34,6 +34,7 @@ namespace Monkland.UI
         private bool exitting;
 
         public Vector2 screenSize;
+        public Vector2 screenPos;
 
         public MultiplayerHUD(HUD.HUD hud) : base(hud)
         {
@@ -44,8 +45,9 @@ namespace Monkland.UI
             catch (Exception e)
             {
                 Debug.Log(e.Message);
-                this.screenSize = new Vector2(1280f, 0);
+                this.screenSize = new Vector2(1280f, 768f);
             }
+            this.screenPos = this.screenSize - new Vector2(1366f, 768f); // This needs to be adjusted
             //Futile.stage.AddChild(this.inFrontContainer);
             this.hud = hud;
             Debug.Log("Added MultiHUD");
@@ -70,11 +72,9 @@ namespace Monkland.UI
 
             exitButton = false;
 
-
             muiElements.Add(new MUIButton(this, new Vector2(this.ContinueAndExitButtonsXPos - 320f, 20f), "SHUTDOWN"));
             muiElements.Add(new MUIPlayerList(this, new Vector2(this.hud.rainWorld.options.ScreenSize.x / 2f, this.hud.rainWorld.options.ScreenSize.y / 2f)));
             Futile.stage.AddChild(frontContainer);
-
         }
 
         public FContainer container
@@ -160,7 +160,6 @@ namespace Monkland.UI
                     exitting = true;
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
                     MonklandSteamManager.instance.OnGameExit();
-
                 }
                 catch (Exception e)
                 {
@@ -200,7 +199,6 @@ namespace Monkland.UI
             this.lastMouseDown = this.mouseDown;
 
             base.Update();
-
 
             elementsToBeRemoved.Clear();
             foreach (KeyValuePair<ulong, MUIPlayerTag> label in playerLabels)

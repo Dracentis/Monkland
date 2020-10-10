@@ -7,14 +7,14 @@ using UnityEngine;
 
 namespace Monkland.UI
 {
-    class MUIButton : MUIHUD
+    internal class MUIButton : MUIHUD
     {
         public MUIBox box;
         public MUILabel label;
         public MultiplayerHUD owner;
         public Vector2 size;
 
-        public MUIButton(MultiplayerHUD owner, Vector2 pos, string labelString) 
+        public MUIButton(MultiplayerHUD owner, Vector2 pos, string labelString)
         {
             Debug.Log($"creating MUIBUTTON {pos}");
 
@@ -22,7 +22,7 @@ namespace Monkland.UI
 
             box = new MUIBox(owner, pos, new Vector2(110f, 30f));
 
-            label = new MUILabel(owner, labelString, Color.white, pos + new Vector2(0, -MUIBox.lineHeight -5f));
+            label = new MUILabel(owner, labelString, Color.white, pos + new Vector2(0, -MUIBox.lineHeight - 5f));
 
             size = box.drawSize;
             this.pos = pos - new Vector2(box.drawSize.x, 0);
@@ -52,17 +52,33 @@ namespace Monkland.UI
 
             label.Update();
             box.Update();
+        }
 
+        internal Vector2 ScreenPos
+        {
+            get
+            {
+                if (this.owner == null) { return Vector2.zero; }
+                return this.owner.screenPos;
+            }
+        }
+
+        internal Vector2 MousePos
+        {
+            get
+            {
+                return new Vector2(this.owner.mousePos.x - this.ScreenPos.x, this.owner.mousePos.y - this.ScreenPos.y);
+            }
         }
 
         public bool MouseOver
         {
             get
             {
-                return this.owner.mousePos.x > this.pos.x 
-                    && this.owner.mousePos.x < this.pos.x + this.size.x 
-                    && this.owner.mousePos.y > this.pos.y 
-                    && this.owner.mousePos.y < this.pos.y + this.size.y;
+                return this.MousePos.x > this.pos.x
+                    && this.MousePos.x < this.pos.x + this.size.x
+                    && this.MousePos.y > this.pos.y
+                    && this.MousePos.y < this.pos.y + this.size.y;
             }
         }
     }
