@@ -10,26 +10,8 @@ namespace Monkland.Hooks.Entities
     {
         public static void ApplyHook()
         {
-            // On.Room.ctor += Room_ctor;
-
             On.Room.Update += new On.Room.hook_Update(UpdateHK);
             On.RoomSpecificScript.AddRoomSpecificScript += new On.RoomSpecificScript.hook_AddRoomSpecificScript(AddRoomSpecificScriptHK);
-        }
-
-        private static void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
-        {
-            orig(self, game, world, abstractRoom);
-
-            // Add rain if Battle Royale
-            /* if (MonklandSteamManager.gameMode == MonklandSteamManager.GameMode.BattleRoyale)
-             {
-                 self.
-
-                 if (MonklandSteamManager.isInGame && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.index))
-                 {
-
-                 }
-             }*/
         }
 
         /// <summary>
@@ -40,20 +22,18 @@ namespace Monkland.Hooks.Entities
             orig(self);
             if (MonklandSteamManager.isInGame)
             {
-                //if (MonklandSteamManager.gameMode == MonklandSteamManager.GameMode.BattleRoyale && MonklandSteamManager.WorldManager.sessionTotalCycles > 0)
+                /*
+                if (MonklandSteamManager.gameMode == MonklandSteamManager.GameMode.BattleRoyale && MonklandSteamManager.WorldManager.sessionTotalCycles >= 0)
                 {
 
-                    if(AbstractRoomHK.GetField(self.abstractRoom).battleRain == null)
+                    if (AbstractRoomHK.GetField(self.abstractRoom).battleRain == null)
                     {
                         AbstractRoomHK.GetField(self.abstractRoom).battleRain = new BattleRoomRain(self);
                         self.AddObject(AbstractRoomHK.GetField(self.abstractRoom).battleRain);
                     }
-                    else
-                    {
-                        //AbstractRoomHK.GetField(self.abstractRoom).battleRain.Update();
-                    }
 
                 }
+                */
 
                 if (MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.index) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
                 { 
