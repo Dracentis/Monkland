@@ -1,4 +1,5 @@
 ﻿using Monkland.Hooks.Entities;
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -6,201 +7,73 @@ namespace Monkland.SteamManagement
 {
     internal static class PhysicalObjectHandler
     {
-        /*
-        public static Spear Read(Spear physicalObject, ref BinaryReader reader)
-        {
-            physicalObject.abstractPhysicalObject = AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            //int numberOfAppendages = reader.ReadInt32();
-            //if (physicalObject.appendages.Count < numberOfAppendages)
-            //{
-            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            //}
-            //for (int a = 0; a < numberOfAppendages; a++)
-            //{
-            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            //}
-            int numberOfChunks = reader.ReadInt32();
-            BodyChunk[] chunks = physicalObject.bodyChunks;
-            if (physicalObject.bodyChunks.Length < numberOfChunks)
-            { chunks = new BodyChunk[numberOfChunks]; }
-            for (int a = 0; a < numberOfChunks; a++)
-            { chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader); }
-            SyncPhysicalObject(physicalObject, chunks);
-            int numberOFConnections = reader.ReadInt32();
-            if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
-            { physicalObject.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOFConnections]; }
-            for (int a = 0; a < numberOFConnections; a++)
-            { physicalObject.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader); }
-            physicalObject.bounce = reader.ReadSingle();
-            physicalObject.canBeHitByWeapons = reader.ReadBoolean();
-            return physicalObject;
-        }
-
-        public static Rock Read(Rock physicalObject, ref BinaryReader reader)
-        {
-            physicalObject.abstractPhysicalObject = AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            //int numberOfAppendages = reader.ReadInt32();
-            //if (physicalObject.appendages.Count < numberOfAppendages)
-            //{
-            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            //}
-            //for (int a = 0; a < numberOfAppendages; a++)
-            //{
-            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            //}
-            int numberOfChunks = reader.ReadInt32();
-            BodyChunk[] chunks = physicalObject.bodyChunks;
-            if (physicalObject.bodyChunks.Length < numberOfChunks)
-            { chunks = new BodyChunk[numberOfChunks]; }
-            for (int a = 0; a < numberOfChunks; a++)
-            { chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader); }
-            SyncPhysicalObject(physicalObject, chunks);
-            int numberOFConnections = reader.ReadInt32();
-            if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
-            {
-                physicalObject.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOFConnections];
-            }
-            for (int a = 0; a < numberOFConnections; a++)
-            {
-                physicalObject.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader);
-            }
-            physicalObject.bounce = reader.ReadSingle();
-            physicalObject.canBeHitByWeapons = reader.ReadBoolean();
-            return physicalObject;
-        } */
-
-        /* public static Weapon Read(Weapon physicalObject, ref BinaryReader reader)
-        {
-            AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            //int numberOfAppendages = reader.ReadInt32();
-            //if (physicalObject.appendages.Count < numberOfAppendages)
-            //{
-            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            //}
-            //for (int a = 0; a < numberOfAppendages; a++)
-            //{
-            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            //}
-            int numberOfChunks = reader.ReadInt32();
-            BodyChunk[] chunks = physicalObject.bodyChunks;
-            if (physicalObject.bodyChunks.Length < numberOfChunks)
-            { chunks = new BodyChunk[numberOfChunks]; }
-            for (int a = 0; a < numberOfChunks; a++)
-            { chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader); }
-            SyncPhysicalObject(physicalObject, chunks);
-            int numberOFConnections = reader.ReadInt32();
-            if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
-            { physicalObject.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOFConnections]; }
-            for (int a = 0; a < numberOFConnections; a++)
-            { physicalObject.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader); }
-            physicalObject.bounce = reader.ReadSingle();
-            physicalObject.canBeHitByWeapons = reader.ReadBoolean();
-            return physicalObject;
-        } */
-
-        public static void Read(Weapon weapon, ref BinaryReader reader)
-        {
-            AbstractPhysicalObjectHandler.Read(weapon.abstractPhysicalObject, ref reader);
-            //int numberOfAppendages = reader.ReadInt32();
-            //if (weapon.appendages.Count < numberOfAppendages)
-            //{
-            //    weapon.appendages = new List<PhysicalObject.Appendage>();
-            //}
-            //for (int a = 0; a < numberOfAppendages; a++)
-            //{
-            //    weapon.appendages[a] = AppendageHandler.Read(weapon.appendages[a], ref reader);
-            //}
-            int numberOfChunks = reader.ReadInt32();
-            BodyChunk[] chunks = weapon.bodyChunks;
-            if (weapon.bodyChunks.Length < numberOfChunks)
-            { chunks = new BodyChunk[numberOfChunks]; }
-            for (int a = 0; a < numberOfChunks; a++)
-            { chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader); }
-            SyncPhysicalObject(weapon, chunks);
-            int numberOFConnections = reader.ReadInt32();
-            if (weapon.bodyChunkConnections.Length < numberOFConnections)
-            { weapon.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOFConnections]; }
-            for (int a = 0; a < numberOFConnections; a++)
-            { weapon.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(weapon.bodyChunkConnections[a], ref reader); }
-            weapon.bounce = reader.ReadSingle();
-            weapon.canBeHitByWeapons = reader.ReadBoolean();
-        }
-
-        public static void Read(Creature creature, ref BinaryReader reader)
-        {
-            AbstractPhysicalObjectHandler.Read(creature.abstractPhysicalObject, ref reader);
-            //int numberOfAppendages = reader.ReadInt32();
-            //if (physicalObject.appendages.Count < numberOfAppendages)
-            //{
-            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            //}
-            //for (int a = 0; a < numberOfAppendages; a++)
-            //{
-            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            //}
-            int numberOfChunks = reader.ReadInt32();
-            BodyChunk[] chunks = creature.bodyChunks;
-            if (creature.bodyChunks.Length < numberOfChunks)
-            { chunks = new BodyChunk[numberOfChunks]; }
-            for (int a = 0; a < numberOfChunks; a++)
-            { chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader); }
-            SyncPhysicalObject(creature, chunks);
-            int numberOFConnections = reader.ReadInt32();
-            if (creature.bodyChunkConnections.Length < numberOFConnections)
-            { creature.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOFConnections]; }
-            for (int a = 0; a < numberOFConnections; a++)
-            { creature.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(creature.bodyChunkConnections[a], ref reader); }
-            creature.bounce = reader.ReadSingle();
-            creature.canBeHitByWeapons = reader.ReadBoolean();
-        }
-
-        /*
-        public static Player Read(ref Player physicalObject, ref BinaryReader reader)
-        {
-            AbstractPhysicalObjectHandler.Read(ref physicalObject.abstractPhysicalObject, ref reader);
-            //int numberOfAppendages = reader.ReadInt32();
-            //if (physicalObject.appendages.Count < numberOfAppendages)
-            //{
-            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            //}
-            //for (int a = 0; a < numberOfAppendages; a++)
-            //{
-            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            //}
-            int numberOfChunks = reader.ReadInt32();
-            BodyChunk[] chunks = physicalObject.bodyChunks;
-            if (physicalObject.bodyChunks.Length < numberOfChunks)
-            { chunks = new BodyChunk[numberOfChunks]; }
-            for (int a = 0; a < numberOfChunks; a++)
-            { chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader); }
-            SyncPhysicalObject(physicalObject, chunks);
-            int numberOFConnections = reader.ReadInt32();
-            if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
-            { physicalObject.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOFConnections]; }
-            for (int a = 0; a < numberOFConnections; a++)
-            { physicalObject.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader); }
-            physicalObject.bounce = reader.ReadSingle();
-            physicalObject.canBeHitByWeapons = reader.ReadBoolean();
-        } */
-
         public static void SyncPhysicalObject(PhysicalObject self, BodyChunk[] bodyChunks) => self.bodyChunks = bodyChunks;
+
+
+        /* **************
+        * PhysicalObject packet (6 bytes + bodyChunkPacket + bodyChunkConnections)
+        * 
+        * (float) bounce                  (4 byte)
+        * (bool)  canBeHitByWeapons       (1 byte)
+        * (byte)  numberOfChunks          (1 byte)
+        * (BODYCHUNKS PACKET)
+        * (byte)  numberOfChunkConnectino (1 byte)
+        * (BODYCHUNKSCONNECTION PACKET)
+        * **************/
+
+        /// <summary>
+        /// Writes physicalObject packet 
+        /// <para>[ABSTRACTPHYSICALOBJ | float bounce | bool canBeHitByWeapons | byte numberOfChunks | BODYCHUNK(s) | byte numberOfConnections | BODYCHUNKCONN(s)]</para>
+        /// <para>[min 74 bytes]</para>
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>void</returns>
+        public static void Write(PhysicalObject physicalObject, ref BinaryWriter writer)
+        {
+            //AbstractPhysicalObjectHandler.Write(physicalObject.abstractPhysicalObject, ref writer);
+
+            if (physicalObject is Creature creature)
+            {
+                AbstractCreatureHandler.Write(creature.abstractCreature, ref writer);
+            }
+
+            //writer.Write(physicalObject.appendages.Count);
+            //foreach (PhysicalObject.Appendage app in physicalObject.appendages)
+            //{
+            //    AppendageHandler.Write(app, ref writer);
+            //}
+
+            //DistHandler.Write(physicalObject, ref writer);
+
+            writer.Write(physicalObject.bounce);
+            writer.Write(physicalObject.canBeHitByWeapons);
+
+            writer.Write((byte)physicalObject.bodyChunks.Length);
+            foreach (BodyChunk chunk in physicalObject.bodyChunks)
+            {
+                BodyChunkHandler.Write(chunk, ref writer);
+            }
+            writer.Write((byte)physicalObject.bodyChunkConnections.Length);
+
+            foreach (PhysicalObject.BodyChunkConnection con in physicalObject.bodyChunkConnections)
+            {
+                BodyChunkConnectionHandler.Write(con, ref writer);
+            }
+        }
 
         public static void Read(PhysicalObject physicalObject, ref BinaryReader reader)
         {
-            AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            //int numberOfAppendages = reader.ReadInt32();
-            //if (physicalObject.appendages.Count < numberOfAppendages)
-            //{
-            //    physicalObject.appendages = new List<PhysicalObject.Appendage>();
-            //}
-            //for (int a = 0; a < numberOfAppendages; a++)
-            //{
-            //    physicalObject.appendages[a] = AppendageHandler.Read(physicalObject.appendages[a], ref reader);
-            //}
+            //AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
+            if (physicalObject is Creature creature)
+            {
+                AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
+            }
+            physicalObject.bounce = reader.ReadSingle();
+            physicalObject.canBeHitByWeapons = reader.ReadBoolean();
 
-            int numberOfChunks = reader.ReadInt32();
+            int numberOfChunks = reader.ReadByte();
             BodyChunk[] chunks = physicalObject.bodyChunks;
-
             if (physicalObject.bodyChunks.Length < numberOfChunks)
             {
                 chunks = new BodyChunk[numberOfChunks];
@@ -212,68 +85,98 @@ namespace Monkland.SteamManagement
 
             SyncPhysicalObject(physicalObject, chunks);
 
-            int numberOFConnections = reader.ReadInt32();
-
-            if (physicalObject.bodyChunkConnections.Length < numberOFConnections)
+            int numberOfConnections = reader.ReadByte();
+            if (physicalObject.bodyChunkConnections.Length < numberOfConnections)
             {
-                physicalObject.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOFConnections];
+                physicalObject.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOfConnections];
             }
-            for (int a = 0; a < numberOFConnections; a++)
+            for (int a = 0; a < numberOfConnections; a++)
             {
                 physicalObject.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader);
             }
-
-            physicalObject.bounce = reader.ReadSingle();
-            physicalObject.canBeHitByWeapons = reader.ReadBoolean();
         }
 
-        public static void Write(PhysicalObject physicalObject, ref BinaryWriter writer)
+
+
+        public static void ReadSpecificPhysicalObject(PhysicalObject physicalObject, ref BinaryReader reader)
         {
-            AbstractPhysicalObjectHandler.Write(physicalObject.abstractPhysicalObject, ref writer);
-            //writer.Write(physicalObject.appendages.Count);
-            //foreach (PhysicalObject.Appendage app in physicalObject.appendages)
-            //{
-            //    AppendageHandler.Write(app, ref writer);
-            //}
-            writer.Write(physicalObject.bodyChunks.Length);
-
-            foreach (BodyChunk chunk in physicalObject.bodyChunks)
+            AbstractPhysicalObject.AbstractObjectType type = physicalObject.abstractPhysicalObject.type;
+            switch (type)
             {
-                BodyChunkHandler.Write(chunk, ref writer);
+                case AbstractPhysicalObject.AbstractObjectType.Creature:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.Rock:
+                    WeaponHandler.Read(physicalObject as Rock, ref reader);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.Spear:
+                    SpearHandler.Read(physicalObject as Spear, ref reader);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.FlareBomb:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.VultureMask:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.PuffBall:
+                    break;
+                    /* ... */
             }
-            writer.Write(physicalObject.bodyChunkConnections.Length);
-
-            foreach (PhysicalObject.BodyChunkConnection con in physicalObject.bodyChunkConnections)
-            {
-                BodyChunkConnectionHandler.Write(con, ref writer);
-            }
-
-            writer.Write(physicalObject.bounce);
-            writer.Write(physicalObject.canBeHitByWeapons);
         }
 
-        private static class BodyChunkConnectionHandler
+        public static void WriteSpecificPhysicalObject(PhysicalObject physicalObject, ref BinaryWriter writer)
         {
-            public static PhysicalObject.BodyChunkConnection Read(PhysicalObject.BodyChunkConnection bodyChunkConnection, ref BinaryReader reader)
+            AbstractPhysicalObject.AbstractObjectType type = physicalObject.abstractPhysicalObject.type;
+            switch (type)
             {
-                bodyChunkConnection.active = reader.ReadBoolean();
-                bodyChunkConnection.type = (PhysicalObject.BodyChunkConnection.Type)reader.ReadByte();
-                bodyChunkConnection.distance = reader.ReadSingle();
-                bodyChunkConnection.weightSymmetry = reader.ReadSingle();
-                bodyChunkConnection.elasticity = reader.ReadSingle();
-                return bodyChunkConnection;
-            }
-
-            public static void Write(PhysicalObject.BodyChunkConnection bodyChunkConnection, ref BinaryWriter writer)
-            {
-                writer.Write(bodyChunkConnection.active);
-                writer.Write((byte)bodyChunkConnection.type);
-                writer.Write(bodyChunkConnection.distance);
-                writer.Write(bodyChunkConnection.weightSymmetry);
-                writer.Write(bodyChunkConnection.elasticity);
+                case AbstractPhysicalObject.AbstractObjectType.Creature:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.Rock:
+                    WeaponHandler.Write(physicalObject as Rock, ref writer);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.Spear:
+                    SpearHandler.Write(physicalObject as Spear, ref writer);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.FlareBomb:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.VultureMask:
+                    break;
+                    /* ... */
             }
         }
 
+        internal static void WriteSpecificCreature(Creature creature, ref BinaryWriter writer)
+        {
+            switch (creature.abstractCreature.creatureTemplate.TopAncestor().type)
+            {
+                case CreatureTemplate.Type.StandardGroundCreature:
+                    break;
+                case CreatureTemplate.Type.Slugcat:
+                    PlayerHandler.Write(creature as Player, ref writer);
+                    break;
+                case CreatureTemplate.Type.LizardTemplate:
+                    break;
+                    /* ... */
+
+            }
+        }
+        internal static void ReadSpecificCreature(Creature creature, ref BinaryReader reader)
+        {
+            switch (creature.abstractCreature.creatureTemplate.TopAncestor().type)
+            {
+                case CreatureTemplate.Type.StandardGroundCreature:
+                    break;
+                case CreatureTemplate.Type.Slugcat:
+                    PlayerHandler.Read(creature as Player, ref reader);
+                    break;
+                case CreatureTemplate.Type.LizardTemplate:
+                    break;
+                case CreatureTemplate.Type.PinkLizard:
+                    break;
+                    /* ... */
+
+            }
+
+        }
+
+        // Unused
         private static class AppendageHandler
         {
             public static PhysicalObject.Appendage Read(PhysicalObject.Appendage appendage, ref BinaryReader reader)
@@ -298,5 +201,6 @@ namespace Monkland.SteamManagement
                 writer.Write(appendage.totalLength);
             }
         }
+
     }
 }

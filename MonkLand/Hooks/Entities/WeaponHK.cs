@@ -20,6 +20,8 @@ namespace Monkland.Hooks.Entities
             AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
         }
 
+        public static void Sync(PhysicalObject self) => AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
+
         private static void Weapon_Update(On.Weapon.orig_Update orig, Weapon self, bool eu)
         {
             orig(self, eu);
@@ -76,10 +78,10 @@ namespace Monkland.Hooks.Entities
         {
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
             if (CheckNet()) { return; }
-            if (MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.index))
+            if (MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
                 MonklandSteamManager.EntityManager.SendThrow(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc);
-                MonklandSteamManager.EntityManager.Send(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.index], true);
+                MonklandSteamManager.EntityManager.SendPhysicalObject(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);
             }
         }
 
@@ -88,10 +90,10 @@ namespace Monkland.Hooks.Entities
         {
             bool hit = orig(self, result, eu);
             if (CheckNet()) { return hit; }
-            if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.index))
+            if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
                 MonklandSteamManager.EntityManager.SendHit(self, result.obj, result.chunk);
-                MonklandSteamManager.EntityManager.Send(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.index], true);
+                MonklandSteamManager.EntityManager.SendPhysicalObject(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);
             }
             return hit;
         }

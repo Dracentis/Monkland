@@ -5,37 +5,41 @@ namespace Monkland.SteamManagement
 {
     internal class AbstractPhysicalObjectHandler
     {
-        /* public static AbstractPhysicalObject Read(AbstractPhysicalObject physicalObject, ref BinaryReader reader)
-        {
-            physicalObject.ID = EntityIDHandler.Read(ref reader);
-            physicalObject.pos = WorldCoordinateHandler.Read(ref reader);
-            physicalObject.InDen = reader.ReadBoolean();
-            physicalObject.timeSpentHere = reader.ReadInt32();
-            physicalObject.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
-            physicalObject.ID.number = reader.ReadInt32();
-            physicalObject.destroyOnAbstraction = true;
-            return physicalObject;
-        } */
+        /* **************
+        * AbstractPhysicalObject packet ()
+        * 
+        * (byte) type          (1 byte)
+        * (int)  distinguisher (1~5 byte)
 
-        public static void Read(AbstractPhysicalObject physicalObject, ref BinaryReader reader)
+        * **************/
+
+        /// <summary>
+        /// Writes physicalObject packet 
+        /// <para>[ABSTRACTENTITYOBJ | byte type]</para>
+        /// <para>[30 bytes]</para>
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>void</returns>
+        public static void Write(AbstractPhysicalObject abstractPhysicalObject, ref BinaryWriter writer)
         {
-            physicalObject.ID = EntityIDHandler.Read(ref reader);
-            physicalObject.pos = WorldCoordinateHandler.Read(ref reader);
-            physicalObject.InDen = reader.ReadBoolean();
-            physicalObject.timeSpentHere = reader.ReadInt32();
-            physicalObject.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
-            physicalObject.ID.number = reader.ReadInt32();
-            physicalObject.destroyOnAbstraction = true;
+            AbstractWorldEntityHandler.Write(abstractPhysicalObject, ref writer);
+            writer.Write((byte)abstractPhysicalObject.type);
         }
 
-        public static void Write(AbstractPhysicalObject physicalObject, ref BinaryWriter writer)
+        /// <summary>
+        /// Writes physicalObject packet 
+        /// <para>[ABSTRACTENTITYOBJ | byte type]</para>
+        /// <para>[30 bytes]</para>
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>void</returns>
+        public static void Read(AbstractPhysicalObject abstractPhysicalObject, ref BinaryReader reader)
         {
-            EntityIDHandler.Write(physicalObject.ID, ref writer);
-            WorldCoordinateHandler.Write(physicalObject.pos, ref writer);
-            writer.Write(physicalObject.InDen);
-            writer.Write(physicalObject.timeSpentHere);
-            writer.Write((byte)physicalObject.type);
-            writer.Write(AbstractPhysicalObjectHK.GetField(physicalObject).dist);
+            AbstractWorldEntityHandler.Read(abstractPhysicalObject, ref reader);
+            abstractPhysicalObject.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+            abstractPhysicalObject.destroyOnAbstraction = true;
         }
     }
 }

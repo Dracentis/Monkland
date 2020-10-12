@@ -5,10 +5,25 @@ namespace Monkland.SteamManagement
 {
     internal class CreatureHandler
     {
+
+        public static void Write(Creature creature, ref BinaryWriter writer)
+        {
+            //writer.Write(creature.blind);
+            writer.Write(creature.dead);
+            IntVector2NHandler.Write(creature.enteringShortCut, ref writer);
+            WorldCoordinateHandler.Write(creature.lastCoord, ref writer);
+            writer.Write(creature.leechedOut);
+            writer.Write(creature.newToRoomInvinsibility);
+            WorldCoordinateHandler.Write(creature.NPCTransportationDestination, ref writer);
+            writer.Write(creature.shortcutDelay);
+            /*for(int i = 0; i < creature.grasps.Length; i++)
+            {
+                GraspHandler.Write(creature.grasps[i], ref writer);
+            }*/
+        }
+
         public static void Read(Creature creature, ref BinaryReader reader)
         {
-            AbstractCreatureHandler.Read(creature, ref reader);
-            PhysicalObjectHandler.Read(creature, ref reader);
             //creature.blind = reader.ReadInt32();
             CreatureHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
@@ -17,7 +32,6 @@ namespace Monkland.SteamManagement
             creature.newToRoomInvinsibility = reader.ReadInt32();
             creature.NPCTransportationDestination = WorldCoordinateHandler.Read(ref reader);
             creature.shortcutDelay = reader.ReadInt32();
-            // return creature;
         }
 
         /*
@@ -62,22 +76,5 @@ namespace Monkland.SteamManagement
         //return creature;
         //}
 
-        public static void Write(Creature creature, ref BinaryWriter writer)
-        {
-            AbstractCreatureHandler.Write(creature.abstractCreature, ref writer);
-            PhysicalObjectHandler.Write(creature, ref writer);
-            //writer.Write(creature.blind);
-            writer.Write(creature.dead);
-            IntVector2NHandler.Write(creature.enteringShortCut, ref writer);
-            WorldCoordinateHandler.Write(creature.lastCoord, ref writer);
-            writer.Write(creature.leechedOut);
-            writer.Write(creature.newToRoomInvinsibility);
-            WorldCoordinateHandler.Write(creature.NPCTransportationDestination, ref writer);
-            writer.Write(creature.shortcutDelay);
-            /*for(int i = 0; i < creature.grasps.Length; i++)
-            {
-                GraspHandler.Write(creature.grasps[i], ref writer);
-            }*/
-        }
     }
 }

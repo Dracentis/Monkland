@@ -5,6 +5,31 @@ namespace Monkland.SteamManagement
 {
     internal static class AbstractCreatureHandler
     {
+        public static void Write(AbstractCreature creature, ref BinaryWriter writer)
+        {
+            AbstractPhysicalObjectHandler.Write(creature, ref writer);
+            writer.Write((byte)creature.creatureTemplate.type);
+            //AbstractCreatureAIHandler.Write(creature.abstractAI, ref writer);
+            //Additional personality and relationship traits should be synced here!
+            writer.Write(creature.remainInDenCounter);
+            WorldCoordinateHandler.Write(creature.spawnDen, ref writer);
+            //creature state should also be synced here!!
+        }
+
+        public static void Read(AbstractCreature creature, ref BinaryReader reader)
+        {
+            AbstractPhysicalObjectHandler.Read(creature, ref reader);
+            creature.creatureTemplate.type = (CreatureTemplate.Type)reader.ReadByte();
+            //creature.abstractAI = AbstractCreatureAIHandler.Read(creature.abstractAI, ref reader);
+            //Additional personality and relationship traits should be synced here!
+            creature.remainInDenCounter = reader.ReadInt32();
+            creature.spawnDen = WorldCoordinateHandler.Read(ref reader);
+            //creature state should also be synced here!!
+            //return creature;
+        }
+
+
+        /*
         public static void Read(AbstractCreature creature, ref BinaryReader reader)
         {
             creature.ID = EntityIDHandler.Read(ref reader);
@@ -54,6 +79,7 @@ namespace Monkland.SteamManagement
             WorldCoordinateHandler.Write(creature.spawnDen, ref writer);
             //creature state should also be synced here!!
         }
+        */
 
         private static class AbstractCreatureAIHandler
         {

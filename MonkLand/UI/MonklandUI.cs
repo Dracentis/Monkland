@@ -228,6 +228,11 @@ namespace Monkland.UI
             }
         }
 
+        internal static string BuildSendPhysicalObjectLog(PhysicalObject physicalObject)
+        {
+            return $"[Sending--->] {physicalObject.abstractPhysicalObject.type}";
+        }
+
         public static void UpdateStatus(string message)
         {
             if (statusLabel != null)

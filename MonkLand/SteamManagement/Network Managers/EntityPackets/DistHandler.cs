@@ -37,9 +37,12 @@ namespace Monkland.SteamManagement
         {
             if (!reader.ReadBoolean())
             { return null; }
+
             int dist = reader.ReadInt32();
+
             if (physicalObject != null && physicalObject.abstractPhysicalObject != null && AbstractPhysicalObjectHK.GetField(physicalObject.abstractPhysicalObject).dist == dist)
             { return physicalObject; }
+
             PhysicalObject target = null;
             for (int i = 0; i < room.physicalObjects.Length; i++)
             {
@@ -76,7 +79,16 @@ namespace Monkland.SteamManagement
             }
             else
             { writer.Write(true); }
+
             writer.Write(AbstractPhysicalObjectHK.GetField(target.abstractPhysicalObject).dist);
+        }
+
+        public static int Read( ref BinaryReader reader)
+        {
+            if (!reader.ReadBoolean())
+            { return -1; }
+            return reader.ReadInt32();
+            
         }
     }
 }
