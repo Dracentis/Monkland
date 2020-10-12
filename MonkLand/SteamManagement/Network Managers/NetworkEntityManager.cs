@@ -801,7 +801,7 @@ namespace Monkland.SteamManagement
 
             }
             // PhysicalObject not found, realize new one.
-            AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.StandardGroundCreature), null, new WorldCoordinate(0, 0, 0, 0), new EntityID(-20, -20));
+            AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, 0, 0, 0), new EntityID(-1, distinguisher));
             // Filling the fields
             AbstractCreatureHandler.Read(abstractCreature, ref reader);
             if (abstractCreature.creatureTemplate.type == CreatureTemplate.Type.Slugcat)
