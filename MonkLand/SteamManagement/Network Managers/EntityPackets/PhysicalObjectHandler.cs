@@ -33,11 +33,6 @@ namespace Monkland.SteamManagement
         {
             //AbstractPhysicalObjectHandler.Write(physicalObject.abstractPhysicalObject, ref writer);
 
-            if (physicalObject is Creature creature)
-            {
-                AbstractCreatureHandler.Write(creature.abstractCreature, ref writer);
-            }
-
             //writer.Write(physicalObject.appendages.Count);
             //foreach (PhysicalObject.Appendage app in physicalObject.appendages)
             //{
@@ -65,10 +60,6 @@ namespace Monkland.SteamManagement
         public static void Read(PhysicalObject physicalObject, ref BinaryReader reader)
         {
             //AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
-            if (physicalObject is Creature creature)
-            {
-                AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
-            }
             physicalObject.bounce = reader.ReadSingle();
             physicalObject.canBeHitByWeapons = reader.ReadBoolean();
 
@@ -144,7 +135,7 @@ namespace Monkland.SteamManagement
 
         internal static void WriteSpecificCreature(Creature creature, ref BinaryWriter writer)
         {
-            switch (creature.abstractCreature.creatureTemplate.TopAncestor().type)
+            switch (creature.abstractCreature.creatureTemplate.type)
             {
                 case CreatureTemplate.Type.StandardGroundCreature:
                     break;
@@ -159,7 +150,7 @@ namespace Monkland.SteamManagement
         }
         internal static void ReadSpecificCreature(Creature creature, ref BinaryReader reader)
         {
-            switch (creature.abstractCreature.creatureTemplate.TopAncestor().type)
+            switch (creature.abstractCreature.creatureTemplate.type)
             {
                 case CreatureTemplate.Type.StandardGroundCreature:
                     break;
