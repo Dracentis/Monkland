@@ -1,6 +1,8 @@
 Monkland
 
 # Packet Formats
+This a temporal set up of the packet format. The Creature and Object packets could be combined. The sizes are not accurate.
+
 
 Physical Object Packet
 | type  | field              | size (bytes) |
