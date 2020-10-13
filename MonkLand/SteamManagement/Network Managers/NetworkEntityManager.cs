@@ -232,6 +232,7 @@ namespace Monkland.SteamManagement
 
             // Distinguisher
             writer.Write(field.dist);
+            creature.abstractCreature.ID.number = field.dist;
 
             // AbstractCreatureHandler
             AbstractCreatureHandler.Write(creature.abstractCreature, ref writer);
@@ -242,7 +243,7 @@ namespace Monkland.SteamManagement
             reliable = true;
             if (MonklandSteamManager.DEBUG)
             {
-                //MonklandUI.UpdateMessage($"Spear\nO: {field.owner % 10000:0000}\nID: {field.dist % 10000:0000}", 1, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, Color.white);
+                MonklandUI.UpdateMessage($"{creature.abstractCreature.creatureTemplate.TopAncestor().type}\nO: {field.owner % 10000:0000}\nID: {field.dist % 10000:0000}", 1, creature.bodyChunks[0].pos, field.dist, creature.room.abstractRoom.index, creature.ShortCutColor());
                 string message = MonklandUI.BuildSendPhysicalObjectLog(creature);
                 MonklandUI.UpdateMessage(message, 3, creature.bodyChunks[0].pos, field.dist, creature.room.abstractRoom.index, Color.blue);
             }
@@ -282,6 +283,7 @@ namespace Monkland.SteamManagement
              * packetType (1 byte)
              * roomName (~ byte)
              * distinguisher
+             * type
              * PhysicalObject Packet
              * 
              * extra...
@@ -306,6 +308,9 @@ namespace Monkland.SteamManagement
 
             // Distinguisher
             writer.Write(field.dist);
+            //physicalObject.abstractPhysicalObject.ID.number = field.dist;
+
+            writer.Write((byte)absType);
 
             // AbstractPhysicalObjectPacket
             AbstractPhysicalObjectHandler.Write(physicalObject.abstractPhysicalObject, ref writer);
@@ -316,9 +321,9 @@ namespace Monkland.SteamManagement
             reliable = true;
             if (MonklandSteamManager.DEBUG)
             {
-                //MonklandUI.UpdateMessage($"Spear\nO: {field.owner % 10000:0000}\nID: {field.dist % 10000:0000}", 1, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, Color.white);
-                string message = MonklandUI.BuildSendPhysicalObjectLog(physicalObject);
-                MonklandUI.UpdateMessage(message, 3, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, Color.blue);
+                MonklandUI.UpdateMessage($"{absType}\nO: {field.owner % 10000:0000}\nID: {field.dist % 10000:0000}", 1, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, Color.white);
+                //string message = MonklandUI.BuildSendPhysicalObjectLog(physicalObject);
+                //MonklandUI.UpdateMessage(message, 3, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, Color.blue);
             }
 
             // Finalize acket
@@ -690,6 +695,7 @@ namespace Monkland.SteamManagement
              * packetType (1 byte)
              * string roomName (~ byte)
              * distinguisher
+             * type
              * PhysicalObject Packet
              * 
              * extra...
@@ -712,6 +718,8 @@ namespace Monkland.SteamManagement
 
             int distinguisher = reader.ReadInt32();
 
+            AbstractPhysicalObject.AbstractObjectType type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+
             for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
             {
                 for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
@@ -719,36 +727,56 @@ namespace Monkland.SteamManagement
                     if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null)
                     {
                         AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject);
-                        if (field.dist != distinguisher) { continue; }
-                        if (field.owner == sentPlayer.m_SteamID)
+                        if (field.dist != distinguisher)
                         {
-                            PhysicalObject foundObject = abstractRoom.realizedRoom.physicalObjects[i][j];
+                            if (field.owner == sentPlayer.m_SteamID)
+                            {
+                                try
+                                {
+                                    PhysicalObject foundObject = abstractRoom.realizedRoom.physicalObjects[i][j];
 
-                            // ALWAYS FOLLOW THIS ORDER WHEN READING / WRITING PACKERS
-                            AbstractPhysicalObjectHandler.Read(foundObject.abstractPhysicalObject, ref reader);
-                            PhysicalObjectHandler.Read(foundObject, ref reader);
-                            PhysicalObjectHandler.ReadSpecificPhysicalObject(foundObject, ref reader);
+                                    // ALWAYS FOLLOW THIS ORDER WHEN READING / WRITING PACKERS
+                                    AbstractPhysicalObjectHandler.Read(foundObject.abstractPhysicalObject, ref reader);
+                                    PhysicalObjectHandler.Read(foundObject, ref reader);
+                                    PhysicalObjectHandler.ReadSpecificPhysicalObject(foundObject, ref reader);
 
-                            if (MonklandSteamManager.DEBUG)
-                            { MonklandUI.UpdateMessage($"{foundObject.abstractPhysicalObject.type}\nO: {sentPlayer.m_SteamID % 10000:0000}\nID: {distinguisher % 10000:1000}", 2, abstractRoom.realizedRoom.physicalObjects[i][j].bodyChunks[0].pos, distinguisher, abstractRoom.index, Color.white); }
-                            foundObject.abstractPhysicalObject.pos.room = abstractRoom.index;
+                                    if (MonklandSteamManager.DEBUG)
+                                    { MonklandUI.UpdateMessage($"{foundObject.abstractPhysicalObject.type}\nO: {sentPlayer.m_SteamID % 10000:0000}\nID: {distinguisher % 10000:1000}", 2, abstractRoom.realizedRoom.physicalObjects[i][j].bodyChunks[0].pos, distinguisher, abstractRoom.index, Color.white); }
+                                    // Make sure it is in correct room (probably not necessary)
+                                    foundObject.abstractPhysicalObject.pos.room = abstractRoom.index;
+                                }
+                                catch (Exception e) { Debug.Log(e); }
+                            }
                         }
                         return;
                     }
                 }
             }
+
             // PhysicalObject not found, realize new one.
-            AbstractPhysicalObject abstractObject = new AbstractPhysicalObject(RainWorldGameHK.mainGame.world, 0, null, new WorldCoordinate(abstractRoom.index, 0, 0, -1), new EntityID(-20, -20));
+            //AbstractPhysicalObject abstractObject = new AbstractPhysicalObject(RainWorldGameHK.mainGame.world, 0, null, new WorldCoordinate(abstractRoom.index, 0, 0, -1), new EntityID(-20, -20));
+            AbstractPhysicalObject abstractObject = AbstractPhysicalObjectHandler.InitializeAbstractObject(RainWorldGameHK.mainGame.world, type, null, new WorldCoordinate(abstractRoom.index, 0, 0, -1), new EntityID(-20, -20));
+
             // Filling the fields
             AbstractPhysicalObjectHandler.Read(abstractObject, ref reader);
-            // Missing distinguisher?
-            MonklandUI.AddMessage($"Creating new physicalobject {abstractObject.type}", 4);
-            RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractObject.pos.room).AddEntity(abstractObject);
-            abstractObject.RealizeInRoom();
-            PhysicalObjectHandler.Read(abstractObject.realizedObject, ref reader);
-            PhysicalObjectHandler.ReadSpecificPhysicalObject(abstractObject.realizedObject, ref reader);
+
+            // Fill ID number before calling GetField()
+            //abstractObject.ID.number = distinguisher;
             AbstractPhysicalObjectHK.GetField(abstractObject).owner = sentPlayer.m_SteamID;
 
+            // Realizing in room
+            RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractRoom.index).AddEntity(abstractObject);
+            abstractObject.RealizeInRoom();
+
+            // Filling the fields
+            PhysicalObjectHandler.Read(abstractObject.realizedObject, ref reader);
+            PhysicalObjectHandler.ReadSpecificPhysicalObject(abstractObject.realizedObject, ref reader);
+
+            // Making sure the object ins in the intended room
+            abstractObject.pos.room = abstractRoom.index;
+            Debug.Log($"Creating new Obj {abstractObject.type}. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractObject).owner)}. Distinguisher {distinguisher} | ID number {abstractObject.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractObject).dist}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractObject.pos.room).name}");
+
+            //Debug.Log($"Creating new physical Object {abstractObject.type}");
         }
 
         public void GetCreature(BinaryReader reader, CSteamID sentPlayer)
@@ -783,11 +811,12 @@ namespace Monkland.SteamManagement
             foreach (AbstractCreature absCreature in abstractRoom.creatures)
             {
                 AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(absCreature);
-                Debug.Log($"Reading new creature. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(absCreature).owner)}. Distinguisher read-{distinguisher} |  getfield-{AbstractPhysicalObjectHK.GetField(absCreature).dist}");
                 if (field.dist == distinguisher && absCreature.realizedCreature != null)
                 {
                     if (field.owner == sentPlayer.m_SteamID)
                     {
+                        //Debug.Log($"Read creature matches. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(absCreature).owner)}. Distinguisher read {distinguisher} |  getfield {AbstractPhysicalObjectHK.GetField(absCreature).dist}");
+
                         // Read Player
                         Creature realizedCreature = absCreature.realizedCreature;
 
@@ -806,132 +835,31 @@ namespace Monkland.SteamManagement
             }
 
             // PhysicalObject not found, realize new one.
-            AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(abstractRoom.index, 0, 0, -1), new EntityID(-1, distinguisher));
+            AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(abstractRoom.index, 15, 25, -1), new EntityID(-1, distinguisher));
             // Filling the fields
             AbstractCreatureHandler.Read(abstractCreature, ref reader);
+            // Create PlayerState if it is player (should be moved elsewhere probably)
             if (abstractCreature.creatureTemplate.type == CreatureTemplate.Type.Slugcat)
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 1, 0, false);
             }
+            // Fill ID number before calling GetField()
             abstractCreature.ID.number = distinguisher;
             AbstractPhysicalObjectHK.GetField(abstractCreature).owner = sentPlayer.m_SteamID;
 
-            abstractCreature.pos.room = abstractRoom.index;
-            RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
+            // Realizing Creature in Room
+            RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractRoom.index).AddEntity(abstractCreature);
             abstractCreature.RealizeInRoom();
 
+            // Filling the fields
             PhysicalObjectHandler.Read(abstractCreature.realizedObject, ref reader);
             PhysicalObjectHandler.ReadSpecificCreature(abstractCreature.realizedCreature, ref reader);
-            Debug.Log($"Creating new Creature {abstractCreature.type}. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractCreature).owner)}. Distinguisher {distinguisher} | {abstractCreature.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractCreature).dist}");
 
-        }
-
-        public void ReadPlayer(BinaryReader br, CSteamID sentPlayer)
-        {
-
-            /*
-                * packet type
-                * roon name
-                * dist
-                * playerhanlder
-                * */
-
-            // Read World Coordinate
-            if (!MonklandSteamManager.WorldManager.gameRunning)
-            { return; }
-
-            //Read Room Name
-            string roomName = br.ReadString();
-
-            if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(roomName))
-            { return; }
-
-            AbstractRoom abstractRoom = RainWorldGameHK.mainGame.world.GetAbstractRoom(roomName);
-            if (abstractRoom == null || abstractRoom.realizedRoom == null)
-            { return; }
-
-            // Read Distinguisher
-            int dist = br.ReadInt32();
-
-            // Read World Coordinate
-            WorldCoordinate startPos = WorldCoordinateHandler.Read(ref br);
-
-            foreach (AbstractCreature creature in abstractRoom.creatures)
-            {
-                AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(creature);
-                if (field.dist == dist && creature.realizedCreature != null)
-                {
-                    if (field.owner == sentPlayer.m_SteamID)
-                    {
-                        // Read Player
-                        PlayerHandler.Read(creature.realizedCreature as Player, ref br);
-                        if (MonklandSteamManager.DEBUG)
-                        { MonklandUI.UpdateMessage($"{SteamFriends.GetFriendPersonaName(sentPlayer)}\nOwner: {sentPlayer.m_SteamID}\nID: {dist}", 1, creature.realizedCreature.bodyChunks[0].pos, dist, abstractRoom.index, (creature.realizedCreature as Player).ShortCutColor()); }
-                        creature.pos.room = abstractRoom.index;
-                    }
-                    return;
-                }
-            }
-
-            startPos.room = abstractRoom.index;
-            startPos.abstractNode = -1;
-            AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Slugcat), null, startPos, new EntityID(-1, dist));
-            abstractCreature.state = new PlayerState(abstractCreature, 1, 0, false);
-            abstractCreature.ID.number = dist;
-            AbstractPhysicalObjectHK.GetField(abstractCreature).owner = sentPlayer.m_SteamID;
+            // Making sure player is in the intended room
             abstractCreature.pos.room = abstractRoom.index;
-            RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
-            abstractCreature.RealizeInRoom();
-            // Read Player
-            PlayerHandler.Read(abstractCreature.realizedCreature as Player, ref br);
-            if (MonklandSteamManager.DEBUG)
-            {
-                Debug.Log($"Spawning main player ID {sentPlayer.m_SteamID} in room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).name}");
-            }
-        }
+            Debug.Log($"Creating new Creature. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractCreature).owner)}. Distinguisher {distinguisher} | ID number {abstractCreature.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractCreature).dist}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).name}");
 
-        /*
-        public void ReadPhysicalObject(BinaryReader br, CSteamID sentPlayer, AbstractRoom abstractRoom, int dist, WorldCoordinate startPos)
-        {
-            for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
-            {
-                for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
-                {
-                    if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null)
-                    {
-                        AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject);
-                        if (field.dist != dist)
-                        {
-                            continue;
-                        }
-                        if (field.owner == sentPlayer.m_SteamID)
-                        {
-                            WeaponHK.Sync(abstractRoom.realizedRoom.physicalObjects[i][j]);
-                            // Read Spear
-                            abstractRoom.realizedRoom.physicalObjects[i][j] = SpearHandler.Read((abstractRoom.realizedRoom.physicalObjects[i][j] as Spear), ref br);
-                            if (MonklandSteamManager.DEBUG)
-                            {
-                                MonklandUI.UpdateMessage($"Spear\nO: {sentPlayer.m_SteamID % 10000:1000}\nID: {dist % 10000:1000}", 2,
-                                    abstractRoom.realizedRoom.physicalObjects[i][j].bodyChunks[0].pos, dist, abstractRoom.index, Color.white);
-                            }
-                            abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject.pos.room = abstractRoom.index;
-                        }
-                        return;
-                    }
-                }
-            }
-            startPos.room = abstractRoom.index;
-            startPos.abstractNode = -1;
-            AbstractPhysicalObject abstractObject = new AbstractPhysicalObject(RainWorldGameHK.mainGame.world, type, null, startPos, ID, false);
-            AbstractPhysicalObjectHK.GetField(abstractObject).owner = sentPlayer.m_SteamID;
-            abstractObject.pos.room = abstractRoom.index;
-            RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractObject.pos.room).AddEntity(abstractObject);
-            abstractObject.RealizeInRoom();
-            WeaponHK.Sync(abstractObject.realizedObject as Spear);
-            // Read Spear
-            abstractObject.realizedObject = SpearHandler.Read((abstractObject.realizedObject as Spear), ref br);
         }
-        */
 
         #region Grasps and Sticks
 
@@ -951,7 +879,7 @@ namespace Monkland.SteamManagement
                 {
                     if (hit != null)
                     {
-                        MonklandSteamManager.Log($"[Entity] Incoming hit: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} hit {AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject).dist}");
+                        MonklandSteamManager.Log($"[Entity] Incoming hit: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} hit {hit.abstractPhysicalObject.type} [{AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject).dist}]");
                     }
                     else
                     {
@@ -993,8 +921,8 @@ namespace Monkland.SteamManagement
                 float frc = br.ReadSingle();
                 if (obj != null && thrownBy != null)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incoming Throw: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} thrownby {AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject).dist}");
-                    if (obj is Rock || obj is Spear)
+                    MonklandSteamManager.Log($"[Entity] Incoming Throw: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} thrownby {thrownBy.abstractCreature.type} [{AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject).dist}]");
+                    if (obj is Weapon)
                     {
                         WeaponHK.SetNet();
                         (obj as Weapon).Thrown(thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, RainWorldGameHK.mainGame.evenUpdate);

@@ -25,6 +25,18 @@ namespace Monkland.SteamManagement
         {
             AbstractWorldEntityHandler.Write(abstractPhysicalObject, ref writer);
             writer.Write((byte)abstractPhysicalObject.type);
+            switch (abstractPhysicalObject.type)
+            {
+                case AbstractPhysicalObject.AbstractObjectType.Spear:
+                    AbstractSpearHandler.Write(abstractPhysicalObject as AbstractSpear, ref writer);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.DataPearl:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.VultureMask:
+                    break;
+                    /*...*/
+           
+            }
         }
 
         /// <summary>
@@ -40,6 +52,27 @@ namespace Monkland.SteamManagement
             AbstractWorldEntityHandler.Read(abstractPhysicalObject, ref reader);
             abstractPhysicalObject.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
             abstractPhysicalObject.destroyOnAbstraction = true;
+            switch(abstractPhysicalObject.type)
+            {
+                case AbstractPhysicalObject.AbstractObjectType.Spear:
+                    AbstractSpearHandler.Read(abstractPhysicalObject as AbstractSpear, ref reader);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.DataPearl:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.VultureMask:
+                    break;
+                    /*...*/
+            }
+        }
+
+        public static AbstractPhysicalObject InitializeAbstractObject(World world, AbstractPhysicalObject.AbstractObjectType type, PhysicalObject realizedObject, WorldCoordinate pos, EntityID ID)
+        {
+            AbstractPhysicalObject abstractPhysical = new AbstractPhysicalObject(world, type, realizedObject, pos, ID);
+            if (type == AbstractPhysicalObject.AbstractObjectType.Spear)
+            {
+                abstractPhysical = new AbstractSpear(world, realizedObject as Spear, pos, ID, false);
+            }
+            return abstractPhysical;
         }
     }
 }

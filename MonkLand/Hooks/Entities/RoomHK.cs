@@ -38,7 +38,7 @@ namespace Monkland.Hooks.Entities
                 if (MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.abstractRoom.name) && self.game.Players[0].realizedObject != null && self.game.Players[0].Room.name == self.abstractRoom.name)
                 { 
                     AbsRoomFields field = AbstractRoomHK.GetField(self.abstractRoom);
-                    if(self.game.Players[0].realizedCreature != null)
+                    if (self.game.Players[0].realizedCreature != null)
                     {
                         MonklandSteamManager.EntityManager.SendCreature(self.game.Players[0].realizedCreature, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name]);
                     }

@@ -15,7 +15,7 @@ namespace Monkland
             this.ModID = "Monkland";
         }
 
-        public const string VERSION = "0.4";
+        public const string VERSION = "0.5";
 
         // public static Monkland instance;
 
@@ -59,7 +59,7 @@ namespace Monkland
             #endregion Others
         }
 
-        public int version = 2;
+        public int version = 0;
 
     }
 }

@@ -26,13 +26,13 @@ namespace Monkland.Hooks.Entities
         {
             orig(self, eu);
 
-            AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            if (sub.networkObject)
+            AbsPhyObjFields fields = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            if (fields.networkObject)
             {
-                if (sub.networkLife > 0) { sub.networkLife--; }
+                if (fields.networkLife > 0) { fields.networkLife--; }
                 else
                 {
-                    sub.networkLife = 60;
+                    fields.networkLife = 60;
                     for (int i = 0; i < self.grabbedBy.Count; i++)
                     {
                         if (self.grabbedBy[i] != null)

@@ -135,7 +135,7 @@ namespace Monkland.SteamManagement
 
         internal static void WriteSpecificCreature(Creature creature, ref BinaryWriter writer)
         {
-            switch (creature.abstractCreature.creatureTemplate.type)
+            switch (creature.abstractCreature.creatureTemplate.TopAncestor().type)
             {
                 case CreatureTemplate.Type.StandardGroundCreature:
                     break;
@@ -150,7 +150,7 @@ namespace Monkland.SteamManagement
         }
         internal static void ReadSpecificCreature(Creature creature, ref BinaryReader reader)
         {
-            switch (creature.abstractCreature.creatureTemplate.type)
+            switch (creature.abstractCreature.creatureTemplate.TopAncestor().type)
             {
                 case CreatureTemplate.Type.StandardGroundCreature:
                     break;
