@@ -2,8 +2,6 @@
 using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace Monkland.UI
@@ -15,7 +13,7 @@ namespace Monkland.UI
         public MUIBox box;
         // private Vector2 size;
 
-        public MUIPlayerList(MultiplayerHUD owner, Vector2 pos)
+        public MUIPlayerList(MultiplayerHUD owner, Vector2 pos) : base(owner, pos)
         {
             Debug.Log("Added MUIPlayer list");
 
@@ -27,7 +25,7 @@ namespace Monkland.UI
                 yPos -= MUIBox.lineHeight;
                 string steamName = SteamFriends.GetFriendPersonaName((CSteamID)s);
 
-                Color bodyColor = Color.white;
+                Color bodyColor = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
                 try
                 {
                     bodyColor = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(s)];

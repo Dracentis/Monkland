@@ -1,9 +1,4 @@
-﻿using Monkland.Hooks.Entities;
-using RWCustom;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using RWCustom;
 using UnityEngine;
 
 namespace Monkland.UI
@@ -23,20 +18,17 @@ namespace Monkland.UI
         private float lastAlpha;
         private float lastBlink;
         private float alpha;
-        private MultiplayerHUD owner;
         private int fadeAwayCounter;
         private int counter;
         public bool slatedForDeletion;
 
-        public MUIPlayerTag(AbstractPhysicalObject player, string name, Color color, MultiplayerHUD owner)
+        public MUIPlayerTag(AbstractPhysicalObject player, string name, Color color, MultiplayerHUD owner) : base(owner, new Vector2(-1000f, -1000f))
         {
             //MonklandUI.AddMessage($"Added label for player {name}[{AbstractPhysicalObjectHK.GetField(player).owner}]");
             this.player = player;
             this.labelName = name;
-            this.pos = new Vector2(-1000f, -1000f);
             this.gradient = new FSprite("Futile_White", true);
             this.gradient.shader = owner.hud.rainWorld.Shaders["FlatLight"];
-            this.owner = owner;
             this.owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;

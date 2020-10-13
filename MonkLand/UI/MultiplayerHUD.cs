@@ -1,13 +1,10 @@
 ﻿using HUD;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Monkland.SteamManagement;
-using RWCustom;
-using Steamworks;
 using Monkland.Hooks.Entities;
+using Monkland.Hooks;
 
 namespace Monkland.UI
 {
@@ -23,9 +20,6 @@ namespace Monkland.UI
         public bool overLayActive;
         public Vector2 lastMousePos;
         public Vector2 mousePos;
-        public bool mouseDown;
-        public bool mouseClick;
-        public bool lastMouseDown;
         public MUIPlayerList muiPlayerList;
 
         public List<MUIHUD> muiElements;
@@ -38,19 +32,11 @@ namespace Monkland.UI
 
         public MultiplayerHUD(HUD.HUD hud) : base(hud)
         {
-            try
-            {
-                this.screenSize = hud.rainWorld.options.ScreenSize;
-            }
-            catch (Exception e)
-            {
-                Debug.Log(e.Message);
-                this.screenSize = new Vector2(1280f, 768f);
-            }
+            this.screenSize = RainWorldHK.mainRW.options.ScreenSize;
             this.screenPos = this.screenSize - new Vector2(1366f, 768f); // This needs to be adjusted
             //Futile.stage.AddChild(this.inFrontContainer);
             this.hud = hud;
-            Debug.Log("Added MultiHUD");
+            Debug.Log("Monkland) Added MultiplayerHUD");
             playerLabels = new Dictionary<ulong, MUIPlayerTag>();
             elementsToBeRemoved = new List<ulong>();
             overLayActive = false;
@@ -58,9 +44,9 @@ namespace Monkland.UI
             frontContainer = new FContainer();
 
             this.backgroundBlack = new FSprite("Futile_White", true);
-            this.backgroundBlack.color = new Color(0f, 0f, 0f);
+            this.backgroundBlack.color = new Color(0.01f, 0.01f, 0.01f);
             this.container.AddChild(this.backgroundBlack);
-            this.backgroundBlack.scaleX = this.hud.rainWorld.options.ScreenSize.x / 16f;
+            this.backgroundBlack.scaleX = this.screenSize.x / 16f;
             this.backgroundBlack.scaleY = 48f;
             this.backgroundBlack.anchorX = 0f;
             this.backgroundBlack.anchorY = 0f;
@@ -72,8 +58,8 @@ namespace Monkland.UI
 
             exitButton = false;
 
-            muiElements.Add(new MUIButton(this, new Vector2(this.ContinueAndExitButtonsXPos - 320f, 20f), "SHUTDOWN"));
-            muiElements.Add(new MUIPlayerList(this, new Vector2(this.hud.rainWorld.options.ScreenSize.x / 2f, this.hud.rainWorld.options.ScreenSize.y / 2f)));
+            muiElements.Add(new MUIButton(this, new Vector2(this.ContinueAndExitButtonsXPos - 320f, 20f), signalShutdown, "SHUTDOWN"));
+            muiElements.Add(new MUIPlayerList(this, new Vector2(this.screenSize.x / 2f, this.screenSize.y / 2f)));
             Futile.stage.AddChild(frontContainer);
         }
 
@@ -104,12 +90,18 @@ namespace Monkland.UI
         public void ShowMultiPauseMenu()
         {
             overLayActive = !overLayActive;
-            Debug.Log("Requested multi pause menu");
+            Debug.Log("Monkland) Requested multi pause menu");
         }
 
-        public void ExitButton()
+        private const string signalShutdown = "SHUTDOWN";
+
+        public void Signal(MUIHUD item, string signal)
         {
-            exitButton = !exitButton;
+            switch (signal)
+            {
+                case signalShutdown:
+                    this.exitButton = !this.exitButton; break;
+            }
         }
 
         public override void ClearSprites()
@@ -163,13 +155,17 @@ namespace Monkland.UI
                 }
                 catch (Exception e)
                 {
-                    Debug.Log(e.Message);
+                    Debug.Log($"Monkland Error in MultiplayerHUD.ExitGame: {e.Message}");
                 }
             }
         }
 
         public override void Update()
         {
+            this.counter++;
+            this.lastMousePos = this.mousePos;
+            this.mousePos = (Vector2)Input.mousePosition;
+
             // Make items visible
             this.backgroundBlack.isVisible = overLayActive;
             foreach (MUIHUD item in muiElements)
@@ -188,15 +184,8 @@ namespace Monkland.UI
                         ExitGame((hud.owner as Player).room.game.manager);
                     }
                 }
-                catch (Exception e) { Debug.Log(e.Message); }
+                catch (Exception e) { Debug.Log($"Monkland Error in MultiplayerHUD.Update: {e.Message}"); }
             }
-
-            this.counter++;
-            this.lastMousePos = this.mousePos;
-            this.mousePos = Input.mousePosition;
-            this.mouseDown = Input.GetMouseButton(0);
-            this.mouseClick = (this.mouseDown && !this.lastMouseDown);
-            this.lastMouseDown = this.mouseDown;
 
             base.Update();
 

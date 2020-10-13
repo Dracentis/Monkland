@@ -15,29 +15,23 @@ namespace Monkland.UI
         public FSprite[] sprites;
         public Vector2 drawSize;
 
-        MultiplayerHUD owner;
-
         private int longestLineX;
         private int numberLines;
 
-        public MUIBox(MultiplayerHUD owner, Vector2 pos, int longestLineX, int numberLines)
+        public MUIBox(MultiplayerHUD owner, Vector2 pos, int longestLineX, int numberLines) : base(owner, pos)
         {
             //this.messages = new List<DialogBox.Message>();
-            this.pos = pos;
-            this.owner = owner;
             this.longestLineX = longestLineX;
             this.numberLines = numberLines;
             this.InitiateSprites();
 
-            drawSize = new Vector2(0f, 0);
+            drawSize = new Vector2(0f, 0f);
             drawSize.x = MUIBox.widthMargin + (float)this.longestLineX + MUIBox.widthMargin;  //* MUIBox.meanCharWidth;
             drawSize.y = MUIBox.heightMargin + MUIBox.lineHeight * (float)this.numberLines;
         }
 
-        public MUIBox(MultiplayerHUD owner, Vector2 pos, Vector2 size)
+        public MUIBox(MultiplayerHUD owner, Vector2 pos, Vector2 size) : base(owner, pos)
         {
-            this.pos = pos;
-            this.owner = owner;
             this.longestLineX = (int)size.x;
             this.numberLines = 1;
             this.InitiateSprites();
@@ -53,7 +47,6 @@ namespace Monkland.UI
             MUIBox.widthMargin = 30f;
         }
 
-
         public int SideSprite(int side)
         {
             return 9 + side;
@@ -64,7 +57,6 @@ namespace Monkland.UI
             return 13 + corner;
         }
 
-
         public int FillSideSprite(int side)
         {
             return side;
@@ -74,6 +66,7 @@ namespace Monkland.UI
         {
             return 4 + corner;
         }
+
         public int MainFillSprite
         {
             get
@@ -160,7 +153,6 @@ namespace Monkland.UI
             */
             Vector2 vecPos = pos;
 
-
             //drawSize.x = Mathf.Lerp(40f, drawSize.x, Mathf.Pow(Mathf.Lerp(this.lastSizeFac, this.sizeFac, timeStacker), 0.5f));
 
             //drawSize.y *= 0.5f + 0.5f * Mathf.Lerp(this.lastSizeFac, this.sizeFac, timeStacker);
@@ -197,7 +189,7 @@ namespace Monkland.UI
 
             this.sprites[this.CornerSprite(3)].x = vecPos.x + drawSize.x - 3.5f;
             this.sprites[this.CornerSprite(3)].y = vecPos.y + 3.5f;
-            Color color = new Color(1f, 1f, 1f);
+            Color color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey); //new Color(1f, 1f, 1f);
             for (int j = 0; j < 4; j++)
             {
                 this.sprites[this.SideSprite(j)].color = color;

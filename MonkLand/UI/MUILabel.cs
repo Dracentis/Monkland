@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Monkland.UI
 {
@@ -10,20 +6,17 @@ namespace Monkland.UI
     {
         public FLabel label;
         public Color color;
-        public MultiplayerHUD owner;
         public float alpha;
         //public Vector2 pos;
 
-        public MUILabel(MultiplayerHUD owner, string labelName, Color color, Vector2 pos)
+        public MUILabel(MultiplayerHUD owner, string labelName, Color color, Vector2 pos) : base(owner, pos)
         {
-            this.owner = owner;
             this.label = new FLabel("font", labelName);
             this.color = color;
             this.label.color = color;
             this.owner.frontContainer.AddChild(this.label);
             this.label.alpha = 0f;
             this.label.x = -1000f;
-            this.pos = pos;
         }
 
         public RoomCamera Camera
@@ -40,10 +33,10 @@ namespace Monkland.UI
 
         public override void Draw(float timeStacker)
         {
-            this.alpha = this.isVisible ? 1f : 0f;
+            this.label.isVisible = this.isVisible;
 
             this.label.x = pos.x;
-            this.label.y = pos.y + 20f;
+            this.label.y = pos.y + 20.01f;
             this.label.color = this.color;
             this.label.alpha = alpha;
         }

@@ -1,9 +1,4 @@
-﻿using HUD;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Monkland.UI
 {
@@ -11,21 +6,20 @@ namespace Monkland.UI
     {
         public MUIBox box;
         public MUILabel label;
-        public MultiplayerHUD owner;
         public Vector2 size;
+        public string signalString;
 
-        public MUIButton(MultiplayerHUD owner, Vector2 pos, string labelString)
+        public MUIButton(MultiplayerHUD owner, Vector2 pos, string signalString, string labelString) : base(owner, pos)
         {
-            Debug.Log($"creating MUIBUTTON {pos}");
+            Debug.Log($"Monkland) Creating MUIButton {pos}");
 
-            this.owner = owner;
+            this.signalString = signalString;
 
-            box = new MUIBox(owner, pos, new Vector2(110f, 30f));
+            this.box = new MUIBox(owner, pos, new Vector2(110f, 30f));
 
-            label = new MUILabel(owner, labelString, Color.white, pos + new Vector2(0, -MUIBox.lineHeight - 5f));
-
-            size = box.drawSize;
-            this.pos = pos - new Vector2(box.drawSize.x, 0);
+            this.label = new MUILabel(owner, labelString, Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey), pos + new Vector2(0, -MUIBox.lineHeight - 5f));
+            this.size = box.drawSize;
+            this.pos.x -= box.drawSize.x;
         }
 
         public override void ClearSprites()
@@ -40,35 +34,28 @@ namespace Monkland.UI
             box.Draw(timeStacker);
         }
 
+        private bool mouseDown;
+
         public override void Update()
         {
-            if (MouseOver && this.owner.mouseDown)
+            if (MouseOver)
             {
-                this.owner.ExitButton();
+                if (Input.GetMouseButton(0))
+                { mouseDown = true; }
+                else if (mouseDown)
+                {
+                    mouseDown = false;
+                    this.owner.Signal(this, signalString);
+                }
             }
+            else if (!Input.GetMouseButton(0))
+            { mouseDown = false; }
 
             label.isVisible = this.isVisible;
             box.isVisible = this.isVisible;
 
             label.Update();
             box.Update();
-        }
-
-        internal Vector2 ScreenPos
-        {
-            get
-            {
-                if (this.owner == null) { return Vector2.zero; }
-                return this.owner.screenPos;
-            }
-        }
-
-        internal Vector2 MousePos
-        {
-            get
-            {
-                return new Vector2(this.owner.mousePos.x - this.ScreenPos.x, this.owner.mousePos.y - this.ScreenPos.y);
-            }
         }
 
         public bool MouseOver
