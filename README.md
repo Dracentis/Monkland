@@ -9,7 +9,8 @@ Changes to respect main branch:
 
 # Packet Formats
 This a temporal set up of the packet format. The Creature and Object packets could be combined. The sizes are not accurate.
-
+I tried an encapsulating approach to packets following the RW system.
+Realized and Abstract fields are separated. If you callm for example, Spear.Read. It will first all the fields up to PhysicalObject [PlayerCarryableItem-Weapon-Spear].
 
 Physical Object Packet
 | type  | field              | size (bytes) |
