@@ -1,5 +1,12 @@
 Monkland
 
+Changes to respect main branch:
+ - Ported to Partiality
+ - Rewrite of packet handling, removed specific methods in favor of general methods to allow more entities to be synced in the future.
+ - In-Game pause menu with player list and exit button.
+ - Player arrow tags.
+ 
+
 # Packet Formats
 This a temporal set up of the packet format. The Creature and Object packets could be combined. The sizes are not accurate.
 
