@@ -57,7 +57,7 @@ Physical Entity Packet
 | type   | field                    | size (bytes) |
 |--------|--------------------------|:------------:|
 | byte   | packetType               |       1      |
-| string | roonName                 |     ~26?     |
+| string | roomName                 |     ~26?     |
 | int    | distinguisher            |       4      |
 | byte   | AbsPhyObj type           |       1      |
 | pkt    | Abstract Physical Object |              |
@@ -68,7 +68,7 @@ Creature Entity Packet
 | type   | field                    | size (bytes) |
 |--------|--------------------------|:------------:|
 | byte   | packetType               |       1      |
-| string | roonName                 |     ~26?     |
+| string | roomName                 |     ~26?     |
 | int    | distinguisher            |       4      |
 | byte   | AbsPhyObj type           |       1      |
 | pkt    | Abstract Physical Object |              |
