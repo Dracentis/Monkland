@@ -202,8 +202,7 @@ namespace Monkland.Hooks.Entities
                 } 
                 catch (Exception e)
                 {
-                    self.slatedForDeletetion = true;
-                    Debug.Log($"Destroying spear, found error {e.Message}");
+                    Debug.Log(e);
                 }
             }
 
