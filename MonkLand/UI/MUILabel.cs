@@ -33,7 +33,7 @@ namespace Monkland.UI
 
         public override void Draw(float timeStacker)
         {
-            this.label.isVisible = this.isVisible;
+            this.alpha = this.isVisible ? 1f : 0f;
 
             this.label.x = pos.x;
             this.label.y = pos.y + 20.01f;
