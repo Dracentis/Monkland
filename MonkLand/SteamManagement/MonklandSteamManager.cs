@@ -614,6 +614,7 @@ namespace Monkland.SteamManagement
                                 sb.Append(getPacket.data[i] + "" + ((getPacket.readCount == i) ? "|" : ""));
 
                             Debug.LogError("Packet data was " + sb.ToString() + " in channel " + channelName);
+                            Debug.LogError($"Packet Type {(NetworkEntityManager.PacketType)getPacket.data[2]}, ObjectType {(AbstractCreature.AbstractObjectType)getPacket.data[5]}");
                             Debug.LogError(e);
                             packetsLeft--;
                         }

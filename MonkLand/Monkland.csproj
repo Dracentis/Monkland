@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Hooks\Entities\RockHK.cs" />
     <Compile Remove="Hooks\Menus\RainMeterHK.cs" />
     <Compile Remove="Patches\Entities\patch_AbstractPhysicalObject.cs" />
     <Compile Remove="Patches\Entities\patch_BodyChunk.cs" />

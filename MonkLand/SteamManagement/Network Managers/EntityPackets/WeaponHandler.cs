@@ -54,7 +54,6 @@ namespace Monkland.SteamManagement
             weapon.thrownBy = DistHandler.ReadCreature(ref weapon.thrownBy, ref reader, weapon.room);
             weapon.thrownClosestToCreature = DistHandler.ReadCreature(ref weapon.thrownClosestToCreature, ref reader, weapon.room);
             weapon.thrownPos = Vector2Handler.Read(ref reader);
-            WeaponHK.Sync(weapon);
         }
     }
 }

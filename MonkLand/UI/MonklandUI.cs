@@ -149,8 +149,8 @@ namespace Monkland.UI
                         if (cr.realizedCreature is Player p)
                         {
                             AbstractPhysicalObject player = cr.realizedCreature.abstractPhysicalObject;
-                            string playerName = SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(player).owner);
-                            Color color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(AbstractPhysicalObjectHK.GetField(player).owner)];
+                            string playerName = SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(player).ownerID);
+                            Color color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(AbstractPhysicalObjectHK.GetField(player).ownerID)];
                             (currentRoom.game.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).AddLabel(player, playerName, color);
                         }
                     }
@@ -158,7 +158,7 @@ namespace Monkland.UI
                     {
                         // Throw exception
                         //Debug.LogException(e);
-                        Debug.Log($"Error when trying to add label for Player" + e);
+                       // Debug.Log($"Error when trying to add label for Player " + e);
                     }
                 }
             }
@@ -228,11 +228,6 @@ namespace Monkland.UI
             }
         }
 
-        internal static string BuildSendPhysicalObjectLog(PhysicalObject physicalObject)
-        {
-            return $"[Sending--->] {physicalObject.abstractPhysicalObject.type}";
-        }
-
         public static void UpdateStatus(string message)
         {
             if (statusLabel != null)
@@ -267,6 +262,10 @@ namespace Monkland.UI
 
         public static void UpdateMessage(string message, float time, Vector2 worldPos, int dist, int roomID, Color color)
         {
+            if (!MonklandSteamManager.DEBUG)
+            {
+                return;
+            }
             for (int i = 0; i < displayMessages.Count; i++)
             {
                 if (displayMessages[i].tracking == dist)
@@ -292,8 +291,6 @@ namespace Monkland.UI
             displayMessages.Add(msg);
         }
 
-#pragma warning disable CA1822
-#pragma warning disable CA1034
 
         public void ClearSprites()
         {

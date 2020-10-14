@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Monkland.Hooks.Entities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,7 @@ namespace Monkland.SteamManagement
         {
             //PhysicalObjectHandler.Read(playerCarryableItem, ref reader, ref distinguisher);
             playerCarryableItem.blink = reader.ReadByte();
+            AbstractPhysicalObjectHK.GetField(playerCarryableItem.abstractPhysicalObject).networkLife = 60;
         }
     }
 }

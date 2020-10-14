@@ -26,6 +26,8 @@ namespace Monkland.SteamManagement
         {
             Vector2Handler.Write(bodyChunk.pos, ref writer);
             Vector2Handler.Write(bodyChunk.vel, ref writer);
+            //writer.Write(bodyChunk.mass);
+            //writer.Write(bodyChunk.rad);
         }
 
         /// <summary>
@@ -36,11 +38,22 @@ namespace Monkland.SteamManagement
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>void</returns>
-        public static BodyChunk Read(BodyChunk bodyChunk, ref BinaryReader reader)
+        public static void Read(BodyChunk bodyChunk, ref BinaryReader reader)
         {
-            bodyChunk.pos = Vector2Handler.Read(ref reader);
-            bodyChunk.vel = Vector2Handler.Read(ref reader);
-            return bodyChunk;
+            if (bodyChunk == null)
+            {
+                BodyChunk dummy = new BodyChunk(null, 0, new Vector2(0,0), 0, 0);
+                dummy.pos = Vector2Handler.Read(ref reader);
+                dummy.vel = Vector2Handler.Read(ref reader);
+            }
+            else
+            {
+                bodyChunk.pos = Vector2Handler.Read(ref reader);
+                bodyChunk.vel = Vector2Handler.Read(ref reader);
+                //bodyChunk.mass = reader.ReadSingle();
+                //bodyChunk.rad = reader.ReadSingle();
+                //return bodyChunk;
+            }
         }
 
 

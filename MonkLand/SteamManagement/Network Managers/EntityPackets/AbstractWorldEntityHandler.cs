@@ -28,13 +28,24 @@ namespace Monkland.SteamManagement
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>void</returns>
-        public static AbstractWorldEntity Read(AbstractWorldEntity entity, ref BinaryReader reader)
+        public static void Read(AbstractWorldEntity entity, ref BinaryReader reader)
         {
-            entity.ID = EntityIDHandler.Read(ref reader);
-            entity.pos = WorldCoordinateHandler.Read(ref reader);
-            entity.InDen = reader.ReadBoolean();
-            entity.timeSpentHere = reader.ReadInt32();
-            return entity;
+            // Make sure the stream is advanced even if exception happens
+            EntityID ID = EntityIDHandler.Read(ref reader);
+            WorldCoordinate pos = WorldCoordinateHandler.Read(ref reader);
+            bool InDen = reader.ReadBoolean();
+            int timeSpentHere = reader.ReadInt32();
+
+            if (entity == null)
+            {
+                return;
+            }
+
+            entity.ID = ID;
+            entity.pos = pos;
+            entity.InDen = InDen;
+            entity.timeSpentHere = timeSpentHere;
+            return;
         }
 
     }

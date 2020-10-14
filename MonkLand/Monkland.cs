@@ -34,7 +34,6 @@ namespace Monkland
             CreatureHK.ApplyHook();
             PlayerGraphicsHK.ApplyHook();
             PlayerHK.ApplyHook();
-            RockHK.ApplyHook();
             RoomHK.ApplyHook();
             SpearHK.ApplyHook();
             WeaponHK.ApplyHook();

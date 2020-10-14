@@ -303,7 +303,7 @@ namespace Monkland.SteamManagement
             * source ID
             */
 
-            if (self == null || AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject)
+            if (self == null || AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject)
             {
                 return;
             }
@@ -325,7 +325,7 @@ namespace Monkland.SteamManagement
             ulong sourceID = 0;
             try
             {
-                sourceID = (AbstractPhysicalObjectHK.GetField(source.owner.abstractPhysicalObject).owner);
+                sourceID = (AbstractPhysicalObjectHK.GetField(source.owner.abstractPhysicalObject).ownerID);
             }
             catch { } //(Exception e) {/*Debug.Log()*/}
 

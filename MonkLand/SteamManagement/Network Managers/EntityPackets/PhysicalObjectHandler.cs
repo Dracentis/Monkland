@@ -7,7 +7,7 @@ namespace Monkland.SteamManagement
 {
     internal static class PhysicalObjectHandler
     {
-        public static void SyncPhysicalObject(PhysicalObject self, BodyChunk[] bodyChunks) => self.bodyChunks = bodyChunks;
+        //public static void SyncPhysicalObject(PhysicalObject self, BodyChunk[] bodyChunks) => self.bodyChunks = bodyChunks;
 
 
         /* **************
@@ -41,50 +41,83 @@ namespace Monkland.SteamManagement
 
             //DistHandler.Write(physicalObject, ref writer);
 
+            
             writer.Write(physicalObject.bounce);
             writer.Write(physicalObject.canBeHitByWeapons);
 
             writer.Write((byte)physicalObject.bodyChunks.Length);
-            foreach (BodyChunk chunk in physicalObject.bodyChunks)
+            for(int i = 0; i < physicalObject.bodyChunks.Length; i++)
             {
-                BodyChunkHandler.Write(chunk, ref writer);
+                BodyChunkHandler.Write(physicalObject.bodyChunks[i], ref writer);
             }
+
+            /*
             writer.Write((byte)physicalObject.bodyChunkConnections.Length);
 
             foreach (PhysicalObject.BodyChunkConnection con in physicalObject.bodyChunkConnections)
             {
                 BodyChunkConnectionHandler.Write(con, ref writer);
             }
+            */
         }
 
         public static void Read(PhysicalObject physicalObject, ref BinaryReader reader)
         {
-            //AbstractPhysicalObjectHandler.Read(physicalObject.abstractPhysicalObject, ref reader);
             physicalObject.bounce = reader.ReadSingle();
             physicalObject.canBeHitByWeapons = reader.ReadBoolean();
 
             int numberOfChunks = reader.ReadByte();
             BodyChunk[] chunks = physicalObject.bodyChunks;
+
+            for (int a = 0; a < numberOfChunks; a++)
+            {
+                BodyChunkHandler.Read(chunks[a], ref reader);
+            }
+            /*
+            int numberOFConnections = reader.ReadInt32();
+            for (int a = 0; a < numberOFConnections; a++)
+            {
+                if (physicalObject.bodyChunkConnections[a] != null)
+                {
+                    physicalObject.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader);
+                }
+            }
+            */
+
+
+            // Alternative
+            /*
             if (physicalObject.bodyChunks.Length < numberOfChunks)
             {
                 chunks = new BodyChunk[numberOfChunks];
             }
-            for (int a = 0; a < numberOfChunks; a++)
+            for (int a = 0; a < chunks.Length; a++)
             {
+                if (chunks[a] == null)
+                {
+                    chunks[a] = new BodyChunk(physicalObject, a, new Vector2(0, 0), 1, 1);
+                }
                 chunks[a] = BodyChunkHandler.Read(chunks[a], ref reader);
             }
 
-            SyncPhysicalObject(physicalObject, chunks);
+            physicalObject.bodyChunks = chunks;
 
             int numberOfConnections = reader.ReadByte();
+            PhysicalObject.BodyChunkConnection[] bodyChunkConnections = physicalObject.bodyChunkConnections;
             if (physicalObject.bodyChunkConnections.Length < numberOfConnections)
             {
-                physicalObject.bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOfConnections];
+                bodyChunkConnections = new PhysicalObject.BodyChunkConnection[numberOfConnections];
             }
-            for (int a = 0; a < numberOfConnections; a++)
+            for (int a = 0; a < physicalObject.bodyChunks.Length -1; a++)
             {
-                physicalObject.bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader);
+                if (bodyChunkConnections[a] == null)
+                {
+                    bodyChunkConnections[a] = new PhysicalObject.BodyChunkConnection(physicalObject.bodyChunks[a], physicalObject.bodyChunks[a+1], 1, )
+                }
+                bodyChunkConnections[a] = BodyChunkConnectionHandler.Read(physicalObject.bodyChunkConnections[a], ref reader);
             }
+            physicalObject.bodyChunkConnections = body
+            */
         }
 
 

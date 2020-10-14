@@ -16,14 +16,14 @@ namespace Monkland.Hooks.Entities
         {
             orig(self, sLeaser, rCam, palette);
             Color body;
-            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.owner.abstractPhysicalObject);
+            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(self.owner.abstractPhysicalObject);
             if (!MonklandSteamManager.isInGame)
             { 
                 body = PlayerGraphics.SlugcatColor(self.player.playerState.slugcatCharacter); 
             }
             else
             { 
-                body = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)]; 
+                body = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.ownerID)]; 
             }
             Color eyes = palette.blackColor;
             if (self.malnourished > 0f)
@@ -41,9 +41,9 @@ namespace Monkland.Hooks.Entities
             { sLeaser.sprites[i].color = body; }
             if (MonklandSteamManager.isInGame)
             {
-                sLeaser.sprites[11].color = Color.Lerp(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)], Color.white, 0.3f);
-                sLeaser.sprites[10].color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)];
-                sLeaser.sprites[9].color = MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(field.owner)];
+                sLeaser.sprites[11].color = Color.Lerp(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.ownerID)], Color.white, 0.3f);
+                sLeaser.sprites[10].color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(field.ownerID)];
+                sLeaser.sprites[9].color = MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(field.ownerID)];
             }
             else
             {

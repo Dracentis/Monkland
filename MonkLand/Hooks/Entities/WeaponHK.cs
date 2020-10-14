@@ -20,14 +20,14 @@ namespace Monkland.Hooks.Entities
             AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
         }
 
-        public static void Sync(PhysicalObject self) => AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
+        //public static void Sync(PhysicalObject self) => AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
 
         private static void Weapon_Update(On.Weapon.orig_Update orig, Weapon self, bool eu)
         {
             orig(self, eu);
 
-            AbsPhyObjFields fields = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            if (fields.networkObject)
+            AbstractObjFields fields = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            if (fields.isNetworkObject)
             {
                 if (fields.networkLife > 0) { fields.networkLife--; }
                 else
@@ -64,7 +64,7 @@ namespace Monkland.Hooks.Entities
         }
         */
 
-
+        /*
         private static bool isNet = false;
 
         public static bool CheckNet()
@@ -73,12 +73,18 @@ namespace Monkland.Hooks.Entities
             return false;
         }
         public static void SetNet() => isNet = true;
+        */
 
         private static void Weapon_Thrown(On.Weapon.orig_Thrown orig, Weapon self, Creature thrownBy, UnityEngine.Vector2 thrownPos, UnityEngine.Vector2? firstFrameTraceFromPos, RWCustom.IntVector2 throwDir, float frc, bool eu)
         {
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
-            if (CheckNet()) { return; }
-            if (MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
+
+            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject)
+            {
+                return;
+            }
+
+            if (MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
                 MonklandSteamManager.EntityManager.SendThrow(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc);
                 MonklandSteamManager.EntityManager.SendPhysicalObject(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);
@@ -89,8 +95,13 @@ namespace Monkland.Hooks.Entities
         private static bool Weapon_HitSomething(On.Weapon.orig_HitSomething orig, Weapon self, SharedPhysics.CollisionResult result, bool eu)
         {
             bool hit = orig(self, result, eu);
-            if (CheckNet()) { return hit; }
-            if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
+
+            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject)
+            {
+                return hit;
+            }
+
+            if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
                 MonklandSteamManager.EntityManager.SendHit(self, result.obj, result.chunk);
                 MonklandSteamManager.EntityManager.SendPhysicalObject(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);

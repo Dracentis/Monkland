@@ -31,7 +31,7 @@ namespace Monkland.Hooks.Entities
 
         private static void Creature_Violence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, UnityEngine.Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus)
         {
-            if (self is Player && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject && !self.dead)
+            if (self is Player && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject && !self.dead)
             {
                 /*
                  * #Violence packet#
@@ -71,12 +71,12 @@ namespace Monkland.Hooks.Entities
 
         private static bool GrabHK(On.Creature.orig_Grab orig, Creature self, PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
         {
-            if (self is Player && AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject)
+            if (self is Player && AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject)
             {
                 return false;
             }
 
-            AbsPhyObjFields objs = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
+            AbstractObjFields objs = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
             if (CheckNet())
             {
                 if (self.grasps[graspUsed] != null && self.grasps[graspUsed].grabbed == obj)
@@ -98,7 +98,7 @@ namespace Monkland.Hooks.Entities
                 return true;
             }
 
-            if (MonklandSteamManager.isInGame && objs.networkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name].Contains(objs.owner))
+            if (MonklandSteamManager.isInGame && objs.isNetworkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name].Contains(objs.ownerID))
             {
                 return false;
             }

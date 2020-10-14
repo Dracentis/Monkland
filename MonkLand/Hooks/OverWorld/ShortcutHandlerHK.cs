@@ -20,7 +20,7 @@ namespace Monkland.Hooks.OverWorld
                 if (shortCut.shortCutType == ShortcutData.Type.RoomExit)
                 {
                     int cnt = room.abstractRoom.connections[shortCut.destNode];
-                    if (cnt > -1 && !AbstractPhysicalObjectHK.GetField(creature.abstractPhysicalObject).networkObject)
+                    if (cnt > -1 && !AbstractPhysicalObjectHK.GetField(creature.abstractPhysicalObject).isNetworkObject)
                     { 
                         room.world.ActivateRoom(room.world.GetAbstractRoom(cnt)); 
                     }

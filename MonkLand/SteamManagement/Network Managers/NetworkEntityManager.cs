@@ -36,6 +36,7 @@ namespace Monkland.SteamManagement
         public const int CHANNEL = 2;
 
         public byte UtilityHandler = 0;
+        public byte EntityHandler = 1;
 
         public override void Update()
         {
@@ -146,61 +147,7 @@ namespace Monkland.SteamManagement
 
         #region Outgoing Packets
 
-        public void SendPlayer(Player physicalObject, List<ulong> targets, bool reliable = false)
-        {
-            try
-            {
-                if (physicalObject == null || targets == null || targets.Count == 0 || physicalObject.room == null || physicalObject.room.abstractRoom == null || !isSynced(physicalObject))
-                {
-                    return;
-                }
-                MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
-                BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
-                AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(physicalObject.abstractPhysicalObject);
-
-                /*
-                 * packet type
-                 * roon name
-                 * dist
-                 * playerhanlder
-                 * */
-
-                writer.Write((byte)PacketType.Player);
-                writer.Write(physicalObject.room.abstractRoom.name);
-                writer.Write(field.dist);
-                WorldCoordinateHandler.Write(physicalObject.abstractPhysicalObject.pos, ref writer);
-                PlayerHandler.Write(physicalObject as PhysicalObject as Player, ref writer);
-                if (MonklandSteamManager.DEBUG)
-                {
-                    MonklandUI.UpdateMessage($"Player\nOwner: {field.owner}\nID: {field.dist}", 1, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, (physicalObject as Player).ShortCutColor());
-                }
-
-                //Debug.Log($"Sending player {SteamFriends.GetFriendPersonaName( (CSteamID)(ulong)field.dist )} || {field.dist} in room {physicalObject.room.abstractRoom.name}");
-
-                MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-                foreach (ulong target in targets)
-                {
-                    if (MonklandSteamManager.WorldManager.ingamePlayers.Contains(target) && target != playerID)
-                    {
-                        if (reliable)
-                        {
-                            MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendReliable);
-                        }
-                        else
-                        {
-                            MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-        }
-
-
-
+       
         internal void SendCreature(Creature creature, List<ulong> targets, bool reliable = false)
         {
             /* PhysicalObject Packet */
@@ -209,6 +156,7 @@ namespace Monkland.SteamManagement
              * packetType (1 byte)
              * roomName (~ byte)
              * distinguisher
+             * type
              * PhysicalObject Packet
              * 
              * extra...
@@ -222,7 +170,7 @@ namespace Monkland.SteamManagement
             // Prepare packet
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
-            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(creature.abstractPhysicalObject);
+            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(creature.abstractPhysicalObject);
 
             // Packet Type
             writer.Write((byte)PacketType.Creature);
@@ -231,8 +179,10 @@ namespace Monkland.SteamManagement
             writer.Write(creature.room.abstractRoom.name);
 
             // Distinguisher
-            writer.Write(field.dist);
-            creature.abstractCreature.ID.number = field.dist;
+            writer.Write(field.networkID);
+            creature.abstractCreature.ID.number = field.networkID;
+
+            writer.Write((byte)creature.abstractCreature.creatureTemplate.TopAncestor().type);
 
             // AbstractCreatureHandler
             AbstractCreatureHandler.Write(creature.abstractCreature, ref writer);
@@ -241,12 +191,9 @@ namespace Monkland.SteamManagement
             PhysicalObjectHandler.WriteSpecificCreature(creature, ref writer);
 
             reliable = true;
-            if (MonklandSteamManager.DEBUG)
-            {
-                MonklandUI.UpdateMessage($"{creature.abstractCreature.creatureTemplate.TopAncestor().type}\nO: {field.owner % 10000:0000}\nID: {field.dist % 10000:0000}", 1, creature.bodyChunks[0].pos, field.dist, creature.room.abstractRoom.index, creature.ShortCutColor());
-                string message = MonklandUI.BuildSendPhysicalObjectLog(creature);
-                MonklandUI.UpdateMessage(message, 3, creature.bodyChunks[0].pos, field.dist, creature.room.abstractRoom.index, Color.blue);
-            }
+
+            MonklandUI.UpdateMessage($"{creature.abstractCreature.creatureTemplate.TopAncestor().type}\nO: {field.ownerID % 10000:0000}\nID: {field.networkID % 10000:0000}", 1, creature.bodyChunks[0].pos, field.networkID, creature.room.abstractRoom.index, creature.ShortCutColor());
+
 
             // Finalize acket
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -289,28 +236,30 @@ namespace Monkland.SteamManagement
              * extra...
              * **************/
 
-            if (physicalObject == null || physicalObject is Creature || targets == null || targets.Count == 0 || physicalObject.room == null || physicalObject.room.abstractRoom == null || !isSynced(physicalObject))
+            if (physicalObject == null || physicalObject is Creature ||targets == null || targets.Count == 0 || physicalObject.room == null || physicalObject.room.abstractRoom == null || !isSynced(physicalObject))
             {
                 return;
             }
-
+            string buildingPacket = "[Sending Physical Object ->] ";
             // Prepare packet
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
-            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(physicalObject.abstractPhysicalObject);
+            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(physicalObject.abstractPhysicalObject);
             AbstractPhysicalObject.AbstractObjectType absType = physicalObject.abstractPhysicalObject.type;
 
             // Packet Type
             writer.Write((byte)PacketType.PhysicalObject);
-
             // RoomName
             writer.Write(physicalObject.room.abstractRoom.name);
+            buildingPacket += $" room[{physicalObject.room.abstractRoom.name}]";
 
             // Distinguisher
-            writer.Write(field.dist);
+            writer.Write(physicalObject.abstractPhysicalObject.ID.number);
             //physicalObject.abstractPhysicalObject.ID.number = field.dist;
+            buildingPacket += $" networkID[{field.networkID}]";
 
             writer.Write((byte)absType);
+            buildingPacket += $" type[{absType}]";
 
             // AbstractPhysicalObjectPacket
             AbstractPhysicalObjectHandler.Write(physicalObject.abstractPhysicalObject, ref writer);
@@ -318,13 +267,13 @@ namespace Monkland.SteamManagement
             PhysicalObjectHandler.Write(physicalObject, ref writer);
             PhysicalObjectHandler.WriteSpecificPhysicalObject(physicalObject, ref writer);
 
+            buildingPacket += $" ID[{physicalObject.abstractPhysicalObject.ID}]";
+
             reliable = true;
-            if (MonklandSteamManager.DEBUG)
-            {
-                MonklandUI.UpdateMessage($"{absType}\nO: {field.owner % 10000:0000}\nID: {field.dist % 10000:0000}", 1, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, Color.white);
-                //string message = MonklandUI.BuildSendPhysicalObjectLog(physicalObject);
-                //MonklandUI.UpdateMessage(message, 3, physicalObject.bodyChunks[0].pos, field.dist, physicalObject.room.abstractRoom.index, Color.blue);
-            }
+
+            MonklandUI.UpdateMessage($"{absType}\nO: {field.ownerID % 10000:0000}\nID: {field.networkID % 10000:0000}", 1, physicalObject.bodyChunks[0].pos, field.networkID, physicalObject.room.abstractRoom.index, Color.white);
+
+            Debug.Log(buildingPacket);
 
             // Finalize acket
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -356,20 +305,20 @@ namespace Monkland.SteamManagement
 
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(grasp.grabber.room.abstractRoom.name)) { return; }
 
-            AbsPhyObjFields grabberField = AbstractPhysicalObjectHK.GetField(grasp.grabber.abstractPhysicalObject);
+            AbstractObjFields grabberField = AbstractPhysicalObjectHK.GetField(grasp.grabber.abstractPhysicalObject);
 
-            if (grabberField.owner != NetworkGameManager.playerID) { return; }
+            if (grabberField.ownerID != NetworkGameManager.playerID) { return; }
 
-            AbsPhyObjFields grabbedSub = AbstractPhysicalObjectHK.GetField(grasp.grabbed.abstractPhysicalObject);
+            AbstractObjFields grabbedSub = AbstractPhysicalObjectHK.GetField(grasp.grabbed.abstractPhysicalObject);
 
-            MonklandSteamManager.Log($"[Entity] Sending Grab: {grabberField.dist} grabbed {grabbedSub.dist}");
+            MonklandSteamManager.Log($"[Entity] Sending Grab: {grabberField.networkID} grabbed {grabbedSub.networkID}");
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             writer.Write((byte)PacketType.EstablishGrasp);
             writer.Write(grasp.grabber.room.abstractRoom.name);
-            writer.Write(grabberField.dist);
-            writer.Write(grabbedSub.dist);
+            writer.Write(grabberField.networkID);
+            writer.Write(grabbedSub.networkID);
             writer.Write(grasp.graspUsed);
             writer.Write(grasp.grabbedChunk.index);
             writer.Write((int)grasp.shareability);
@@ -387,11 +336,11 @@ namespace Monkland.SteamManagement
             }
             if ((grasp.grabbed is Player) && !(grasp.grabber is Player))//One of our creatures is grabbing another player so the grabber should belong to the grabbed
             {
-                grabberField.owner = grabbedSub.owner;
+                grabberField.ownerID = grabbedSub.ownerID;
             }
             else if (!(grasp.grabbed is Player))//One of our creatures is the grabber so we should take ownership of the grabbed
             {
-                grabbedSub.owner = grabberField.owner;
+                grabbedSub.ownerID = grabberField.ownerID;
             }
         }
 
@@ -399,16 +348,16 @@ namespace Monkland.SteamManagement
         {
             if (grabber == null || !isSynced(grabber)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(grabber.room.abstractRoom.name)) { return; }
-            AbsPhyObjFields grabberSub = AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject);
-            if (grabberSub.owner != NetworkGameManager.playerID) { return; }
+            AbstractObjFields grabberSub = AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject);
+            if (grabberSub.ownerID != NetworkGameManager.playerID) { return; }
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
             writer.Write((byte)PacketType.SwitchGrasps);
             writer.Write(grabber.room.abstractRoom.name);
-            writer.Write(grabberSub.dist);
+            writer.Write(grabberSub.networkID);
             writer.Write(from);
             writer.Write(to);
-            MonklandSteamManager.Log($"[Entity] Sending Switch: {grabberSub.dist} switched {from} => {to}");
+            MonklandSteamManager.Log($"[Entity] Sending Switch: {grabberSub.networkID} switched {from} => {to}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grabber.room.abstractRoom.name])
             {
@@ -425,17 +374,17 @@ namespace Monkland.SteamManagement
             if (grasp == null || grasp.grabber == null || grasp.grabbed == null || !isSynced(grasp.grabber) || !isSynced(grasp.grabbed))
             { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(grasp.grabber.room.abstractRoom.name)) { return; }
-            AbsPhyObjFields grabberSub = AbstractPhysicalObjectHK.GetField(grasp.grabber.abstractPhysicalObject);
-            if (grabberSub.owner != NetworkGameManager.playerID) { return; }
-            AbsPhyObjFields grabbedSub = AbstractPhysicalObjectHK.GetField(grasp.grabbed.abstractPhysicalObject);
+            AbstractObjFields grabberSub = AbstractPhysicalObjectHK.GetField(grasp.grabber.abstractPhysicalObject);
+            if (grabberSub.ownerID != NetworkGameManager.playerID) { return; }
+            AbstractObjFields grabbedSub = AbstractPhysicalObjectHK.GetField(grasp.grabbed.abstractPhysicalObject);
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             writer.Write((byte)PacketType.ReleaseGrasp);
             writer.Write(grasp.grabber.room.abstractRoom.name);
-            writer.Write(grabberSub.dist);
-            writer.Write(grabbedSub.dist);
-            MonklandSteamManager.Log($"[Entity] Sending Release: {grabberSub.dist} released {grabbedSub.dist}");
+            writer.Write(grabberSub.networkID);
+            writer.Write(grabbedSub.networkID);
+            MonklandSteamManager.Log($"[Entity] Sending Release: {grabberSub.networkID} released {grabbedSub.networkID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[grasp.grabber.room.abstractRoom.name])
             {
@@ -452,23 +401,23 @@ namespace Monkland.SteamManagement
             if (hit == null || obj == null || !isSynced(obj) || !isSynced(hit)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(obj.room.abstractRoom.name)) { return; }
 
-            AbsPhyObjFields objField = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
-            AbsPhyObjFields hitField = AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject);
+            AbstractObjFields objField = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
+            AbstractObjFields hitField = AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject);
 
-            if (objField.owner != NetworkGameManager.playerID) { return; }
+            if (objField.ownerID != NetworkGameManager.playerID) { return; }
 
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             writer.Write((byte)PacketType.Hit);
             writer.Write(obj.room.abstractRoom.name);
-            writer.Write(objField.dist);
-            writer.Write(hitField.dist);
+            writer.Write(objField.networkID);
+            writer.Write(hitField.networkID);
 
             if (chunk != null) { writer.Write(chunk.index); }
             else { writer.Write(-1); }
 
-            MonklandSteamManager.Log($"[Entity] Sending Hit: {objField.dist} hit {hitField.dist}");
+            MonklandSteamManager.Log($"[Entity] Sending Hit: {objField.networkID} hit {hitField.networkID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
 
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name])
@@ -494,27 +443,27 @@ namespace Monkland.SteamManagement
                 return;
             }
 
-            AbsPhyObjFields thrownField = AbstractPhysicalObjectHK.GetField(thrown.abstractPhysicalObject);
+            AbstractObjFields thrownField = AbstractPhysicalObjectHK.GetField(thrown.abstractPhysicalObject);
 
-            if (thrownField.owner != NetworkGameManager.playerID)
+            if (thrownField.ownerID != NetworkGameManager.playerID)
             {
                 return;
             }
 
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
-            AbsPhyObjFields thrownBySub = AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject);
+            AbstractObjFields thrownBySub = AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject);
 
             writer.Write((byte)PacketType.Throw);
             writer.Write(thrown.room.abstractRoom.name);
-            writer.Write(thrownField.dist);
-            writer.Write(thrownBySub.dist);
+            writer.Write(thrownField.networkID);
+            writer.Write(thrownBySub.networkID);
             Vector2Handler.Write(thrownPos, ref writer);
             Vector2NHandler.Write(firstFrameTraceFromPos, ref writer);
             IntVector2Handler.Write(throwDir, ref writer);
             writer.Write(frc);
 
-            MonklandSteamManager.Log($"[Entity] Sending Throw: {thrownField.dist} thrown by {thrownBySub.dist}");
+            MonklandSteamManager.Log($"[Entity] Sending Throw: {thrownField.networkID} thrown by {thrownBySub.networkID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
 
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[thrown.room.abstractRoom.name])
@@ -535,10 +484,10 @@ namespace Monkland.SteamManagement
             if (A == null || B == null || room == null || !isSynced(A) || !isSynced(B)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(room.name)) { return; }
 
-            AbsPhyObjFields AField = AbstractPhysicalObjectHK.GetField(A);
-            AbsPhyObjFields BField = AbstractPhysicalObjectHK.GetField(B);
+            AbstractObjFields AField = AbstractPhysicalObjectHK.GetField(A);
+            AbstractObjFields BField = AbstractPhysicalObjectHK.GetField(B);
 
-            if (AField.owner != NetworkGameManager.playerID && BField.owner != NetworkGameManager.playerID) { return; }
+            if (AField.ownerID != NetworkGameManager.playerID && BField.ownerID != NetworkGameManager.playerID) { return; }
 
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -546,13 +495,13 @@ namespace Monkland.SteamManagement
             writer.Write((byte)PacketType.Stick);
             writer.Write((byte)StickType.Spear);
             writer.Write(room.name);
-            writer.Write(AField.dist);
-            writer.Write(BField.dist);
+            writer.Write(AField.networkID);
+            writer.Write(BField.networkID);
             writer.Write(chunk);
             writer.Write(bodyPart);
             writer.Write(angle);
 
-            MonklandSteamManager.Log($"[Entity] Sending Spear Stick: {AField.dist}, {BField.dist}");
+            MonklandSteamManager.Log($"[Entity] Sending Spear Stick: {AField.networkID}, {BField.networkID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
 
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[room.name])
@@ -572,10 +521,10 @@ namespace Monkland.SteamManagement
             if (A == null || B == null || room == null || !isSynced(A) || !isSynced(B)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(room.name)) { return; }
 
-            AbsPhyObjFields AField = AbstractPhysicalObjectHK.GetField(A);
-            AbsPhyObjFields BField = AbstractPhysicalObjectHK.GetField(B);
+            AbstractObjFields AField = AbstractPhysicalObjectHK.GetField(A);
+            AbstractObjFields BField = AbstractPhysicalObjectHK.GetField(B);
 
-            if (AField.owner != NetworkGameManager.playerID && BField.owner != NetworkGameManager.playerID) { return; }
+            if (AField.ownerID != NetworkGameManager.playerID && BField.ownerID != NetworkGameManager.playerID) { return; }
 
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -583,14 +532,14 @@ namespace Monkland.SteamManagement
             writer.Write((byte)PacketType.Stick);
             writer.Write((byte)StickType.SpearAppendage);
             writer.Write(room.name);
-            writer.Write(AField.dist);
-            writer.Write(BField.dist);
+            writer.Write(AField.networkID);
+            writer.Write(BField.networkID);
             writer.Write(appendage);
             writer.Write(prevSeg);
             writer.Write(distanceToNext);
             writer.Write(angle);
 
-            MonklandSteamManager.Log($"[Entity] Sending Spear Appendage Stick: {AField.dist}, {BField.dist}");
+            MonklandSteamManager.Log($"[Entity] Sending Spear Appendage Stick: {AField.networkID}, {BField.networkID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
 
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[room.name])
@@ -610,10 +559,10 @@ namespace Monkland.SteamManagement
             if (A == null || B == null || room == null || !isSynced(A) || !isSynced(B)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(room.name)) { return; }
 
-            AbsPhyObjFields AField = AbstractPhysicalObjectHK.GetField(A);
-            AbsPhyObjFields BField = AbstractPhysicalObjectHK.GetField(B);
+            AbstractObjFields AField = AbstractPhysicalObjectHK.GetField(A);
+            AbstractObjFields BField = AbstractPhysicalObjectHK.GetField(B);
 
-            if (AField.owner != NetworkGameManager.playerID && BField.owner != NetworkGameManager.playerID) { return; }
+            if (AField.ownerID != NetworkGameManager.playerID && BField.ownerID != NetworkGameManager.playerID) { return; }
 
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
@@ -621,12 +570,12 @@ namespace Monkland.SteamManagement
             writer.Write((byte)PacketType.Stick);
             writer.Write((byte)StickType.SpearImpaled);
             writer.Write(room.name);
-            writer.Write(AField.dist);
-            writer.Write(BField.dist);
+            writer.Write(AField.networkID);
+            writer.Write(BField.networkID);
             writer.Write(chunk);
             writer.Write(onSpearPosition);
 
-            MonklandSteamManager.Log($"[Entity] Sending Spear Impaled Stick: {AField.dist}, {BField.dist}");
+            MonklandSteamManager.Log($"[Entity] Sending Spear Impaled Stick: {AField.networkID}, {BField.networkID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
 
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[room.name])
@@ -645,16 +594,16 @@ namespace Monkland.SteamManagement
         {
             if (A == null || B == null || room == null || !isSynced(A) || !isSynced(B)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(room.name)) { return; }
-            AbsPhyObjFields ASub = AbstractPhysicalObjectHK.GetField(A);
-            AbsPhyObjFields BSub = AbstractPhysicalObjectHK.GetField(B);
-            if (ASub.owner != NetworkGameManager.playerID && BSub.owner != NetworkGameManager.playerID) { return; }
+            AbstractObjFields ASub = AbstractPhysicalObjectHK.GetField(A);
+            AbstractObjFields BSub = AbstractPhysicalObjectHK.GetField(B);
+            if (ASub.ownerID != NetworkGameManager.playerID && BSub.ownerID != NetworkGameManager.playerID) { return; }
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(CHANNEL, UtilityHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
             writer.Write((byte)PacketType.Deactivate);
             writer.Write(room.name);
-            writer.Write(ASub.dist);
-            writer.Write(BSub.dist);
-            MonklandSteamManager.Log($"[Entity] Sending Stick Deactivate: {ASub.dist}, {BSub.dist}");
+            writer.Write(ASub.networkID);
+            writer.Write(BSub.networkID);
+            MonklandSteamManager.Log($"[Entity] Sending Stick Deactivate: {ASub.networkID}, {BSub.networkID}");
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             foreach (ulong target in MonklandSteamManager.WorldManager.commonRooms[room.name])
             {
@@ -716,42 +665,53 @@ namespace Monkland.SteamManagement
             if (abstractRoom == null || abstractRoom.realizedRoom == null || abstractRoom.realizedRoom.physicalObjects == null)
             { return; }
 
-            int distinguisher = reader.ReadInt32();
+            string buildingPacket = "[Receiving Physical Object <-] ";
+            int networkID = reader.ReadInt32();
+
+            buildingPacket += $" ID[{networkID}]";
 
             AbstractPhysicalObject.AbstractObjectType type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
 
+            buildingPacket += $" type[{type}]";
+            
             for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
             {
                 for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
                 {
-                    if (abstractRoom.realizedRoom.physicalObjects[i][j] != null && abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject != null)
+                    if (abstractRoom.realizedRoom.physicalObjects[i][j] != null)
                     {
-                        AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject);
-                        if (field.dist != distinguisher)
+                        try
                         {
-                            if (field.owner == sentPlayer.m_SteamID)
+                            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(abstractRoom.realizedRoom.physicalObjects[i][j].abstractPhysicalObject);
+
+                            if (field.networkID == networkID && field.ownerID == sentPlayer.m_SteamID)
                             {
+                                PhysicalObject foundObject = abstractRoom.realizedRoom.physicalObjects[i][j];
                                 try
                                 {
-                                    PhysicalObject foundObject = abstractRoom.realizedRoom.physicalObjects[i][j];
-
                                     // ALWAYS FOLLOW THIS ORDER WHEN READING / WRITING PACKERS
                                     AbstractPhysicalObjectHandler.Read(foundObject.abstractPhysicalObject, ref reader);
                                     PhysicalObjectHandler.Read(foundObject, ref reader);
                                     PhysicalObjectHandler.ReadSpecificPhysicalObject(foundObject, ref reader);
-
-                                    if (MonklandSteamManager.DEBUG)
-                                    { MonklandUI.UpdateMessage($"{foundObject.abstractPhysicalObject.type}\nO: {sentPlayer.m_SteamID % 10000:0000}\nID: {distinguisher % 10000:1000}", 2, abstractRoom.realizedRoom.physicalObjects[i][j].bodyChunks[0].pos, distinguisher, abstractRoom.index, Color.white); }
-                                    // Make sure it is in correct room (probably not necessary)
-                                    foundObject.abstractPhysicalObject.pos.room = abstractRoom.index;
                                 }
-                                catch (Exception e) { Debug.Log(e); }
+                                catch (Exception e) { Debug.Log("Read failed \n" + e); }
+                                try
+                                {
+                                    MonklandUI.UpdateMessage($"{foundObject.abstractPhysicalObject.type}\nO: {sentPlayer.m_SteamID % 10000:0000}\nID: {networkID % 10000:1000}", 2, foundObject.bodyChunks[0].pos, networkID, abstractRoom.index, Color.white);
+                                }
+                                catch (Exception e) { Debug.Log("Log failed \n" + e); }
+
+                                // Make sure it is in correct room (probably not necessary)
+                                foundObject.abstractPhysicalObject.pos.room = abstractRoom.index;
+                                Debug.Log("found object " + buildingPacket);
+                                return;
                             }
                         }
-                        return;
+                        catch (Exception e) { Debug.Log("Field failed \n" + e); }
                     }
                 }
             }
+
 
             // PhysicalObject not found, realize new one.
             //AbstractPhysicalObject abstractObject = new AbstractPhysicalObject(RainWorldGameHK.mainGame.world, 0, null, new WorldCoordinate(abstractRoom.index, 0, 0, -1), new EntityID(-20, -20));
@@ -761,20 +721,21 @@ namespace Monkland.SteamManagement
             AbstractPhysicalObjectHandler.Read(abstractObject, ref reader);
 
             // Fill ID number before calling GetField()
-            //abstractObject.ID.number = distinguisher;
-            AbstractPhysicalObjectHK.GetField(abstractObject).owner = sentPlayer.m_SteamID;
+            abstractObject.ID.number = networkID;
+            AbstractPhysicalObjectHK.GetField(abstractObject).ownerID = sentPlayer.m_SteamID;
 
             // Realizing in room
+            abstractObject.pos.room = abstractRoom.index;
             RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractRoom.index).AddEntity(abstractObject);
             abstractObject.RealizeInRoom();
 
             // Filling the fields
-            PhysicalObjectHandler.Read(abstractObject.realizedObject, ref reader);
+            //PhysicalObjectHandler.Read(abstractObject.realizedObject, ref reader);
             PhysicalObjectHandler.ReadSpecificPhysicalObject(abstractObject.realizedObject, ref reader);
 
             // Making sure the object ins in the intended room
-            abstractObject.pos.room = abstractRoom.index;
-            Debug.Log($"Creating new Obj {abstractObject.type}. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractObject).owner)}. Distinguisher {distinguisher} | ID number {abstractObject.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractObject).dist}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractObject.pos.room).name}");
+
+            Debug.Log($"Creating new Obj {abstractObject.type}. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractObject).ownerID)}. Distinguisher {networkID} | ID number {abstractObject.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractObject).networkID}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractObject.pos.room).name}");
 
             //Debug.Log($"Creating new physical Object {abstractObject.type}");
         }
@@ -807,13 +768,15 @@ namespace Monkland.SteamManagement
             if (abstractRoom == null || abstractRoom.realizedRoom == null || abstractRoom.realizedRoom.physicalObjects == null)
             { return; }
 
-            int distinguisher = reader.ReadInt32();
+            int networkID = reader.ReadInt32();
+            CreatureTemplate.Type type = (CreatureTemplate.Type)reader.ReadByte();
+
             foreach (AbstractCreature absCreature in abstractRoom.creatures)
             {
-                AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(absCreature);
-                if (field.dist == distinguisher && absCreature.realizedCreature != null)
+                AbstractObjFields field = AbstractPhysicalObjectHK.GetField(absCreature);
+                if (field.networkID == networkID && absCreature.realizedCreature != null)
                 {
-                    if (field.owner == sentPlayer.m_SteamID)
+                    if (field.ownerID == sentPlayer.m_SteamID)
                     {
                         //Debug.Log($"Read creature matches. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(absCreature).owner)}. Distinguisher read {distinguisher} |  getfield {AbstractPhysicalObjectHK.GetField(absCreature).dist}");
 
@@ -825,8 +788,7 @@ namespace Monkland.SteamManagement
                         PhysicalObjectHandler.Read(realizedCreature, ref reader);
                         PhysicalObjectHandler.ReadSpecificCreature(realizedCreature, ref reader);
 
-                        if (MonklandSteamManager.DEBUG)
-                        { MonklandUI.UpdateMessage($"{absCreature.creatureTemplate.type}\nO: {sentPlayer.m_SteamID % 10000:0000}\nID: {distinguisher % 10000:1000}", 2, realizedCreature.bodyChunks[0].pos, distinguisher, abstractRoom.index, Color.white); }
+                        MonklandUI.UpdateMessage($"{absCreature.creatureTemplate.type}\nO: {sentPlayer.m_SteamID % 10000:0000}\nID: {networkID % 10000:1000}", 2, realizedCreature.bodyChunks[0].pos, networkID, abstractRoom.index, Color.white); 
                         absCreature.pos.room = abstractRoom.index;
                     }
 
@@ -835,7 +797,7 @@ namespace Monkland.SteamManagement
             }
 
             // PhysicalObject not found, realize new one.
-            AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(abstractRoom.index, 15, 25, -1), new EntityID(-1, distinguisher));
+            AbstractCreature abstractCreature = new AbstractCreature(RainWorldGameHK.mainGame.world, StaticWorld.GetCreatureTemplate(type), null, new WorldCoordinate(abstractRoom.index, 15, 25, -1), new EntityID(-1, 0));
             // Filling the fields
             AbstractCreatureHandler.Read(abstractCreature, ref reader);
             // Create PlayerState if it is player (should be moved elsewhere probably)
@@ -844,8 +806,8 @@ namespace Monkland.SteamManagement
                 abstractCreature.state = new PlayerState(abstractCreature, 1, 0, false);
             }
             // Fill ID number before calling GetField()
-            abstractCreature.ID.number = distinguisher;
-            AbstractPhysicalObjectHK.GetField(abstractCreature).owner = sentPlayer.m_SteamID;
+            //abstractCreature.ID.number = networkID;
+            AbstractPhysicalObjectHK.GetField(abstractCreature).ownerID = sentPlayer.m_SteamID;
 
             // Realizing Creature in Room
             RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractRoom.index).AddEntity(abstractCreature);
@@ -857,7 +819,7 @@ namespace Monkland.SteamManagement
 
             // Making sure player is in the intended room
             abstractCreature.pos.room = abstractRoom.index;
-            Debug.Log($"Creating new Creature. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractCreature).owner)}. Distinguisher {distinguisher} | ID number {abstractCreature.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractCreature).dist}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).name}");
+            Debug.Log($"Creating new Creature. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractCreature).ownerID)}. Distinguisher {networkID} | ID number {abstractCreature.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractCreature).networkID}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).name}");
 
         }
 
@@ -879,15 +841,15 @@ namespace Monkland.SteamManagement
                 {
                     if (hit != null)
                     {
-                        MonklandSteamManager.Log($"[Entity] Incoming hit: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} hit {hit.abstractPhysicalObject.type} [{AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject).dist}]");
+                        MonklandSteamManager.Log($"[Entity] Incoming hit: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).networkID} hit {hit.abstractPhysicalObject.type} [{AbstractPhysicalObjectHK.GetField(hit.abstractPhysicalObject).networkID}]");
                     }
                     else
                     {
-                        MonklandSteamManager.Log($"[Entity] Incoming hit: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} hit something");
+                        MonklandSteamManager.Log($"[Entity] Incoming hit: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).networkID} hit something");
                     }
                     if (obj is Rock || obj is Spear)
                     {
-                        WeaponHK.SetNet();
+                        //WeaponHK.SetNet();
                         if (hit != null && chunk != -1)
                         { 
                             (obj as Weapon).HitSomething(new SharedPhysics.CollisionResult(hit, hit.bodyChunks[chunk], null, true, default), RainWorldGameHK.mainGame.evenUpdate); 
@@ -921,10 +883,10 @@ namespace Monkland.SteamManagement
                 float frc = br.ReadSingle();
                 if (obj != null && thrownBy != null)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incoming Throw: {AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).dist} thrownby {thrownBy.abstractCreature.type} [{AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject).dist}]");
-                    if (obj is Weapon)
+                    MonklandSteamManager.Log($"[Entity] Incoming Throw: {obj.abstractPhysicalObject.type}[{AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).networkID}] thrownby {thrownBy.abstractCreature.creatureTemplate.TopAncestor().type} [{AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject).networkID}]");
+                    if (obj is Rock || obj is Spear)
                     {
-                        WeaponHK.SetNet();
+                        //WeaponHK.SetNet();
                         (obj as Weapon).Thrown(thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, RainWorldGameHK.mainGame.evenUpdate);
                     }
                     /*
@@ -949,8 +911,8 @@ namespace Monkland.SteamManagement
             {
                 Creature grabber = DistHandler.ReadCreature(ref br, abstractRoom.realizedRoom);
                 PhysicalObject grabbed = DistHandler.ReadPhysicalObject(ref br, abstractRoom.realizedRoom);
-                AbsPhyObjFields grabberSub = AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject);
-                AbsPhyObjFields grabbedSub = AbstractPhysicalObjectHK.GetField(grabbed.abstractPhysicalObject);
+                AbstractObjFields grabberSub = AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject);
+                AbstractObjFields grabbedSub = AbstractPhysicalObjectHK.GetField(grabbed.abstractPhysicalObject);
                 int graspUsed = br.ReadInt32();
                 int grabbedChunk = br.ReadInt32();
                 Creature.Grasp.Shareability shareability = (Creature.Grasp.Shareability)br.ReadInt32();
@@ -960,11 +922,11 @@ namespace Monkland.SteamManagement
                 {
                     if (grabbed is Player && grabber != null && !(grabber is Player))
                     {
-                        grabberSub.owner = grabbedSub.owner;
+                        grabberSub.ownerID = grabbedSub.ownerID;
                     }
                     else if (!(grabbed is Player))
                     {
-                        grabbedSub.owner = sentPlayer.m_SteamID;
+                        grabbedSub.ownerID = sentPlayer.m_SteamID;
                     }
                 }
                 if (grabber == null || grabbed == null)
@@ -972,25 +934,25 @@ namespace Monkland.SteamManagement
                     MonklandSteamManager.Log("[Entity] Incomming grab: One or more targets not found!");
                     return;
                 }
-                if (grabber.grasps[graspUsed] != null && grabber.grasps[graspUsed].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[graspUsed].grabbed.abstractPhysicalObject).dist == grabbedSub.dist)
+                if (grabber.grasps[graspUsed] != null && grabber.grasps[graspUsed].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[graspUsed].grabbed.abstractPhysicalObject).networkID == grabbedSub.networkID)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incomming grab: Grab already satisfied, {grabberSub.dist} grabbed {grabbedSub.dist}");
+                    MonklandSteamManager.Log($"[Entity] Incomming grab: Grab already satisfied, {grabberSub.networkID} grabbed {grabbedSub.networkID}");
                     return;
                 }
                 int preexisting = -1;
                 for (int i = 0; i < grabber.grasps.Length; i++)
                 {
-                    if (grabber.grasps[i] != null && grabber.grasps[i].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[i].grabbed.abstractPhysicalObject).dist == grabbedSub.dist)
+                    if (grabber.grasps[i] != null && grabber.grasps[i].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[i].grabbed.abstractPhysicalObject).networkID == grabbedSub.networkID)
                     { preexisting = i; }
                 }
                 if (preexisting != -1 && preexisting != graspUsed)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incomming grab: Found preexisting satifying grab, {grabberSub.dist} grabbed {grabbedSub.dist}");
+                    MonklandSteamManager.Log($"[Entity] Incomming grab: Found preexisting satifying grab, {grabberSub.networkID} grabbed {grabbedSub.networkID}");
                     CreatureHK.SetNet();
                     grabber.SwitchGrasps(preexisting, graspUsed); //NetSwitch
                     return;
                 }
-                MonklandSteamManager.Log($"[Entity] Incomming grab: GRAB! {grabberSub.dist} grabbed {grabbedSub.dist}");
+                MonklandSteamManager.Log($"[Entity] Incomming grab: GRAB! {grabberSub.networkID} grabbed {grabbedSub.networkID}");
                 CreatureHK.SetNet();
                 grabber.Grab(grabbed, graspUsed, grabbedChunk, shareability, dominance, false, pacifying); //NetGrab
             }
@@ -1005,29 +967,29 @@ namespace Monkland.SteamManagement
                 {
                     if (abstractRoom.entities[i] != null && abstractRoom.entities[i] is AbstractPhysicalObject apo)
                     {
-                        if (AbstractPhysicalObjectHK.GetField(apo).dist == grabber && (abstractRoom.entities[i] is AbstractCreature))
+                        if (AbstractPhysicalObjectHK.GetField(apo).networkID == grabber && (abstractRoom.entities[i] is AbstractCreature))
                         {
                             abstractGrabber = (abstractRoom.entities[i] as AbstractCreature);
                             for (int j = 0; j < (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects.Count; j++)
                             {
-                                if ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).dist == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).dist == grabbed)
+                                if ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).networkID == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).networkID == grabbed)
                                 {
                                     MonklandSteamManager.Log($"[Entity] Incomming grab: Grab already satisfyed. {grabber} grabbed {grabbed}");
                                     abstractGrabbed = (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B;
                                     if (!(abstractGrabbed is AbstractCreature) || (abstractGrabbed as AbstractCreature).creatureTemplate.TopAncestor().type != CreatureTemplate.Type.Slugcat)
-                                        AbstractPhysicalObjectHK.GetField(abstractGrabbed).owner = sentPlayer.m_SteamID;
+                                        AbstractPhysicalObjectHK.GetField(abstractGrabbed).ownerID = sentPlayer.m_SteamID;
                                     return;
                                 }
                             }
                         }
-                        else if (AbstractPhysicalObjectHK.GetField(apo).dist == grabbed)
+                        else if (AbstractPhysicalObjectHK.GetField(apo).networkID == grabbed)
                         {
                             abstractGrabbed = (abstractRoom.entities[i] as AbstractPhysicalObject);
                             if (!(abstractGrabbed is AbstractCreature) || (abstractGrabbed as AbstractCreature).creatureTemplate.TopAncestor().type != CreatureTemplate.Type.Slugcat)
-                            { AbstractPhysicalObjectHK.GetField(abstractGrabbed).owner = sentPlayer.m_SteamID; }
+                            { AbstractPhysicalObjectHK.GetField(abstractGrabbed).ownerID = sentPlayer.m_SteamID; }
                             for (int j = 0; j < apo.stuckObjects.Count; j++)
                             {
-                                if (apo.stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).dist == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).dist == grabbed)
+                                if (apo.stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).networkID == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).networkID == grabbed)
                                 {
                                     MonklandSteamManager.Log($"[Entity] Incomming grab: Grab already satisfyed. {grabber} grabbed {grabbed}");
                                     return;
@@ -1067,9 +1029,9 @@ namespace Monkland.SteamManagement
                 }
                 for (int i = 0; i < grabber.grasps.Length; i++)
                 {
-                    if (grabber.grasps[i] != null && grabber.grasps[i].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[i].grabbed.abstractPhysicalObject).dist == grabbed)
+                    if (grabber.grasps[i] != null && grabber.grasps[i].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[i].grabbed.abstractPhysicalObject).networkID == grabbed)
                     {
-                        MonklandSteamManager.Log($"[Entity] Incomming release grasp: RELEASE! {AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject).dist} released {grabbed}");
+                        MonklandSteamManager.Log($"[Entity] Incomming release grasp: RELEASE! {AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject).networkID} released {grabbed}");
                         CreatureHK.SetNet();
                         grabber.ReleaseGrasp(i); // NetRelease
                     }
@@ -1086,7 +1048,7 @@ namespace Monkland.SteamManagement
                         for (int j = 0; j < apo.stuckObjects.Count; j++)
                         {
                             if (apo.stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null
-                                && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).dist == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).dist == grabbed)
+                                && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).networkID == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).networkID == grabbed)
                             {
                                 MonklandSteamManager.Log($"[Entity] Incomming release grasp: Abstract RELEASE! {grabber} released {grabbed}");
                                 apo.stuckObjects[j].Deactivate();
@@ -1123,7 +1085,7 @@ namespace Monkland.SteamManagement
                 MonklandSteamManager.Log("[Entity] Incomming switch: Target not found!");
                 return;
             }
-            MonklandSteamManager.Log($"[Entity] Incomming switch: SWITCH! {AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject).dist}");
+            MonklandSteamManager.Log($"[Entity] Incomming switch: SWITCH! {AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject).networkID}");
             CreatureHK.SetNet();
             grabber.SwitchGrasps(from, to);
         }
@@ -1149,9 +1111,9 @@ namespace Monkland.SteamManagement
             {
                 if (abstractRoom.entities[i] != null && abstractRoom.entities[i] is AbstractPhysicalObject)
                 {
-                    AbsPhyObjFields sub = AbstractPhysicalObjectHK.GetField(abstractRoom.entities[i] as AbstractPhysicalObject);
-                    if (sub.dist == distA) { A = abstractRoom.entities[i] as AbstractPhysicalObject; }
-                    else if (sub.dist == distB) { B = abstractRoom.entities[i] as AbstractPhysicalObject; }
+                    AbstractObjFields sub = AbstractPhysicalObjectHK.GetField(abstractRoom.entities[i] as AbstractPhysicalObject);
+                    if (sub.networkID == distA) { A = abstractRoom.entities[i] as AbstractPhysicalObject; }
+                    else if (sub.networkID == distB) { B = abstractRoom.entities[i] as AbstractPhysicalObject; }
                 }
             }
             if (A == null || B == null)
@@ -1161,7 +1123,7 @@ namespace Monkland.SteamManagement
             }
             for (int i = 0; i < A.stuckObjects.Count; i++)
             {
-                if (AbstractPhysicalObjectHK.GetField(A.stuckObjects[i].B).dist == distB)
+                if (AbstractPhysicalObjectHK.GetField(A.stuckObjects[i].B).networkID == distB)
                 {
                     MonklandSteamManager.Log("[Entity] Incomming stick: Stick already satisfyed!");
                     return;
@@ -1211,7 +1173,7 @@ namespace Monkland.SteamManagement
                     for (int j = 0; j < apo.stuckObjects.Count; j++)
                     {
                         if (apo.stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null
-                            && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).dist == A && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).dist == B)
+                            && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).networkID == A && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).networkID == B)
                         {
                             MonklandSteamManager.Log($"[Entity] Incomming deactivate: DEACTIVATE! {A} released {B}");
                             apo.stuckObjects[j].Deactivate();

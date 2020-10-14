@@ -9,7 +9,7 @@ namespace Monkland.SteamManagement
         {
             AbstractPhysicalObjectHandler.Write(creature, ref writer);
             writer.Write((byte)creature.creatureTemplate.type);
-            //AbstractCreatureAIHandler.Write(creature.abstractAI, ref writer);
+
             //Additional personality and relationship traits should be synced here!
             writer.Write(creature.remainInDenCounter);
             WorldCoordinateHandler.Write(creature.spawnDen, ref writer);
@@ -20,12 +20,11 @@ namespace Monkland.SteamManagement
         {
             AbstractPhysicalObjectHandler.Read(creature, ref reader);
             creature.creatureTemplate.type = (CreatureTemplate.Type)reader.ReadByte();
-            //creature.abstractAI = AbstractCreatureAIHandler.Read(creature.abstractAI, ref reader);
+
             //Additional personality and relationship traits should be synced here!
             creature.remainInDenCounter = reader.ReadInt32();
             creature.spawnDen = WorldCoordinateHandler.Read(ref reader);
             //creature state should also be synced here!!
-            //return creature;
         }
 
 

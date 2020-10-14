@@ -26,7 +26,7 @@ namespace Monkland.Hooks.Entities
         public static void Sync(Player self, bool dead)
         {
             self.dead = dead;
-            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             field.networkLife = Math.Max(100, field.networkLife);
         }
 
@@ -36,7 +36,7 @@ namespace Monkland.Hooks.Entities
             self.corridorTurnCounter = corridorTurnCounter;
             self.corridorTurnDir = corridorTurnDir;
             self.crawlTurnDelay = crawlTurnDelay;
-            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
             field.networkLife = Math.Max(100, field.networkLife);
         }
 
@@ -54,7 +54,7 @@ namespace Monkland.Hooks.Entities
         {
             if (MonklandSteamManager.isInGame)
             { 
-                return orig(self) && AbstractPhysicalObjectHK.GetField(self.abstractCreature).owner == NetworkGameManager.playerID; 
+                return orig(self) && AbstractPhysicalObjectHK.GetField(self.abstractCreature).ownerID == NetworkGameManager.playerID; 
             }
             else
             { 
@@ -73,14 +73,14 @@ namespace Monkland.Hooks.Entities
             if (MonklandSteamManager.isInGame)
             {
                 return MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(
-                    AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).owner)];
+                    AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).ownerID)];
             }
             return orig(self);
         }
 
         private static void DieHK(On.Player.orig_Die orig, Player self)
         {
-            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkObject) 
+            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject) 
             {
                 return; 
             }
@@ -89,8 +89,8 @@ namespace Monkland.Hooks.Entities
 
         private static void UpdateHK(On.Player.orig_Update orig, Player self, bool eu)
         {
-            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            if (field.networkObject)
+            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            if (field.isNetworkObject)
             {
                 if (self.lungsExhausted)
                 { 
@@ -374,8 +374,8 @@ namespace Monkland.Hooks.Entities
 
         private static void GrabUpdateHK(On.Player.orig_GrabUpdate orig, Player self, bool eu)
         {
-            AbsPhyObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
-            if (field.networkObject)
+            AbstractObjFields field = AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject);
+            if (field.isNetworkObject)
             {
                 if (self.spearOnBack != null) { self.spearOnBack.Update(eu); }
                 bool flag = self.input[0].x == 0 && self.input[0].y == 0 && !self.input[0].jmp && !self.input[0].thrw && self.mainBodyChunk.submersion < 0.5f;

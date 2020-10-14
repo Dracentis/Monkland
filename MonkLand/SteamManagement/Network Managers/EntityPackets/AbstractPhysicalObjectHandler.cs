@@ -50,7 +50,10 @@ namespace Monkland.SteamManagement
         public static void Read(AbstractPhysicalObject abstractPhysicalObject, ref BinaryReader reader)
         {
             AbstractWorldEntityHandler.Read(abstractPhysicalObject, ref reader);
-            abstractPhysicalObject.type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+
+            AbstractPhysicalObject.AbstractObjectType type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+
+            abstractPhysicalObject.type = type;
             abstractPhysicalObject.destroyOnAbstraction = true;
             switch(abstractPhysicalObject.type)
             {

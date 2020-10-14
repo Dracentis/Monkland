@@ -75,9 +75,9 @@ namespace Monkland.UI
         {
             try
             {
-                if (!playerLabels.ContainsKey(AbstractPhysicalObjectHK.GetField(player).owner))
+                if (!playerLabels.ContainsKey(AbstractPhysicalObjectHK.GetField(player).ownerID))
                 {
-                    playerLabels.Add(AbstractPhysicalObjectHK.GetField(player).owner, new MUIPlayerTag(player, name, color, this));
+                    playerLabels.Add(AbstractPhysicalObjectHK.GetField(player).ownerID, new MUIPlayerTag(player, name, color, this));
                 }
             }
             catch //(Exception e)

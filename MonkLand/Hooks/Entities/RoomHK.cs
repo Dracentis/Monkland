@@ -20,6 +20,7 @@ namespace Monkland.Hooks.Entities
         private static void UpdateHK(On.Room.orig_Update orig, Room self)
         {
             orig(self);
+
             if (MonklandSteamManager.isInGame)
             {
                 /*
@@ -46,7 +47,7 @@ namespace Monkland.Hooks.Entities
                     {
                         for (int j = 0; j < self.physicalObjects[i].Count; j++)
                         {
-                            if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).owner == NetworkGameManager.playerID)
+                            if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).ownerID == NetworkGameManager.playerID)
                             {
                                 if (MonklandSteamManager.EntityManager.isSynced(self.physicalObjects[i][j]))
                                 {
@@ -55,14 +56,6 @@ namespace Monkland.Hooks.Entities
                                         MonklandSteamManager.EntityManager.SendPhysicalObject(self.physicalObjects[i][j], MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name], true);
                                     }
                                 }
-                                /*
-                                else if (self.physicalObjects[i][j] is Spear)
-                                {
-                                    if (field.syncDelay == 0)
-                                    {
-                                        MonklandSteamManager.EntityManager.SendPhysicalObject(self.physicalObjects[i][j] as Spear, MonklandSteamManager.WorldManager.commonRooms[self.abstractRoom.name], true);
-                                    }
-                                }*/
                             }
                         }
                     }
@@ -93,7 +86,7 @@ namespace Monkland.Hooks.Entities
                 {
                     for (int j = 0; j < self.physicalObjects[i].Count; j++)
                     {
-                        if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && (AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).owner == NetworkGameManager.playerID))
+                        if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && (AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).ownerID == NetworkGameManager.playerID))
                         {
                             if (MonklandSteamManager.EntityManager.isSynced(self.physicalObjects[i][j]))
                             {
@@ -112,7 +105,7 @@ namespace Monkland.Hooks.Entities
                 {
                     for (int j = 0; j < self.physicalObjects[i].Count; j++)
                     {
-                        if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && (AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).owner == NetworkGameManager.playerID))
+                        if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && (AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).ownerID == NetworkGameManager.playerID))
                         {
                             if (self.physicalObjects[i][j] is Creature && (self.physicalObjects[i][j] as Creature).grasps != null && (self.physicalObjects[i][j] as Creature).grasps.Length > 0)
                             {
@@ -121,7 +114,7 @@ namespace Monkland.Hooks.Entities
                             }
                             foreach (AbstractPhysicalObject.AbstractObjectStick stick in self.physicalObjects[i][j].abstractPhysicalObject.stuckObjects)
                             {
-                                if (AbstractPhysicalObjectHK.GetField(stick.A).dist == AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).dist)
+                                if (AbstractPhysicalObjectHK.GetField(stick.A).networkID == AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).networkID)
                                 {
                                     if (stick is AbstractPhysicalObject.AbstractSpearStick)
                                     {
