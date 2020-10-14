@@ -1,8 +1,10 @@
 ﻿using Monkland.Hooks.Entities;
 using Monkland.SteamManagement;
+using RWCustom;
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Monkland.UI
@@ -258,6 +260,24 @@ namespace Monkland.UI
                 roomID = (trackedPlayer == null ? 0 : trackedPlayer.Room.index)
             };
             displayMessages.Add(msg);
+        }
+
+        internal static void PacketLog(string buildingPacket)
+        {
+            if (!File.Exists(Custom.RootFolderDirectory() + "packetsLog.txt"))
+            {
+                // Create a file to write to.
+                using (StreamWriter sw = File.CreateText(Custom.RootFolderDirectory() + "packetsLog.txt"))
+                {
+                    sw.WriteLine("Packets Log\n");
+                }
+            }
+
+            using (StreamWriter file =
+            new StreamWriter(Custom.RootFolderDirectory() + "packetsLog.txt", true))
+            {
+                file.WriteLine($"[{DateTime.Now.ToString()}] {buildingPacket}");
+            }
         }
 
         public static void UpdateMessage(string message, float time, Vector2 worldPos, int dist, int roomID, Color color)

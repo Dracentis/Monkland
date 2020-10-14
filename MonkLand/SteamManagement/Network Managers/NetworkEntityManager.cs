@@ -273,7 +273,7 @@ namespace Monkland.SteamManagement
 
             MonklandUI.UpdateMessage($"{absType}\nO: {field.ownerID % 10000:0000}\nID: {field.networkID % 10000:0000}", 1, physicalObject.bodyChunks[0].pos, field.networkID, physicalObject.room.abstractRoom.index, Color.white);
 
-            Debug.Log(buildingPacket);
+            MonklandUI.PacketLog(buildingPacket);
 
             // Finalize acket
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -703,7 +703,7 @@ namespace Monkland.SteamManagement
 
                                 // Make sure it is in correct room (probably not necessary)
                                 foundObject.abstractPhysicalObject.pos.room = abstractRoom.index;
-                                Debug.Log("found object " + buildingPacket);
+                                MonklandUI.PacketLog(buildingPacket);
                                 return;
                             }
                         }
