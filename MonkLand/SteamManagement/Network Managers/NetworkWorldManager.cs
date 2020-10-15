@@ -223,7 +223,7 @@ namespace Monkland.SteamManagement
                                         commonRooms.Add(myRoom, new List<ulong>());
                                     }
                                     if (!commonRooms[myRoom].Contains(player))
-                                        commonRooms[myRoom].Add(player);
+                                    { commonRooms[myRoom].Add(player); }
                                 }
                             }
                         }
