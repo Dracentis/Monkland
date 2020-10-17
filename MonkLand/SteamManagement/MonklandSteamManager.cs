@@ -614,7 +614,7 @@ namespace Monkland.SteamManagement
                                 sb.Append(getPacket.data[i] + "" + ((getPacket.readCount == i) ? "|" : ""));
 
                             Debug.LogError("Packet data was " + sb.ToString() + " in channel " + channelName);
-                            Debug.LogError($"Packet Type {(NetworkEntityManager.PacketType)getPacket.data[2]}, ObjectType {(AbstractCreature.AbstractObjectType)getPacket.data[5]}");
+                            Debug.LogError($"Packet Type {getPacket.data[2]}, ObjectType {(AbstractCreature.AbstractObjectType)getPacket.data[5]}");
                             Debug.LogError(e);
                             packetsLeft--;
                         }
@@ -1098,6 +1098,7 @@ namespace Monkland.SteamManagement
         public static NetworkGameManager GameManager;
         public static NetworkWorldManager WorldManager;
         public static NetworkEntityManager EntityManager;
+        public static NetworkGraspStickManager GraspStickManager;
 
         public static Dictionary<string, NetworkManager> netManagers = new Dictionary<string, NetworkManager>();
         private static readonly List<NetworkManager> netManagersList = new List<NetworkManager>();
@@ -1112,6 +1113,7 @@ namespace Monkland.SteamManagement
             RegisterNetworkManager("Game", GameManager);
             RegisterNetworkManager("World", WorldManager);
             RegisterNetworkManager("Entity", EntityManager);
+            RegisterNetworkManager("GraspStick", GraspStickManager);
         }
 
         public int RegisterNetworkManager(string name, NetworkManager manager)
@@ -1176,7 +1178,7 @@ namespace Monkland.SteamManagement
             {
                 bool success = true;
                 if (lobbyID.m_SteamID == 0)
-                    return false;
+                { return false; }
                 this.ID = lobbyID;
                 string ownerData = SteamMatchmaking.GetLobbyData(lobbyID, MANAGER_ID);
                 if (string.IsNullOrEmpty(ownerData))
@@ -1184,7 +1186,7 @@ namespace Monkland.SteamManagement
                 else
                 { this.owner = new CSteamID(ulong.Parse(ownerData)); }
                 if (owner.m_SteamID == 0)
-                    success = false;
+                { success = false; }
                 this.debugAllowed = (SteamMatchmaking.GetLobbyData(lobbyID, "AllowDebug") == "True");
                 this.spearsHit = (SteamMatchmaking.GetLobbyData(lobbyID, "SpearsHit") == "True");
                 //this.otherStart = (SteamMatchmaking.GetLobbyData(lobbyID, "OtherStart") == "True");

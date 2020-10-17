@@ -49,7 +49,7 @@ namespace Monkland.Hooks.Entities
                         {
                             if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).ownerID == NetworkGameManager.playerID)
                             {
-                                if (MonklandSteamManager.EntityManager.isSynced(self.physicalObjects[i][j]))
+                                if (MonklandSteamManager.EntityManager.isSynced(self.physicalObjects[i][j].abstractPhysicalObject))
                                 {
                                     if (field.syncDelay == 0)
                                     {
@@ -88,7 +88,7 @@ namespace Monkland.Hooks.Entities
                     {
                         if (self.physicalObjects[i][j] != null && self.physicalObjects[i][j].abstractPhysicalObject != null && (AbstractPhysicalObjectHK.GetField(self.physicalObjects[i][j].abstractPhysicalObject).ownerID == NetworkGameManager.playerID))
                         {
-                            if (MonklandSteamManager.EntityManager.isSynced(self.physicalObjects[i][j]))
+                            if (MonklandSteamManager.EntityManager.isSynced(self.physicalObjects[i][j].abstractPhysicalObject))
                             {
                                 MonklandSteamManager.EntityManager.SendPhysicalObject(self.physicalObjects[i][j], players, true);
                             }
@@ -110,7 +110,7 @@ namespace Monkland.Hooks.Entities
                             if (self.physicalObjects[i][j] is Creature && (self.physicalObjects[i][j] as Creature).grasps != null && (self.physicalObjects[i][j] as Creature).grasps.Length > 0)
                             {
                                 foreach (Creature.Grasp grasp in (self.physicalObjects[i][j] as Creature).grasps)
-                                { MonklandSteamManager.EntityManager.SendGrab(grasp); }
+                                { MonklandSteamManager.GraspStickManager.SendGrab(grasp); }
                             }
                             foreach (AbstractPhysicalObject.AbstractObjectStick stick in self.physicalObjects[i][j].abstractPhysicalObject.stuckObjects)
                             {
@@ -118,15 +118,15 @@ namespace Monkland.Hooks.Entities
                                 {
                                     if (stick is AbstractPhysicalObject.AbstractSpearStick)
                                     {
-                                        MonklandSteamManager.EntityManager.SendSpearStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearStick).chunk, (stick as AbstractPhysicalObject.AbstractSpearStick).bodyPart, (stick as AbstractPhysicalObject.AbstractSpearStick).angle);
+                                        MonklandSteamManager.GraspStickManager.SendSpearStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearStick).chunk, (stick as AbstractPhysicalObject.AbstractSpearStick).bodyPart, (stick as AbstractPhysicalObject.AbstractSpearStick).angle);
                                     }
                                     else if (stick is AbstractPhysicalObject.AbstractSpearAppendageStick)
                                     {
-                                        MonklandSteamManager.EntityManager.SendSpearAppendageStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).appendage, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).prevSeg, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).distanceToNext, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).angle);
+                                        MonklandSteamManager.GraspStickManager.SendSpearAppendageStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).appendage, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).prevSeg, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).distanceToNext, (stick as AbstractPhysicalObject.AbstractSpearAppendageStick).angle);
                                     }
                                     else if (stick is AbstractPhysicalObject.ImpaledOnSpearStick)
                                     {
-                                        MonklandSteamManager.EntityManager.SendSpearImpaledStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).chunk, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).onSpearPosition);
+                                        MonklandSteamManager.GraspStickManager.SendSpearImpaledStick(stick.A, stick.B, stick.A.Room, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).chunk, (stick as AbstractPhysicalObject.ImpaledOnSpearStick).onSpearPosition);
                                     }
                                 }
                             }

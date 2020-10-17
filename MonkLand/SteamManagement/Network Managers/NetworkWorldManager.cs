@@ -39,18 +39,23 @@ namespace Monkland.SteamManagement
         public Dictionary<ulong, List<string>> roomDict = new Dictionary<ulong, List<string>>(); 
         public Dictionary<string, List<ulong>> commonRooms = new Dictionary<string, List<ulong>>();
 
-        public bool gameRunning = false;//is my game running
+        //is my game running
+        public bool gameRunning = false;
 
-        public int cycleLength = 36000; // cyclelength to sync ingame cycle length with other players
-        public int timer = 0; //Timer to sync ingame time with other players
-        public int joinDelay = -1; //Delay to establish P2P connection before
-        public int syncDelay = 1000; //Cycle periodic sync
+        // cyclelength to sync ingame cycle length with other players
+        public int cycleLength = 36000; 
+        //Timer to sync ingame time with other players
+        public int timer = 0; 
+        //Delay to establish P2P connection before
+        public int joinDelay = -1; 
+        //Cycle periodic sync
+        public int syncDelay = 1000; 
                                     //public int roomVerify = 1000;
 
             // Used for BattleRoyale
         public int sessionTotalCycles = 0;
 
-        public const int WORLD_CHANNEL = 1;
+
         public byte WorldHandler = 0;
 
         public float AmountLeft
@@ -277,6 +282,14 @@ namespace Monkland.SteamManagement
 
         #endregion Logistics
 
+        private enum WorldPacketType
+        {
+            WorldLoadOrExit,
+            RainSync,
+            RealizeRoom,
+            AbstractizeRoom
+        }
+
         #region Packet Handler
 
         public override void RegisterHandlers()
@@ -288,22 +301,22 @@ namespace Monkland.SteamManagement
         // USE ENUM HERE
         public void HandleWorldPackets(BinaryReader br, CSteamID sentPlayer)
         {
-            byte messageType = br.ReadByte();
+            WorldPacketType messageType = (WorldPacketType)br.ReadByte();
             switch (messageType)// up to 256 message types
             {
-                case 0:// World Loaded or Exited
+                case WorldPacketType.WorldLoadOrExit:// World Loaded or Exited
                     ReadLoadPacket(br, sentPlayer);
                     return;
 
-                case 1:// Rain Sync
+                case WorldPacketType.RainSync:// Rain Sync
                     ReadRainPacket(br, sentPlayer);
                     return;
 
-                case 2:// Realize Room
+                case WorldPacketType.RealizeRoom:// Realize Room
                     ReadActivateRoom(br, sentPlayer);
                     return;
 
-                case 3:// Abstractize Room
+                case WorldPacketType.AbstractizeRoom:// Abstractize Room
                     ReadDeactivateRoom(br, sentPlayer);
                     return;
             }
@@ -327,7 +340,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(2));
+            writer.Write((byte)WorldPacketType.RealizeRoom);
             writer.Write(roomName);
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -351,7 +364,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(3));
+            writer.Write((byte)WorldPacketType.AbstractizeRoom);
             writer.Write(roomName);
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -394,7 +407,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(0));
+            writer.Write((byte)WorldPacketType.WorldLoadOrExit);
             writer.Write(true);
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -423,7 +436,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(0));
+            writer.Write((byte)WorldPacketType.WorldLoadOrExit);
             writer.Write(false);
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -437,7 +450,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(1));
+            writer.Write((byte)WorldPacketType.RainSync);
             writer.Write(cycleLength);
             writer.Write(timer);
 
@@ -452,7 +465,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(1));
+            writer.Write((byte)WorldPacketType.RainSync);
             writer.Write(cycleLength);
             writer.Write(timer);
 
@@ -464,8 +477,6 @@ namespace Monkland.SteamManagement
         #endregion Outgoing Packets
 
         #region Incoming Packets
-
-#pragma warning disable IDE0060
 
         public void ReadLoadPacket(BinaryReader reader, CSteamID sent)
         {
