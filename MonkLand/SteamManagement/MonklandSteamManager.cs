@@ -768,8 +768,6 @@ namespace Monkland.SteamManagement
                 MonklandSteamManager.instance.SendPacket(packet, user, EP2PSend.k_EP2PSendReliable);
             }
 
-#pragma warning disable IDE0060
-
             public void RecieveForcewaitReply(BinaryReader reader, CSteamID sender)
             {
                 isForceWait = false;
@@ -1109,6 +1107,7 @@ namespace Monkland.SteamManagement
             GameManager = new NetworkGameManager();
             WorldManager = new NetworkWorldManager();
             EntityManager = new NetworkEntityManager();
+            GraspStickManager = new NetworkGraspStickManager();
 
             RegisterNetworkManager("Game", GameManager);
             RegisterNetworkManager("World", WorldManager);

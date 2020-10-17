@@ -90,8 +90,8 @@ namespace Menu
             else { base.Singal(sender, message); }
         }
 
-#pragma warning disable CA1822 // Mark members as static
-#pragma warning disable IDE0060 // Remove unused parameter
+//#pragma warning disable CA1822 // Mark members as static
+//#pragma warning disable IDE0060 // Remove unused parameter
 
         public new void AddPassageButton(bool buttonBlack)
         {

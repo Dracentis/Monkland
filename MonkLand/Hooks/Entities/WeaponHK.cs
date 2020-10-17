@@ -86,7 +86,7 @@ namespace Monkland.Hooks.Entities
 
             if (MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
-                MonklandSteamManager.EntityManager.SendThrow(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc);
+                MonklandSteamManager.GraspStickManager.SendThrow(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc);
                 MonklandSteamManager.EntityManager.SendPhysicalObject(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);
             }
         }
@@ -103,7 +103,7 @@ namespace Monkland.Hooks.Entities
 
             if (hit && MonklandSteamManager.isInGame && !AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject && MonklandSteamManager.WorldManager.commonRooms.ContainsKey(self.room.abstractRoom.name))
             {
-                MonklandSteamManager.EntityManager.SendHit(self, result.obj, result.chunk);
+                MonklandSteamManager.GraspStickManager.SendHit(self, result.obj, result.chunk);
                 MonklandSteamManager.EntityManager.SendPhysicalObject(self, MonklandSteamManager.WorldManager.commonRooms[self.room.abstractRoom.name], true);
             }
             return hit;

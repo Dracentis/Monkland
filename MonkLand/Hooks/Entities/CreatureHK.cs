@@ -56,7 +56,7 @@ namespace Monkland.Hooks.Entities
             if (CheckNet()) { orig(self, fromGrasp, toGrasp); return; }
             if (MonklandSteamManager.isInGame)
             {
-                MonklandSteamManager.EntityManager.SendSwitch(self, fromGrasp, toGrasp);
+                MonklandSteamManager.GraspStickManager.SendSwitch(self, fromGrasp, toGrasp);
             }
             orig(self, fromGrasp, toGrasp);
         }
@@ -66,7 +66,7 @@ namespace Monkland.Hooks.Entities
             if (CheckNet()) { orig(self, grasp); return; }
             if (self.grasps[grasp] != null && MonklandSteamManager.isInGame)
             {
-                MonklandSteamManager.EntityManager.SendRelease(self.grasps[grasp]);
+                MonklandSteamManager.GraspStickManager.SendRelease(self.grasps[grasp]);
             }
             orig(self, grasp);
         }
@@ -108,7 +108,7 @@ namespace Monkland.Hooks.Entities
             {
                 if (MonklandSteamManager.isInGame)
                 {
-                    MonklandSteamManager.EntityManager.SendGrab(self.grasps[graspUsed]);
+                    MonklandSteamManager.GraspStickManager.SendGrab(self.grasps[graspUsed]);
                 }
                 return true;
             }
