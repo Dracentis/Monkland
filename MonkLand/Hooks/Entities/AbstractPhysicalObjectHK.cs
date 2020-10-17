@@ -57,7 +57,7 @@ namespace Monkland.Hooks.Entities
                 AbstractObjFields Bs = GetField(self.B);
                 if (As.isNetworkObject || Bs.isNetworkObject)
                 { 
-                    MonklandSteamManager.EntityManager.SendDeactivate(self.A, self.B, self.A.Room); 
+                    MonklandSteamManager.GraspStickManager.SendDeactivate(self.A, self.B, self.A.Room); 
                 }
             }
             orig(self);
@@ -72,7 +72,7 @@ namespace Monkland.Hooks.Entities
                 AbstractObjFields Bs = GetField(self.B);
                 if (As.isNetworkObject || Bs.isNetworkObject)
                 { 
-                    MonklandSteamManager.EntityManager.SendSpearStick(self.A, self.B, self.A.Room, chunk, bodyPart, angle);
+                    MonklandSteamManager.GraspStickManager.SendSpearStick(self.A, self.B, self.A.Room, chunk, bodyPart, angle);
                 }
             }
             orig(self, spear, stuckIn, chunk, bodyPart, angle);
@@ -87,7 +87,7 @@ namespace Monkland.Hooks.Entities
                 AbstractObjFields Bs = GetField(self.B);
                 if (As.isNetworkObject || Bs.isNetworkObject)
                 { 
-                    MonklandSteamManager.EntityManager.SendSpearAppendageStick(self.A, self.B, self.A.Room, appendage, prevSeg, distanceToNext, angle); 
+                    MonklandSteamManager.GraspStickManager.SendSpearAppendageStick(self.A, self.B, self.A.Room, appendage, prevSeg, distanceToNext, angle); 
                 }
             }
             orig(self, spear, stuckIn, appendage, prevSeg, distanceToNext, angle);
@@ -103,7 +103,7 @@ namespace Monkland.Hooks.Entities
 
                 if (As.isNetworkObject || Bs.isNetworkObject)
                 { 
-                    MonklandSteamManager.EntityManager.SendSpearImpaledStick(self.A, self.B, self.A.Room, chunk, onSpearPosition); 
+                    MonklandSteamManager.GraspStickManager.SendSpearImpaledStick(self.A, self.B, self.A.Room, chunk, onSpearPosition); 
                 }
             }
             orig(self, spear, stuckIn, chunk, onSpearPosition);

@@ -204,7 +204,7 @@ namespace Monkland.SteamManagement
 
         public void SendHit(Weapon obj, PhysicalObject hit, BodyChunk chunk)
         {
-            if (hit == null || obj == null || !isSynced(obj) || !isSynced(hit)) { return; }
+            if (hit == null || obj == null || !isSynced(obj.abstractPhysicalObject) || !isSynced(hit.abstractPhysicalObject)) { return; }
             if (!MonklandSteamManager.WorldManager.commonRooms.ContainsKey(obj.room.abstractRoom.name)) { return; }
 
             AbstractObjFields objField = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
