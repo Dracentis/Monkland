@@ -19,7 +19,7 @@ namespace Monkland.Hooks.Entities
 
         public static void Sync(Creature self, bool dead) => self.dead = dead;
 
-        /*
+
         private static bool isNet = false;
 
         public static void SetNet() => isNet = true;
@@ -29,7 +29,7 @@ namespace Monkland.Hooks.Entities
             if (isNet) { isNet = false; return true; }
             return false;
         }
-        */
+
 
         private static void Creature_Violence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, UnityEngine.Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus)
         {
@@ -53,7 +53,7 @@ namespace Monkland.Hooks.Entities
 
         private static void SwitchGraspsHK(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
         {
-            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject) { orig(self, fromGrasp, toGrasp); return; }
+            if (CheckNet()) { orig(self, fromGrasp, toGrasp); return; }
             if (MonklandSteamManager.isInGame)
             {
                 MonklandSteamManager.EntityManager.SendSwitch(self, fromGrasp, toGrasp);
@@ -63,7 +63,7 @@ namespace Monkland.Hooks.Entities
 
         private static void ReleaseGraspHK(On.Creature.orig_ReleaseGrasp orig, Creature self, int grasp)
         {
-            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject) { orig(self, grasp); return; }
+            if (CheckNet()) { orig(self, grasp); return; }
             if (self.grasps[grasp] != null && MonklandSteamManager.isInGame)
             {
                 MonklandSteamManager.EntityManager.SendRelease(self.grasps[grasp]);
@@ -79,7 +79,7 @@ namespace Monkland.Hooks.Entities
             }
 
             AbstractObjFields objs = AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject);
-            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject)
+            if (CheckNet())
             {
                 if (self.grasps[graspUsed] != null && self.grasps[graspUsed].grabbed == obj)
                 {

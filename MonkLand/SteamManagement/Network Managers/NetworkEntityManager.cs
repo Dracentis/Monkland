@@ -334,11 +334,13 @@ namespace Monkland.SteamManagement
                     if (target != playerID) { MonklandSteamManager.instance.SendPacket(packet, (CSteamID)target, EP2PSend.k_EP2PSendUnreliableNoDelay); }
                 }
             }
-            if ((grasp.grabbed is Player) && !(grasp.grabber is Player))//One of our creatures is grabbing another player so the grabber should belong to the grabbed
+                //One of our creatures is grabbing another player so the grabber should belong to the grabbed
+            if ((grasp.grabbed is Player) && !(grasp.grabber is Player))
             {
                 grabberField.ownerID = grabbedField.ownerID;
             }
-            else if (!(grasp.grabbed is Player))//One of our creatures is the grabber so we should take ownership of the grabbed
+                //One of our creatures is the grabber so we should take ownership of the grabbed
+            else if (!(grasp.grabbed is Player))
             {
                 grabbedField.ownerID = grabberField.ownerID;
             }
@@ -651,7 +653,9 @@ namespace Monkland.SteamManagement
              * **************/
 
             if (!MonklandSteamManager.WorldManager.gameRunning)
-            { return; }
+            { 
+                return; 
+            }
 
             // Read Room Name
             string roomName = reader.ReadString();
@@ -691,7 +695,6 @@ namespace Monkland.SteamManagement
                                 {
                                     // ALWAYS FOLLOW THIS ORDER WHEN READING / WRITING PACKERS
                                     AbstractPhysicalObjectHandler.Read(foundObject.abstractPhysicalObject, ref reader);
-                                    PhysicalObjectHandler.Read(foundObject, ref reader);
                                     PhysicalObjectHandler.ReadSpecificPhysicalObject(foundObject, ref reader);
                                 }
                                 catch (Exception e) { Debug.Log("Read failed \n" + e); }
@@ -730,7 +733,6 @@ namespace Monkland.SteamManagement
             abstractObject.RealizeInRoom();
 
             // Filling the fields
-            //PhysicalObjectHandler.Read(abstractObject.realizedObject, ref reader);
             PhysicalObjectHandler.ReadSpecificPhysicalObject(abstractObject.realizedObject, ref reader);
 
             // Making sure the object ins in the intended room
@@ -849,9 +851,9 @@ namespace Monkland.SteamManagement
                     }
                     if (obj is Rock || obj is Spear)
                     {
-                        //WeaponHK.SetNet();
+                        WeaponHK.SetNet();
                         if (hit != null && chunk != -1)
-                        { 
+                        {
                             (obj as Weapon).HitSomething(new SharedPhysics.CollisionResult(hit, hit.bodyChunks[chunk], null, true, default), RainWorldGameHK.mainGame.evenUpdate); 
                         }
                         else
@@ -886,7 +888,7 @@ namespace Monkland.SteamManagement
                     MonklandSteamManager.Log($"[Entity] Incoming Throw: {obj.abstractPhysicalObject.type}[{AbstractPhysicalObjectHK.GetField(obj.abstractPhysicalObject).networkID}] thrownby {thrownBy.abstractCreature.creatureTemplate.TopAncestor().type} [{AbstractPhysicalObjectHK.GetField(thrownBy.abstractPhysicalObject).networkID}]");
                     if (obj is Rock || obj is Spear)
                     {
-                        //WeaponHK.SetNet();
+                        WeaponHK.SetNet();
                         (obj as Weapon).Thrown(thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, RainWorldGameHK.mainGame.evenUpdate);
                     }
                     /*
@@ -953,10 +955,12 @@ namespace Monkland.SteamManagement
                 if (preexisting != -1 && preexisting != graspUsed)
                 {
                     MonklandSteamManager.Log($"[Entity] Incomming grab: Found preexisting satifying grab, {grabberField.networkID} grabbed {grabbedField.networkID}");
+                    CreatureHK.SetNet();
                     grabber.SwitchGrasps(preexisting, graspUsed); //NetSwitch
                     return;
                 }
                 MonklandSteamManager.Log($"[Entity] Incomming grab: GRAB! {grabberField.networkID} grabbed {grabbedField.networkID}");
+                CreatureHK.SetNet();
                 grabber.Grab(grabbed, graspUsed, grabbedChunk, shareability, dominance, false, pacifying); //NetGrab
             }
             else
@@ -1035,6 +1039,7 @@ namespace Monkland.SteamManagement
                     if (grabber.grasps[i] != null && grabber.grasps[i].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[i].grabbed.abstractPhysicalObject).networkID == grabbed)
                     {
                         MonklandSteamManager.Log($"[Entity] Incomming release grasp: RELEASE! {AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject).networkID} released {grabbed}");
+                        CreatureHK.SetNet();
                         grabber.ReleaseGrasp(i); // NetRelease
                     }
                 }
@@ -1088,6 +1093,7 @@ namespace Monkland.SteamManagement
                 return;
             }
             MonklandSteamManager.Log($"[Entity] Incomming switch: SWITCH! {AbstractPhysicalObjectHK.GetField(grabber.abstractPhysicalObject).networkID}");
+            CreatureHK.SetNet();
             grabber.SwitchGrasps(from, to);
         }
 

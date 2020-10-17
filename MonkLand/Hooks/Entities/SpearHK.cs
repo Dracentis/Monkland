@@ -21,7 +21,7 @@ namespace Monkland.Hooks.Entities
 
         private static void NoChunkUpdate(Spear self, bool eu)
         {
-            // Call Weapon Update, very ugly
+            // Call Weapon Update, very ugly (is there a better way?)
             ((Action)Activator.CreateInstance(typeof(Action), self, typeof(Weapon).GetMethod("Update").MethodHandle.GetFunctionPointer()))();
 
             self.soundLoop.sound = SoundID.None;

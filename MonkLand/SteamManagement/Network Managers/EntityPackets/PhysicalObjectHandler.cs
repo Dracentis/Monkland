@@ -124,6 +124,7 @@ namespace Monkland.SteamManagement
 
         public static void ReadSpecificPhysicalObject(PhysicalObject physicalObject, ref BinaryReader reader)
         {
+            Read(physicalObject, ref reader);
             AbstractPhysicalObject.AbstractObjectType type = physicalObject.abstractPhysicalObject.type;
             switch (type)
             {
@@ -143,6 +144,7 @@ namespace Monkland.SteamManagement
                     break;
                     /* ... */
             }
+
         }
 
         public static void WriteSpecificPhysicalObject(PhysicalObject physicalObject, ref BinaryWriter writer)

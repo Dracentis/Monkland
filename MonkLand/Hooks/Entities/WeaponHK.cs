@@ -64,7 +64,7 @@ namespace Monkland.Hooks.Entities
         }
         */
 
-        /*
+        
         private static bool isNet = false;
 
         public static bool CheckNet()
@@ -73,13 +73,13 @@ namespace Monkland.Hooks.Entities
             return false;
         }
         public static void SetNet() => isNet = true;
-        */
+        
 
         private static void Weapon_Thrown(On.Weapon.orig_Thrown orig, Weapon self, Creature thrownBy, UnityEngine.Vector2 thrownPos, UnityEngine.Vector2? firstFrameTraceFromPos, RWCustom.IntVector2 throwDir, float frc, bool eu)
         {
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
 
-            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject)
+            if (CheckNet())
             {
                 return;
             }
@@ -96,7 +96,7 @@ namespace Monkland.Hooks.Entities
         {
             bool hit = orig(self, result, eu);
 
-            if (AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).isNetworkObject)
+            if (CheckNet())
             {
                 return hit;
             }
