@@ -36,11 +36,6 @@ namespace Monkland.SteamManagement
             bool InDen = reader.ReadBoolean();
             int timeSpentHere = reader.ReadInt32();
 
-            if (entity == null)
-            {
-                return;
-            }
-
             entity.ID = ID;
             entity.pos = pos;
             entity.InDen = InDen;

@@ -88,7 +88,7 @@ namespace Monkland.SteamManagement
              * extra...
              * **************/
 
-            if (creature == null || targets == null || targets.Count == 0 || creature.room == null || creature.room.abstractRoom == null || !isSynced(creature.abstractPhysicalObject))
+            if (creature == null || !(creature is Creature) || targets == null || targets.Count == 0 || creature.room == null || creature.room.abstractRoom == null || !isSynced(creature))
             {
                 return;
             }
@@ -118,7 +118,7 @@ namespace Monkland.SteamManagement
 
             reliable = true;
 
-            MonklandUI.UpdateMessage($"{creature.abstractCreature.creatureTemplate.TopAncestor().type}\nO: {field.ownerID % 10000:0000}\nID: {field.networkID % 10000:0000}", 1, creature.bodyChunks[0].pos, field.networkID, creature.room.abstractRoom.index, creature.ShortCutColor());
+            MonklandUI.UpdateMessage($"{creature.abstractCreature.creatureTemplate.TopAncestor().type}\nO: {field.ownerName}\nID: {field.networkID % 10000:0000}", 1, creature.bodyChunks[0].pos, field.networkID, creature.room.abstractRoom.index, creature.ShortCutColor());
 
 
             // Finalize acket
@@ -162,11 +162,11 @@ namespace Monkland.SteamManagement
              * extra...
              * **************/
 
-            if (physicalObject == null || physicalObject is Creature ||targets == null || targets.Count == 0 || physicalObject.room == null || physicalObject.room.abstractRoom == null || !isSynced(physicalObject.abstractPhysicalObject))
+            if (physicalObject == null || physicalObject is Creature || targets == null || targets.Count == 0 || physicalObject.room == null || physicalObject.room.abstractRoom == null || !isSynced(physicalObject))
             {
                 return;
             }
-            string buildingPacket = "[Sending Physical Object ->] ";
+            string buildingPacket = "[--->Sending Physical Object] ";
 
             // Prepare packet
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(ENTITY_CHANNEL, EntityHandler);
@@ -181,10 +181,11 @@ namespace Monkland.SteamManagement
             buildingPacket += $" room[{physicalObject.room.abstractRoom.name}]";
 
             // Distinguisher
-            writer.Write(physicalObject.abstractPhysicalObject.ID.number);
-            physicalObject.abstractPhysicalObject.ID.number = field.dist;
-            buildingPacket += $" networkID[{field.networkID}]";
+            //physicalObject.abstractPhysicalObject.ID.number = field.networkID;
+            writer.Write(field.networkID);
+            buildingPacket += $" networkID[{field.networkID}] || IDNumber [{physicalObject.abstractPhysicalObject.ID.number}]";
 
+            AbstractPhysicalObject.AbstractObjectType absType = physicalObject.abstractPhysicalObject.type;
             writer.Write((byte)absType);
             buildingPacket += $" type[{absType}]";
 
@@ -198,7 +199,7 @@ namespace Monkland.SteamManagement
 
             reliable = true;
 
-            MonklandUI.UpdateMessage($"{absType}\nO: {field.ownerID % 10000:0000}\nID: {field.networkID % 10000:0000}", 1, physicalObject.bodyChunks[0].pos, field.networkID, physicalObject.room.abstractRoom.index, Color.white);
+            MonklandUI.UpdateMessage($"{absType}\nO:{field.ownerName}\nID: {field.networkID}", 1, physicalObject.bodyChunks[0].pos, field.networkID, physicalObject.room.abstractRoom.index, Color.white);
 
             MonklandUI.PacketLog(buildingPacket);
 
@@ -243,9 +244,7 @@ namespace Monkland.SteamManagement
              * **************/
 
             if (!MonklandSteamManager.WorldManager.gameRunning)
-            { 
-                return; 
-            }
+            { return; }
 
             // Read Room Name
             string roomName = reader.ReadString();
@@ -258,16 +257,50 @@ namespace Monkland.SteamManagement
             AbstractRoom abstractRoom = RainWorldGameHK.mainGame.world.GetAbstractRoom(roomName);
             if (abstractRoom == null || abstractRoom.realizedRoom == null || abstractRoom.realizedRoom.physicalObjects == null)
             { return; }
+            string buildingPacket = "[<--- Receiving Physical Object] ";
 
-            string buildingPacket = "[Receiving Physical Object <-] ";
             int networkID = reader.ReadInt32();
-
             buildingPacket += $" ID[{networkID}]";
 
             AbstractPhysicalObject.AbstractObjectType type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
-
             buildingPacket += $" type[{type}]";
             
+            foreach (AbstractWorldEntity entity in abstractRoom.entities)
+            {
+                if (entity is AbstractPhysicalObject absObject && absObject != null)
+                {
+                    AbstractObjFields field = AbstractPhysicalObjectHK.GetField(absObject);
+                    // Match ID and Owner
+                    if (field.networkID == networkID )
+                    {
+                        if (field.ownerID == sentPlayer.m_SteamID)
+                        {
+                            AbstractPhysicalObjectHandler.Read(absObject, ref reader);
+                            buildingPacket += $" Found existing!!!!";
+                            buildingPacket += $" (abs)RoomInt[{absObject.pos.room}]";
+                            // This never happens ?
+                            if (absObject.realizedObject == null)
+                            {
+                                // Making sure the object ins in the intended room
+                                absObject.pos.room = abstractRoom.index;
+                                absObject.RealizeInRoom();
+                                buildingPacket += $" [realized]";
+
+                            }
+                            PhysicalObjectHandler.Read(absObject.realizedObject, ref reader);
+                            PhysicalObjectHandler.ReadSpecificPhysicalObject(absObject.realizedObject, ref reader);
+                            MonklandUI.UpdateMessage($"{absObject.type}\nO: {field.ownerName}\nID: {networkID % 10000:1000}", 2, absObject.realizedObject.bodyChunks[0].pos, networkID, abstractRoom.index, Color.white);
+                            absObject.pos.room = abstractRoom.index;
+                            buildingPacket += $" (realized)RoomName[{absObject.realizedObject.room.abstractRoom.name}]";
+
+                            MonklandUI.PacketLog(buildingPacket);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            /*
             for (int i = 0; i < abstractRoom.realizedRoom.physicalObjects.Length; i++)
             {
                 for (int j = 0; j < abstractRoom.realizedRoom.physicalObjects[i].Count; j++)
@@ -304,32 +337,38 @@ namespace Monkland.SteamManagement
                     }
                 }
             }
-
-
+            */
+            buildingPacket += $" New Object!!!! ]";
             // PhysicalObject not found, realize new one.
             //AbstractPhysicalObject abstractObject = new AbstractPhysicalObject(RainWorldGameHK.mainGame.world, 0, null, new WorldCoordinate(abstractRoom.index, 0, 0, -1), new EntityID(-20, -20));
-            AbstractPhysicalObject abstractObject = AbstractPhysicalObjectHandler.InitializeAbstractObject(RainWorldGameHK.mainGame.world, type, null, new WorldCoordinate(abstractRoom.index, 0, 0, -1), new EntityID(-20, -20));
+            AbstractPhysicalObject abstractObject = AbstractPhysicalObjectHandler.InitializeAbstractObject(RainWorldGameHK.mainGame.world, type, null, new WorldCoordinate(abstractRoom.index, 15, 25, -1), new EntityID(-1, networkID));
 
             // Filling the fields
             AbstractPhysicalObjectHandler.Read(abstractObject, ref reader);
+            buildingPacket += $" (abs)type[{abstractObject.type}]";
 
             // Fill ID number before calling GetField()
-            abstractObject.ID.number = networkID;
+            //abstractObject.ID.number = networkID;
             AbstractPhysicalObjectHK.GetField(abstractObject).ownerID = sentPlayer.m_SteamID;
+            buildingPacket += $" (abs)IDNumber[{abstractObject.ID.number}]";
 
             // Realizing in room
-            abstractObject.pos.room = abstractRoom.index;
             RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractRoom.index).AddEntity(abstractObject);
+            // Making sure the object ins in the intended room
+            abstractObject.pos.room = abstractRoom.index;
+            abstractObject.realizedObject = null;
             abstractObject.RealizeInRoom();
+            buildingPacket += $" (realized)in Room[{abstractObject.realizedObject.room.abstractRoom.name}]";
 
             // Filling the fields
+            PhysicalObjectHandler.Read(abstractObject.realizedObject, ref reader);
             PhysicalObjectHandler.ReadSpecificPhysicalObject(abstractObject.realizedObject, ref reader);
+            
+            buildingPacket += $"Owner {AbstractPhysicalObjectHK.GetField(abstractObject).ownerName}";
+            MonklandUI.PacketLog(buildingPacket);
 
-            // Making sure the object ins in the intended room
+            //Debug.Log($"Creating new Obj {abstractObject.type}. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractObject).ownerID)}. Distinguisher {networkID} | ID number {abstractObject.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractObject).networkID}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractObject.pos.room).name}");
 
-            Debug.Log($"Creating new Obj {abstractObject.type}. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractObject).ownerID)}. Distinguisher {networkID} | ID number {abstractObject.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractObject).networkID}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractObject.pos.room).name}");
-
-            //Debug.Log($"Creating new physical Object {abstractObject.type}");
         }
 
         public void GetCreature(BinaryReader reader, CSteamID sentPlayer)
@@ -380,7 +419,7 @@ namespace Monkland.SteamManagement
                         PhysicalObjectHandler.Read(realizedCreature, ref reader);
                         PhysicalObjectHandler.ReadSpecificCreature(realizedCreature, ref reader);
 
-                        MonklandUI.UpdateMessage($"{absCreature.creatureTemplate.type}\nO: {sentPlayer.m_SteamID % 10000:0000}\nID: {networkID % 10000:1000}", 2, realizedCreature.bodyChunks[0].pos, networkID, abstractRoom.index, Color.white); 
+                        MonklandUI.UpdateMessage($"{absCreature.creatureTemplate.type}\nO: {field.ownerName}\nID: {networkID % 10000:1000}", 2, realizedCreature.bodyChunks[0].pos, networkID, abstractRoom.index, Color.white); 
                         absCreature.pos.room = abstractRoom.index;
                     }
 
@@ -403,15 +442,15 @@ namespace Monkland.SteamManagement
 
             // Realizing Creature in Room
             RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractRoom.index).AddEntity(abstractCreature);
+            // Making sure player is in the intended room
+            abstractCreature.pos.room = abstractRoom.index;
             abstractCreature.RealizeInRoom();
 
             // Filling the fields
             PhysicalObjectHandler.Read(abstractCreature.realizedObject, ref reader);
             PhysicalObjectHandler.ReadSpecificCreature(abstractCreature.realizedCreature, ref reader);
 
-            // Making sure player is in the intended room
-            abstractCreature.pos.room = abstractRoom.index;
-            Debug.Log($"Creating new Creature. Owner {SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(abstractCreature).ownerID)}. Distinguisher {networkID} | ID number {abstractCreature.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractCreature).networkID}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).name}");
+            Debug.Log($"Creating new Creature. Owner {AbstractPhysicalObjectHK.GetField(abstractCreature).ownerName}. Distinguisher {networkID} | ID number {abstractCreature.ID.number} | { AbstractPhysicalObjectHK.GetField(abstractCreature).networkID}. Room {RainWorldGameHK.mainGame.world.GetAbstractRoom(abstractCreature.pos.room).name}");
 
         }
 
