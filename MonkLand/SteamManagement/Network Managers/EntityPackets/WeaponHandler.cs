@@ -1,4 +1,5 @@
 ﻿using Monkland.Hooks.Entities;
+using System.Diagnostics;
 using System.IO;
 
 namespace Monkland.SteamManagement
@@ -54,6 +55,8 @@ namespace Monkland.SteamManagement
             weapon.thrownBy = DistHandler.ReadCreature(ref weapon.thrownBy, ref reader, weapon.room);
             weapon.thrownClosestToCreature = DistHandler.ReadCreature(ref weapon.thrownClosestToCreature, ref reader, weapon.room);
             weapon.thrownPos = Vector2Handler.Read(ref reader);
+            // Refresh network
+            AbstractPhysicalObjectHK.Refresh(weapon.abstractPhysicalObject, WeaponHK.defaultNetworkLife);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Monkland.Hooks.Entities
 
         private static Dictionary<AbstractPhysicalObject, AbstractObjFields> fields;
 
-        public static void Sync(AbstractPhysicalObject self) => GetField(self).networkLife = 60;
+        public static void Refresh(AbstractPhysicalObject self, int newNetworkLife) => GetField(self).networkLife = newNetworkLife;
 
         public static void ClearFields() => fields.Clear();
 

@@ -1,4 +1,5 @@
 ﻿using Monkland.SteamManagement;
+using UnityEngine;
 using System.Xml.Schema;
 
 namespace Monkland.Hooks.Entities
@@ -14,10 +15,12 @@ namespace Monkland.Hooks.Entities
             On.Weapon.ctor += Weapon_ctor;
         }
 
+        public static readonly int defaultNetworkLife = 60;
+
         private static void Weapon_ctor(On.Weapon.orig_ctor orig, Weapon self, AbstractPhysicalObject abstractPhysicalObject, World world)
         {
             orig(self, abstractPhysicalObject, world);
-            AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
+            AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = defaultNetworkLife;
         }
 
         //public static void Sync(PhysicalObject self) => AbstractPhysicalObjectHK.GetField(self.abstractPhysicalObject).networkLife = 60;
@@ -32,7 +35,8 @@ namespace Monkland.Hooks.Entities
                 if (fields.networkLife > 0) { fields.networkLife--; }
                 else
                 {
-                    fields.networkLife = 60;
+                    fields.networkLife = defaultNetworkLife;
+                    Debug.Log($"[{self.abstractPhysicalObject.type} EXPIRED] ID [{fields.networkID}] Owner [{fields.ownerName}]");
                     for (int i = 0; i < self.grabbedBy.Count; i++)
                     {
                         if (self.grabbedBy[i] != null)

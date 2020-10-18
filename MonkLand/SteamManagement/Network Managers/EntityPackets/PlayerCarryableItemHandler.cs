@@ -27,7 +27,7 @@ namespace Monkland.SteamManagement
         {
             //PhysicalObjectHandler.Read(playerCarryableItem, ref reader, ref distinguisher);
             playerCarryableItem.blink = reader.ReadByte();
-            AbstractPhysicalObjectHK.GetField(playerCarryableItem.abstractPhysicalObject).networkLife = 60;
+            //AbstractPhysicalObjectHK.GetField(playerCarryableItem.abstractPhysicalObject).networkLife = 60;
         }
     }
 }
