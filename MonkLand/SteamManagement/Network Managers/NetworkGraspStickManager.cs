@@ -539,12 +539,12 @@ namespace Monkland.SteamManagement
                 }
                 if (grabber == null || grabbed == null)
                 {
-                    MonklandSteamManager.Log("[Entity] Incomming grab: One or more targets not found!");
+                    MonklandSteamManager.Log("[Entity] Incoming grab: One or more targets not found!");
                     return;
                 }
                 if (grabber.grasps[graspUsed] != null && grabber.grasps[graspUsed].grabbed != null && AbstractPhysicalObjectHK.GetField(grabber.grasps[graspUsed].grabbed.abstractPhysicalObject).networkID == grabbedField.networkID)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incomming grab: Grab already satisfied, {grabberField.networkID} grabbed {grabbedField.networkID}");
+                    MonklandSteamManager.Log($"[Entity] Incoming grab: Grab already satisfied, {grabber.abstractPhysicalObject.type}[{grabberField.networkID}] grabbed {grabbed.abstractPhysicalObject.type}[{grabbedField.networkID}]");
                     return;
                 }
                 int preexisting = -1;
@@ -555,12 +555,12 @@ namespace Monkland.SteamManagement
                 }
                 if (preexisting != -1 && preexisting != graspUsed)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incomming grab: Found preexisting satifying grab, {grabberField.networkID} grabbed {grabbedField.networkID}");
+                    MonklandSteamManager.Log($"[Entity] Incoming grab: Found preexisting satifying grab, {grabberField.networkID} grabbed {grabbedField.networkID}");
                     CreatureHK.SetNet();
                     grabber.SwitchGrasps(preexisting, graspUsed); //NetSwitch
                     return;
                 }
-                MonklandSteamManager.Log($"[Entity] Incomming grab: GRAB! {grabberField.networkID} grabbed {grabbedField.networkID}");
+                MonklandSteamManager.Log($"[Entity] Incoming grab: GRAB! {grabber.abstractPhysicalObject.type}[{grabberField.networkID}] grabbed {grabbed.abstractPhysicalObject.type}[{grabbedField.networkID}]");
                 CreatureHK.SetNet();
                 grabber.Grab(grabbed, graspUsed, grabbedChunk, shareability, dominance, false, pacifying); //NetGrab
             }
@@ -582,7 +582,7 @@ namespace Monkland.SteamManagement
                             {
                                 if ((abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).networkID == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).networkID == grabbed)
                                 {
-                                    MonklandSteamManager.Log($"[Entity] Incomming grab: Grab already satisfyed. {grabber} grabbed {grabbed}");
+                                    MonklandSteamManager.Log($"[Entity] Incoming grab: Grab already satisfyed. {grabber} grabbed {grabbed}");
                                     abstractGrabbed = (abstractRoom.entities[i] as AbstractPhysicalObject).stuckObjects[j].B;
                                     if (!(abstractGrabbed is AbstractCreature) || (abstractGrabbed as AbstractCreature).creatureTemplate.TopAncestor().type != CreatureTemplate.Type.Slugcat)
                                         AbstractPhysicalObjectHK.GetField(abstractGrabbed).ownerID = sentPlayer.m_SteamID;
@@ -599,7 +599,7 @@ namespace Monkland.SteamManagement
                             {
                                 if (apo.stuckObjects[j] != null && apo.stuckObjects[j].A != null && apo.stuckObjects[j].B != null && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].A).networkID == grabber && AbstractPhysicalObjectHK.GetField(apo.stuckObjects[j].B).networkID == grabbed)
                                 {
-                                    MonklandSteamManager.Log($"[Entity] Incomming grab: Grab already satisfyed. {grabber} grabbed {grabbed}");
+                                    MonklandSteamManager.Log($"[Entity] Incoming grab: Grab already satisfyed. {grabber} grabbed {grabbed}");
                                     return;
                                 }
                             }
@@ -608,12 +608,12 @@ namespace Monkland.SteamManagement
                 }
                 if (abstractGrabber != null && abstractGrabbed != null)
                 {
-                    MonklandSteamManager.Log($"[Entity] Incomming grab: Abstract GRAB! {grabber} grabbed {grabbed}");
+                    MonklandSteamManager.Log($"[Entity] Incoming grab: Abstract GRAB! {grabber} grabbed {grabbed}");
                     new AbstractPhysicalObject.CreatureGripStick(abstractGrabber, abstractGrabbed, graspUsed, true);
                 }
                 else
                 {
-                    MonklandSteamManager.Log("[Entity] Incomming grab: One or more abstract targets not found!");
+                    MonklandSteamManager.Log("[Entity] Incoming grab: One or more abstract targets not found!");
                 }
             }
         }

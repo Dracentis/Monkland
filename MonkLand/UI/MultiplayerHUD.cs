@@ -100,7 +100,8 @@ namespace Monkland.UI
             switch (signal)
             {
                 case signalShutdown:
-                    this.exitButton = !this.exitButton; break;
+                    this.exitButton = !this.exitButton; 
+                    break;
             }
         }
 

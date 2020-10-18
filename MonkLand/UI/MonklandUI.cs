@@ -52,6 +52,11 @@ namespace Monkland.UI
 
             displayMessages.Clear();
             stage.AddChild(uiContainer);
+
+            using (StreamWriter sw = File.CreateText(Custom.RootFolderDirectory() + "packetsLog.txt"))
+            {
+                sw.WriteLine("Packets Log\n");
+            }
         }
 
         public static Vector2 camPos()

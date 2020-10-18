@@ -24,6 +24,13 @@ namespace Monkland.SteamManagement
             return false;
         }*/
 
+        public bool isSynced(PhysicalObject obj)
+        {
+            if (obj == null)
+            { return false; }
+            return isSynced(obj.abstractPhysicalObject);
+        }
+
         public bool isSynced(AbstractPhysicalObject obj)
         {
             if (obj == null)

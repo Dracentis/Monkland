@@ -24,6 +24,7 @@ namespace Monkland.SteamManagement
         public static void Write(AbstractPhysicalObject abstractPhysicalObject, ref BinaryWriter writer)
         {
             AbstractWorldEntityHandler.Write(abstractPhysicalObject, ref writer);
+
             writer.Write((byte)abstractPhysicalObject.type);
             switch (abstractPhysicalObject.type)
             {
@@ -52,7 +53,6 @@ namespace Monkland.SteamManagement
             AbstractWorldEntityHandler.Read(abstractPhysicalObject, ref reader);
 
             AbstractPhysicalObject.AbstractObjectType type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
-
             abstractPhysicalObject.type = type;
             abstractPhysicalObject.destroyOnAbstraction = true;
             switch(abstractPhysicalObject.type)
