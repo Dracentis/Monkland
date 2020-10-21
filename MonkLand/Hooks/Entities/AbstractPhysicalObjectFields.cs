@@ -9,7 +9,7 @@ namespace Monkland.Hooks.Entities
         {
             this.self = self;
 
-            playerdist = UnityEngine.Random.Range(1, int.MaxValue);
+            playerdist = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             if (MonklandSteamManager.isInGame)
             {
                 ownerID = NetworkGameManager.playerID;

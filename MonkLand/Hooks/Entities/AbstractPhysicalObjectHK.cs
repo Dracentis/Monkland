@@ -39,7 +39,8 @@ namespace Monkland.Hooks.Entities
         {
             orig(self, world, type, realizedObject, pos, ID);
             //if (ID.number != -1 && ID.number != 5 && ID.number != 0 && self.ID.number != 1 && self.ID.number != 2 && self.ID.number == 3) //What?
-            if (ID.number < -1 && ID.number > 5)
+            //if (ID.number < -1 && ID.number > 5) //What??? 2x
+            if (self.ID.number == 3)
             {
                 while (self.ID.number >= -1 && self.ID.number <= 15000)
                 { 
