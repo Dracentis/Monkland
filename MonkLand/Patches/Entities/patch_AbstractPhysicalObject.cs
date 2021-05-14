@@ -31,7 +31,8 @@ namespace Monkland.Patches
 
         public bool networkObject
         {
-            get{
+            get
+            {
                 return (MonklandSteamManager.isInGame && owner != NetworkGameManager.playerID);
             }
         }
@@ -61,7 +62,7 @@ namespace Monkland.Patches
 
         [MonoModPatch("global::AbstractPhysicalObject.AbstractObjectStick")]
         public abstract class patch_AbstractObjectStick : AbstractPhysicalObject.AbstractObjectStick
-		{
+        {
             [MonoModIgnore]
             protected patch_AbstractObjectStick(AbstractPhysicalObject A, AbstractPhysicalObject B) : base(A, B)
             {
@@ -74,9 +75,9 @@ namespace Monkland.Patches
                     MonklandSteamManager.EntityManager.SendDeactivate(A, B, A.Room);
                 }
                 this.A.stuckObjects.Remove(this);
-				this.B.stuckObjects.Remove(this);
-			}
-		}
+                this.B.stuckObjects.Remove(this);
+            }
+        }
 
         [MonoModPatch("global::AbstractPhysicalObject.AbstractSpearStick")]
         public class patch_AbstractSpearStick : AbstractPhysicalObject.AbstractSpearStick

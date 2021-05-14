@@ -8,16 +8,17 @@ using Menu;
 using MonoMod;
 using UnityEngine;
 
-namespace Monkland.Patches {
+namespace Monkland.Patches
+{
     [MonoMod.MonoModPatch("global::Menu.MainMenu")]
-    class patch_MainMenu : Menu.MainMenu {
-
+    class patch_MainMenu : Menu.MainMenu
+    {
         [MonoMod.MonoModIgnore]
         private extern MenuScene.SceneID BackgroundScene();
 
         [MonoMod.MonoModIgnore]
         public patch_MainMenu(ProcessManager manager, bool showRegionSpecificBkg) : base(manager, showRegionSpecificBkg) { }
-        
+
         [MonoMod.MonoModIgnore]
         public extern void OriginalConstructor(ProcessManager manager, bool showRegionSpecificBkg);
 
@@ -34,7 +35,6 @@ namespace Monkland.Patches {
             Action<ProcessManager, ProcessManager.ProcessID> funct = (Action<ProcessManager, ProcessManager.ProcessID>)Activator.CreateInstance(typeof(Action<ProcessManager, ProcessManager.ProcessID>), this, ptr);
             funct(manager, ProcessManager.ProcessID.MainMenu);//Menu.Menu constructor
 
-
             //Original code:
             bool flag = manager.rainWorld.progression.IsThereASavedGame(0);
             this.pages.Add(new Page(this, null, "main", 0));
@@ -50,36 +50,45 @@ namespace Monkland.Patches {
                         num = 0.65f;
                         num2 = 0.65f;
                         break;
+
                     case MenuScene.SceneID.Landscape_DS:
                         num = 0.5f;
                         break;
+
                     case MenuScene.SceneID.Landscape_GW:
                         num = 0.45f;
                         num2 = 0.6f;
                         break;
+
                     case MenuScene.SceneID.Landscape_LF:
                         num = 0.65f;
                         num2 = 0.4f;
                         break;
+
                     case MenuScene.SceneID.Landscape_SB:
                         num = 0f;
                         num2 = 0f;
                         break;
+
                     case MenuScene.SceneID.Landscape_SH:
                         num = 0.2f;
                         num2 = 0.2f;
                         break;
+
                     case MenuScene.SceneID.Landscape_SI:
                         num = 0.55f;
                         num2 = 0.75f;
                         break;
+
                     case MenuScene.SceneID.Landscape_SS:
                         num = 0f;
                         num2 = 0f;
                         break;
+
                     case MenuScene.SceneID.Landscape_SU:
                         num = 0.6f;
                         break;
+
                     case MenuScene.SceneID.Landscape_UW:
                         num = 0f;
                         num2 = 0f;
@@ -133,14 +142,12 @@ namespace Monkland.Patches {
                     num4 = 0f;
                 }
             }
-            
-
         }
 
         public extern void orig_Singal(MenuObject sender, string message);
-        
-        public void Singal(MenuObject sender, string message) {
 
+        public void Singal(MenuObject sender, string message)
+        {
             if (message == "COOP")
             {
                 base.PlaySound(SoundID.MENU_Switch_Page_In);
@@ -151,6 +158,5 @@ namespace Monkland.Patches {
                 orig_Singal(sender, message);//calls orginal
             }
         }
-
     }
 }

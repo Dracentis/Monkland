@@ -1,34 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Monkland.Hooks.Entities;
 using System.IO;
-using RWCustom;
-using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    class AbstractPhysicalObjectHandler
+    internal class AbstractPhysicalObjectHandler
     {
-        public static AbstractPhysicalObject Read(AbstractPhysicalObject physicalObject, ref BinaryReader reader)
+        /* **************
+        * AbstractPhysicalObject packet ()
+        * 
+        * (byte) type          (1 byte)
+        * (int)  distinguisher (1~5 byte)
+
+        * **************/
+
+        /// <summary>
+        /// Writes physicalObject packet 
+        /// <para>[ABSTRACTENTITYOBJ | byte type]</para>
+        /// <para>[30 bytes]</para>
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>void</returns>
+        public static void Write(AbstractPhysicalObject abstractPhysicalObject, ref BinaryWriter writer)
         {
-            physicalObject.ID = EntityIDHandler.Read(ref reader);
-            physicalObject.pos = WorldCoordinateHandler.Read(ref reader);
-            physicalObject.InDen = reader.ReadBoolean();
-            physicalObject.timeSpentHere = reader.ReadInt32();
-            physicalObject.type = (AbstractPhysicalObject.AbstractObjectType) reader.ReadByte();
-            (physicalObject as Patches.patch_AbstractPhysicalObject).ID.number = reader.ReadInt32();
-            physicalObject.destroyOnAbstraction = true;
-            return physicalObject;
+            AbstractWorldEntityHandler.Write(abstractPhysicalObject, ref writer);
+
+            writer.Write((byte)abstractPhysicalObject.type);
+            switch (abstractPhysicalObject.type)
+            {
+                case AbstractPhysicalObject.AbstractObjectType.Spear:
+                    AbstractSpearHandler.Write(abstractPhysicalObject as AbstractSpear, ref writer);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.DataPearl:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.VultureMask:
+                    break;
+                    /*...*/
+           
+            }
         }
 
-        public static void Write(AbstractPhysicalObject physicalObject, ref BinaryWriter writer)
+        /// <summary>
+        /// Writes physicalObject packet 
+        /// <para>[ABSTRACTENTITYOBJ | byte type]</para>
+        /// <para>[30 bytes]</para>
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>void</returns>
+        public static void Read(AbstractPhysicalObject abstractPhysicalObject, ref BinaryReader reader)
         {
-            EntityIDHandler.Write(physicalObject.ID, ref writer);
-            WorldCoordinateHandler.Write(physicalObject.pos, ref writer);
-            writer.Write(physicalObject.InDen);
-            writer.Write(physicalObject.timeSpentHere);
-            writer.Write((byte)physicalObject.type);
-            writer.Write((physicalObject as Patches.patch_AbstractPhysicalObject).dist);
+            AbstractWorldEntityHandler.Read(abstractPhysicalObject, ref reader);
+
+            AbstractPhysicalObject.AbstractObjectType type = (AbstractPhysicalObject.AbstractObjectType)reader.ReadByte();
+            abstractPhysicalObject.type = type;
+            abstractPhysicalObject.destroyOnAbstraction = true;
+            switch(abstractPhysicalObject.type)
+            {
+                case AbstractPhysicalObject.AbstractObjectType.Spear:
+                    AbstractSpearHandler.Read(abstractPhysicalObject as AbstractSpear, ref reader);
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.DataPearl:
+                    break;
+                case AbstractPhysicalObject.AbstractObjectType.VultureMask:
+                    break;
+                    /*...*/
+            }
+        }
+
+        public static AbstractPhysicalObject InitializeAbstractObject(World world, AbstractPhysicalObject.AbstractObjectType type, PhysicalObject realizedObject, WorldCoordinate pos, EntityID ID)
+        {
+            AbstractPhysicalObject abstractPhysical = new AbstractPhysicalObject(world, type, realizedObject, pos, ID);
+            if (type == AbstractPhysicalObject.AbstractObjectType.Spear)
+            {
+                abstractPhysical = new AbstractSpear(world, realizedObject as Spear, pos, ID, false);
+            }
+            return abstractPhysical;
         }
     }
 }

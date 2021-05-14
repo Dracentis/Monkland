@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using Steamworks;
-using Monkland.Patches;
+﻿using Monkland.Hooks.Entities;
 using Monkland.SteamManagement;
+using RWCustom;
+using Steamworks;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
 
-namespace Monkland.UI {
-    public class MonklandUI {
-
+namespace Monkland.UI
+{
+    public class MonklandUI
+    {
         public static FStage worldStage;
         public static FContainer uiContainer;
 
         private static FLabel statusLabel;
-        public const string VERSION = "0.3.1";
-            
+
         private static List<QuickDisplayMessage> displayMessages = new List<QuickDisplayMessage>();
         private static List<FLabel> uiLabels = new List<FLabel>();
 
@@ -23,33 +23,40 @@ namespace Monkland.UI {
         public static AbstractCreature trackedPlayer;
         public static Vector2 cpos = new Vector2(0f, 0f);
 
-        public MonklandUI(FStage stage) {
+        public MonklandUI(FStage stage)
+        {
             displayMessages = new List<QuickDisplayMessage>();
             uiLabels = new List<FLabel>();
             worldStage = stage;
 
             uiContainer = new FContainer();
 
-            string text = "Monkland " + VERSION;
+            string text = "Monkland " + Monkland.VERSION;
             if (!MonklandSteamManager.DEBUG)
             {
                 text = "";
             }
 
-            statusLabel = new FLabel( "font", text);
+            statusLabel = new FLabel("font", text);
             statusLabel.alignment = FLabelAlignment.Left;
-            statusLabel.SetPosition( 50, Futile.screen.height - 50 );
-            uiContainer.AddChild( statusLabel );
+            statusLabel.SetPosition(50.01f, Futile.screen.height - 49.99f);
+            uiContainer.AddChild(statusLabel);
 
-            for ( int i = 0; i < 200; i++ ) {
-                FLabel displayLabel = new FLabel( "font", "" );
+            for (int i = 0; i < 200; i++)
+            {
+                FLabel displayLabel = new FLabel("font", "");
                 displayLabel.alignment = FLabelAlignment.Left;
-                uiContainer.AddChild( displayLabel );
-                uiLabels.Add( displayLabel );
+                uiContainer.AddChild(displayLabel);
+                uiLabels.Add(displayLabel);
             }
 
             displayMessages.Clear();
-            stage.AddChild( uiContainer );
+            stage.AddChild(uiContainer);
+
+            using (StreamWriter sw = File.CreateText(Custom.RootFolderDirectory() + "packetsLog.txt"))
+            {
+                sw.WriteLine("Packets Log\n");
+            }
         }
 
         public static Vector2 camPos()
@@ -59,24 +66,113 @@ namespace Monkland.UI {
                 cpos = currentRoom.cameraPositions[currentRoom.CameraViewingPoint(trackedPlayer.realizedCreature.DangerPos)];
             }
             return cpos;
+        }
+
+        public static string BuildDeathMessage(CSteamID deadPlayerID, Creature.DamageType damageType, CreatureTemplate.Type killerType, ulong killerID)
+        {
+            string deadPlayerName = SteamFriends.GetFriendPersonaName(deadPlayerID);
+
+            string message = string.Empty;
+
+            switch (damageType)
+            {
+                case Creature.DamageType.Blunt:
+                    message = $"{deadPlayerName} was killed using blunt force";
+                    break;
+                case Creature.DamageType.Stab:
+                    message = $"{deadPlayerName} was stabbed to death";
+                    break;
+                case Creature.DamageType.Bite:
+                    message = $"{deadPlayerName} was bitten to death";
+                    break;
+                case Creature.DamageType.Water:
+                    message = $"{deadPlayerName} drowned";
+                    break;
+                case Creature.DamageType.Explosion:
+                    message = $"{deadPlayerName} was blown up";
+                    break;
+                case Creature.DamageType.Electric:
+                    message = $"{deadPlayerName} was shocked to death";
+                    break;
+            }
+            // Generic death message
+            if (message.Equals(string.Empty))
+            {
+                message = $"{deadPlayerName} was killed";
+            }
+
+            string killerName = SteamFriends.GetFriendPersonaName((CSteamID)killerID);
+
+            if (killerName.Equals(string.Empty))
+            {
+                killerName = "Player";
+            }
+
+            // TO DO -- When creatures are synced  --
             
+            else if (killerType != CreatureTemplate.Type.Slugcat)
+            {
+                killerName = killerType.ToString();
+            }
+            
+
+            if (killerName != string.Empty && damageType != Creature.DamageType.Water && damageType != Creature.DamageType.Electric)
+            {
+                message += $" by {killerName}";
+            }
+
+            Debug.Log($"Debug {message}");
+            return message;
         }
 
-        public void Update(RainWorldGame game) {
-            FindPlayer( game );
+        public void Update(RainWorldGame game)
+        {
+            FindPlayer(game);
             DisplayQuickMessages();
+            DisplayPlayerNames(game);
         }
 
-        private void FindPlayer(RainWorldGame game) {
-            if( game.Players.Count > 0 ) {
+        private void FindPlayer(RainWorldGame game)
+        {
+            if (game.Players.Count > 0)
+            {
                 trackedPlayer = game.Players[0];
-                if( trackedPlayer != null ) {
+                if (trackedPlayer != null)
+                {
                     currentRoom = trackedPlayer.Room.realizedRoom;
                 }
             }
         }
 
-        private void DisplayQuickMessages() {
+        private void DisplayPlayerNames(RainWorldGame game)
+        {
+            if (trackedPlayer != null && currentRoom != null)
+            {
+                foreach (AbstractCreature cr in trackedPlayer.Room.creatures)
+                {
+                    try
+                    {
+                        // Player in the same room
+                        if (cr.realizedCreature is Player p)
+                        {
+                            AbstractPhysicalObject player = cr.realizedCreature.abstractPhysicalObject;
+                            string playerName = SteamFriends.GetFriendPersonaName((CSteamID)AbstractPhysicalObjectHK.GetField(player).ownerID);
+                            Color color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(AbstractPhysicalObjectHK.GetField(player).ownerID)];
+                            (currentRoom.game.cameras[0].hud.parts.Find(x => x is MultiplayerHUD) as MultiplayerHUD).AddLabel(player, playerName, color);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Throw exception
+                        //Debug.LogException(e);
+                       // Debug.Log($"Error when trying to add label for Player " + e);
+                    }
+                }
+            }
+        }
+
+        private void DisplayQuickMessages()
+        {
             bool redraw = false;
             for (int i = 0; i < displayMessages.Count; i++)
             {
@@ -90,7 +186,7 @@ namespace Monkland.UI {
                 }
             }
 
-            if (!MonklandSteamManager.DEBUG || !MonklandSteamManager.isInGame)
+            if (/*!MonklandSteamManager.DEBUG ||*/ !MonklandSteamManager.isInGame)
             {
                 return;
             }
@@ -99,7 +195,7 @@ namespace Monkland.UI {
             {
                 for (int j = 0; j < 200; j++)
                 {
-                    if (uiLabels[j].text != "")
+                    if (!string.IsNullOrEmpty(uiLabels[j].text))
                     {
                         uiLabels[j].text = "";
                         //uiLabels[j].Redraw(false, false);
@@ -113,11 +209,11 @@ namespace Monkland.UI {
                 if (!displayMessages[i].isWorld)
                 {
                     k++;
-                    if (uiLabels[i].text != displayMessages[i].text || uiLabels[i].GetPosition().y != (Futile.screen.height - 50 - (20 * k)))
+                    if (uiLabels[i].text != displayMessages[i].text || Mathf.Abs(uiLabels[i].GetPosition().y - Futile.screen.height - 49.99f - (20 * k)) > float.Epsilon)
                     {
                         uiLabels[i].text = displayMessages[i].text;
                         uiLabels[i].color = displayMessages[i].color;
-                        uiLabels[i].SetPosition(50, Futile.screen.height - 50 - (20 * k));
+                        uiLabels[i].SetPosition(50.01f, Futile.screen.height - 49.99f - (20 * k));
                         //uiLabels[i].Redraw(false, false);
                     }
                 }
@@ -129,17 +225,14 @@ namespace Monkland.UI {
                         {
                             uiLabels[i].text = displayMessages[i].text;
                             uiLabels[i].color = displayMessages[i].color;
-                            uiLabels[i].SetPosition(displayMessages[i].worldPos.x, displayMessages[i].worldPos.y);
+                            uiLabels[i].SetPosition(displayMessages[i].worldPos.x + 0.01f, displayMessages[i].worldPos.y + 0.01f);
                             //uiLabels[i].Redraw(false, false);
                         }
                     }
-                    else if (uiLabels[i].text != "")
-                    {
-                        uiLabels[i].text = "";
-                    }
+                    else if (!string.IsNullOrEmpty(uiLabels[i].text))
+                    { uiLabels[i].text = ""; }
                 }
             }
-
         }
 
         public static void UpdateStatus(string message)
@@ -150,28 +243,54 @@ namespace Monkland.UI {
             }
         }
 
-        public static void AddMessage(string message, float time = 3) {
-            AddMessage( message, time, false, Vector2.zero, Color.white );
+        public static void AddMessage(string message, float time = 3)
+        {
+            AddMessage(message, time, false, Vector2.zero, Color.white);
         }
 
-        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos) {
-            AddMessage( message, time, isWorld, worldPos, Color.white );
+        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos)
+        {
+            AddMessage(message, time, isWorld, worldPos, Color.white);
         }
 
-        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos, Color color) {
-            QuickDisplayMessage msg = new QuickDisplayMessage() {
+        public static void AddMessage(string message, float time, bool isWorld, Vector2 worldPos, Color color)
+        {
+            QuickDisplayMessage msg = new QuickDisplayMessage()
+            {
                 text = message,
                 life = time,
                 isWorld = isWorld,
                 worldPos = worldPos,
                 color = color,
-                roomID = ( trackedPlayer == null ? 0 : trackedPlayer.Room.index )
+                roomID = (trackedPlayer == null ? 0 : trackedPlayer.Room.index)
             };
-            displayMessages.Add( msg );
+            displayMessages.Add(msg);
+        }
+
+        internal static void PacketLog(string buildingPacket)
+        {
+            if (!File.Exists(Custom.RootFolderDirectory() + "packetsLog.txt"))
+            {
+                // Create a file to write to.
+                using (StreamWriter sw = File.CreateText(Custom.RootFolderDirectory() + "packetsLog.txt"))
+                {
+                    sw.WriteLine("Packets Log\n");
+                }
+            }
+
+            using (StreamWriter file =
+            new StreamWriter(Custom.RootFolderDirectory() + "packetsLog.txt", true))
+            {
+                file.WriteLine($"[{DateTime.Now.ToString()}] {buildingPacket}");
+            }
         }
 
         public static void UpdateMessage(string message, float time, Vector2 worldPos, int dist, int roomID, Color color)
         {
+            if (!MonklandSteamManager.DEBUG)
+            {
+                return;
+            }
             for (int i = 0; i < displayMessages.Count; i++)
             {
                 if (displayMessages[i].tracking == dist)
@@ -197,7 +316,9 @@ namespace Monkland.UI {
             displayMessages.Add(msg);
         }
 
-        public void ClearSprites() {
+
+        public void ClearSprites()
+        {
             statusLabel.RemoveFromContainer();
             displayMessages.Clear();
             uiContainer.RemoveAllChildren();
@@ -207,7 +328,8 @@ namespace Monkland.UI {
             uiContainer = null;
         }
 
-        public class QuickDisplayMessage {
+        public class QuickDisplayMessage
+        {
             public string text;
             public float life;
             public Color color;
@@ -216,6 +338,5 @@ namespace Monkland.UI {
             public int tracking = -1;
             public int roomID;
         }
-
     }
 }

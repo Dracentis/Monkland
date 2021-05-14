@@ -122,6 +122,7 @@ namespace Monkland.Patches
                         this.SetRandomSpin();
                     }
                     break;
+
                 case Weapon.Mode.Thrown:
                     {
                         BodyChunk firstChunk = base.firstChunk;
@@ -171,6 +172,7 @@ namespace Monkland.Patches
                         base.firstChunk.pos = this.stuckInWall.Value;
                     }
                     break;
+
                 case Weapon.Mode.StuckInWall:
                     base.firstChunk.pos = this.stuckInWall.Value;
                     base.firstChunk.vel *= 0f;
@@ -197,9 +199,9 @@ namespace Monkland.Patches
         {
             //Sanity check kind of thing, don't know if this actually happens but there's another cause for spear crashes and I want to rule this out
             if (this.mode == Weapon.Mode.StuckInWall && !this.stuckInWall.HasValue)
-                {
-                    Debug.Log("SPEAR STUCK IN WALL WITH NO STUCK POS!");
-                    this.mode = Weapon.Mode.Free;
+            {
+                Debug.Log("SPEAR STUCK IN WALL WITH NO STUCK POS!");
+                this.mode = Weapon.Mode.Free;
             }
             //Alt update called if stuck in creature without a stuckobject, prevents clients crashing when someone sticks a spear in a non-synced creature
             if (this.stuckInObject == null && this.mode == Weapon.Mode.StuckInCreature)

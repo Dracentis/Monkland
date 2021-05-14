@@ -8,10 +8,11 @@ using Menu;
 using MonoMod;
 using UnityEngine;
 
-namespace Monkland.Patches {
+namespace Monkland.Patches
+{
     [MonoMod.MonoModPatch("global::Menu.Slider")]
-    class patch_Slider : Menu.Slider {
-
+    class patch_Slider : Menu.Slider
+    {
         [MonoMod.MonoModIgnore]
         public patch_Slider(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, Slider.SliderID ID, bool subtleSlider) : base(menu, owner, text, pos, size, ID, subtleSlider) { }
 
@@ -48,6 +49,5 @@ namespace Monkland.Patches {
 
             MaxPlayers
         }
-
     }
 }

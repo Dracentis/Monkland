@@ -26,7 +26,7 @@ namespace Monkland.Patches
         {
             if (MonklandSteamManager.isInGame)
             {
-                    MonklandSteamManager.EntityManager.SendSwitch(this, fromGrasp, toGrasp);
+                MonklandSteamManager.EntityManager.SendSwitch(this, fromGrasp, toGrasp);
             }
             orig_SwitchGrasps(fromGrasp, toGrasp);
         }
@@ -52,22 +52,23 @@ namespace Monkland.Patches
         }
 
         public extern bool orig_Grab(PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying);
-		public override bool Grab(PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
-		{
+        public override bool Grab(PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
+        {
             if (MonklandSteamManager.isInGame && (obj.abstractPhysicalObject as patch_AbstractPhysicalObject).networkObject && !MonklandSteamManager.WorldManager.commonRooms[obj.room.abstractRoom.name].Contains((obj.abstractPhysicalObject as patch_AbstractPhysicalObject).owner))
                 return false;
-			if (orig_Grab(obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying))
+            if (orig_Grab(obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying))
             {
-                if (MonklandSteamManager.isInGame) {
+                if (MonklandSteamManager.isInGame)
+                {
                     MonklandSteamManager.EntityManager.SendGrab(this.grasps[graspUsed]);
                 }
                 return true;
             }
             else
             {
-				return false;
+                return false;
             }
-		}
+        }
         public bool NetGrab(PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
             if (this.grasps[graspUsed] != null && this.grasps[graspUsed].grabbed == obj)
@@ -94,6 +95,5 @@ namespace Monkland.Patches
             new AbstractPhysicalObject.CreatureGripStick(this.abstractCreature, obj.abstractPhysicalObject, graspUsed, pacifying || obj.TotalMass < base.TotalMass);
             return true;
         }
-
     }
 }

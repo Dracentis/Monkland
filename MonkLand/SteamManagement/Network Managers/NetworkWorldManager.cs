@@ -1,22 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Monkland.Hooks;
+using Monkland.Hooks.Entities;
 using Steamworks;
-using UnityEngine;
-using RWCustom;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using Monkland.Patches;
+using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    class NetworkWorldManager : NetworkManager
+    internal class NetworkWorldManager : NetworkManager
     {
+        public NetworkWorldManager()
+        {
+            this.sessionTotalCycles = 0;
+        }
+
         private static ulong playerID
         {
-            get{
+            get
+            {
                 return NetworkGameManager.playerID;
-            } 
+            }
         }
+
         private static ulong managerID
         {
             get
@@ -24,22 +30,32 @@ namespace Monkland.SteamManagement
                 return NetworkGameManager.managerID;
             }
         }
+
         private static bool isManager { get { return playerID == managerID; } }
-        
+
         public HashSet<ulong> ingamePlayers = new HashSet<ulong>();
 
-        public Dictionary<ulong, List<string>> roomDict = new Dictionary<ulong, List<string>>(); //dictionary for each player in the game and a list of there currently loaded rooms
+        //dictionary for each player in the game and a list of there currently loaded rooms
+        public Dictionary<ulong, List<string>> roomDict = new Dictionary<ulong, List<string>>(); 
         public Dictionary<string, List<ulong>> commonRooms = new Dictionary<string, List<ulong>>();
 
-        public bool gameRunning = false;//is my game running
+        //is my game running
+        public bool gameRunning = false;
 
-        public int cycleLength = 36000;// cyclelength to sync ingame cycle length with other players
-        public int timer = 0;//Timer to sync ingame time with other players
-        public int joinDelay = -1;//Delay to establish P2P connection before 
-        public int syncDelay = 1000;//Cycle periodic sync
-        //public int roomVerify = 1000;
+        // cyclelength to sync ingame cycle length with other players
+        public int cycleLength = 36000; 
+        //Timer to sync ingame time with other players
+        public int timer = 0; 
+        //Delay to establish P2P connection before
+        public int joinDelay = -1; 
+        //Cycle periodic sync
+        public int syncDelay = 1000; 
+                                    //public int roomVerify = 1000;
 
-        public const int WORLD_CHANNEL = 1;
+            // Used for BattleRoyale
+        public int sessionTotalCycles = 0;
+
+
         public byte WorldHandler = 0;
 
         public float AmountLeft
@@ -76,7 +92,7 @@ namespace Monkland.SteamManagement
             this.timer = 0;
             ingamePlayers.Clear();
             commonRooms.Clear();
-            roomDict.Clear(); 
+            roomDict.Clear();
             roomDict.Add(playerID, new List<string>());
             this.gameRunning = false;
             this.joinDelay = -1;
@@ -97,9 +113,8 @@ namespace Monkland.SteamManagement
                 ingamePlayers.Remove(steamID);
         }
 
-
         #region Logistics
-        
+
         public string GetRegionName(string roomName)
         {
             roomName = roomName.Substring(0, 2);
@@ -109,63 +124,83 @@ namespace Monkland.SteamManagement
                 case "CC":
                     text = "Chimney Canopy";
                     break;
+
                 case "DS":
                     text = "Drainage System";
                     break;
+
                 case "HI":
                     text = "Industrial Complex";
                     break;
+
                 case "GW":
                     text = "Garbage Wastes";
                     break;
+
                 case "SI":
                     text = "Sky Islands";
                     break;
+
                 case "SU":
                     text = "Outskirts";
                     break;
+
                 case "SH":
                     text = "Shaded Citadel";
                     break;
+
                 case "IS":
                     text = "Intake System";
                     break;
+
                 case "SL":
                     text = "Shoreline";
                     break;
+
                 case "LF":
                     text = "Farm Arrays";
                     break;
+
                 case "UW":
                     text = "The Exterior";
                     break;
+
                 case "SB":
                     text = "Subterranean";
                     break;
+
                 case "SS":
                     text = "Five Pebbles";
                     break;
+
                 case "RW":
                     text = "Side House";
                     break;
+
                 case "AB":
                     text = "Arid Barrens";
                     break;
+
                 case "TR":
                     text = "The Root";
                     break;
+
                 case "BL":
                     text = "Badlands";
                     break;
+
                 case "AR":
                     text = "Aether Ridge";
                     break;
+
                 case "LM":
                     text = "Looks To the Moon";
                     break;
+
                 case "MW":
                     text = "The Fragmented Exterior";
                     break;
+
                 case "FS":
                     text = "Forest Sanctuary";
                     break;
@@ -186,14 +221,14 @@ namespace Monkland.SteamManagement
                         {
                             foreach (string myRoom in roomDict[playerID])
                             {
-                                if (myRoom.Equals(otherRoom) && myRoom != null && myRoom != "" && !myRoom.Equals(""))
+                                if (myRoom.Equals(otherRoom) && !string.IsNullOrEmpty(myRoom)) // WHEN DOES THIS HAPPEN
                                 {
                                     if (!commonRooms.ContainsKey(myRoom))
                                     {
                                         commonRooms.Add(myRoom, new List<ulong>());
                                     }
                                     if (!commonRooms[myRoom].Contains(player))
-                                        commonRooms[myRoom].Add(player);
+                                    { commonRooms[myRoom].Add(player); }
                                 }
                             }
                         }
@@ -202,18 +237,22 @@ namespace Monkland.SteamManagement
             }
             foreach (string roomName in commonRooms.Keys)
             {
-                AbstractRoom abstractRoom = patch_RainWorldGame.mainGame.world.GetAbstractRoom(roomName);
+                AbstractRoom abstractRoom = RainWorldGameHK.mainGame.world.GetAbstractRoom(roomName);
                 if (abstractRoom != null && abstractRoom.realizedRoom != null)
-                {
-                    (abstractRoom.realizedRoom as patch_Room).MultiplayerNewToRoom(commonRooms[roomName]);
+                { 
+                    RoomHK.MultiplayerNewToRoom(abstractRoom.realizedRoom, commonRooms[roomName]); 
                 }
             }
             if (MonklandSteamManager.DEBUG)
             {
                 string roomlist = "";
                 foreach (string room in commonRooms.Keys)
+                { 
+                    roomlist = roomlist + room + ", "; 
+                }
+                if (roomlist.Equals(""))
                 {
-                    roomlist = roomlist + room + ", ";
+                    roomlist = "[NO ROOMS]";
                 }
                 MonklandSteamManager.Log("[World] Room Packet: Player shares " + roomlist + " rooms with other players.");
             }
@@ -231,17 +270,25 @@ namespace Monkland.SteamManagement
                 else
                 {
                     SyncCycle();
-                    if (patch_RainWorldGame.mainGame != null && patch_RainWorldGame.mainGame.overWorld != null && patch_RainWorldGame.mainGame.overWorld.activeWorld != null)
+                    if (RainWorldGameHK.mainGame != null && RainWorldGameHK.mainGame.overWorld != null && RainWorldGameHK.mainGame.overWorld.activeWorld != null)
                     {
-                        patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
-                        patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
+                        RainWorldGameHK.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
+                        RainWorldGameHK.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
                     }
                     syncDelay = 1000;
                 }
             }
         }
 
-        #endregion
+        #endregion Logistics
+
+        private enum WorldPacketType
+        {
+            WorldLoadOrExit,
+            RainSync,
+            RealizeRoom,
+            AbstractizeRoom
+        }
 
         #region Packet Handler
 
@@ -250,66 +297,75 @@ namespace Monkland.SteamManagement
             WorldHandler = MonklandSteamManager.instance.RegisterHandler(WORLD_CHANNEL, HandleWorldPackets);
         }
 
+
+        // USE ENUM HERE
         public void HandleWorldPackets(BinaryReader br, CSteamID sentPlayer)
         {
-            byte messageType = br.ReadByte();
+            WorldPacketType messageType = (WorldPacketType)br.ReadByte();
             switch (messageType)// up to 256 message types
             {
-                case 0:// World Loaded or Exited
+                case WorldPacketType.WorldLoadOrExit:// World Loaded or Exited
                     ReadLoadPacket(br, sentPlayer);
                     return;
-                case 1:// Rain Sync
+
+                case WorldPacketType.RainSync:// Rain Sync
                     ReadRainPacket(br, sentPlayer);
                     return;
-                case 2:// Realize Room
+
+                case WorldPacketType.RealizeRoom:// Realize Room
                     ReadActivateRoom(br, sentPlayer);
                     return;
-                case 3:// Abstractize Room
+
+                case WorldPacketType.AbstractizeRoom:// Abstractize Room
                     ReadDeactivateRoom(br, sentPlayer);
                     return;
             }
         }
 
-        #endregion
+        #endregion Packet Handler
 
         #region Outgoing Packets
 
         public void ActivateRoom(string roomName)
         {
             MonklandSteamManager.Log("[World] Sending room activate: " + roomName);
+
             if (!roomDict.ContainsKey(playerID))
-                roomDict.Add(playerID, new List<string>());
+            { roomDict.Add(playerID, new List<string>()); }
+
             if (!roomDict[playerID].Contains(roomName))
-                roomDict[playerID].Add(roomName);
+            { roomDict[playerID].Add(roomName); }
+
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(2));
+            writer.Write((byte)WorldPacketType.RealizeRoom);
             writer.Write(roomName);
-
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             //MonklandSteamManager.instance.SendPacket(packet, (CSteamID)managerID), EP2PSend.k_EP2PSendReliable);
             MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
             CheckForCommonRooms();
         }
+
         public void DeactivateRoom(string roomName)
         {
             MonklandSteamManager.Log("[World] Sending room deactivate: " + roomName);
-            if (roomName == null || roomName.Equals("") || roomName == "")
-                return;
+            //if (string.IsNullOrEmpty(roomName)) { return; }
+
             if (!roomDict.ContainsKey(playerID))
-                roomDict.Add(playerID, new List<string>());
+            { roomDict.Add(playerID, new List<string>()); }
             if (roomDict[playerID].Contains(roomName))
-                roomDict[playerID].Remove(roomName);
+
+            { roomDict[playerID].Remove(roomName); }
+
             MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(WORLD_CHANNEL, WorldHandler);
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(3));
+            writer.Write((byte)WorldPacketType.AbstractizeRoom);
             writer.Write(roomName);
-
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             //MonklandSteamManager.instance.SendPacket(packet, (CSteamID)managerID), EP2PSend.k_EP2PSendReliable);
@@ -323,22 +379,25 @@ namespace Monkland.SteamManagement
             this.cycleLength = (int)(minutes * 40f * 60f);
             this.timer = 0;
             SyncCycle();
-            if (patch_RainWorldGame.mainGame != null && patch_RainWorldGame.mainGame.overWorld != null && patch_RainWorldGame.mainGame.overWorld.activeWorld != null)
+            if (RainWorldGameHK.mainGame != null && RainWorldGameHK.mainGame.overWorld != null && RainWorldGameHK.mainGame.overWorld.activeWorld != null)
             {
-                patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
-                patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
+                RainWorldGameHK.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
+                RainWorldGameHK.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
             }
             syncDelay = 1000;
         }
 
         public void GameStart()
         {
+            this.sessionTotalCycles++;
             this.timer = 0;
             if (!ingamePlayers.Contains(playerID))
-                ingamePlayers.Add(playerID);
+            { ingamePlayers.Add(playerID); }
+
             if (!roomDict.ContainsKey(playerID))
-                roomDict.Add(playerID, new List<string>());
-            MonklandSteamManager.Log("[World] Sending game start packet: " + ingamePlayers.Count + " players ingame");
+            { roomDict.Add(playerID, new List<string>()); }
+
+            MonklandSteamManager.Log($"[World] Sending game start packet: {ingamePlayers.Count} players ingame");
             foreach (ulong player in ingamePlayers)
             {
                 MonklandSteamManager.Log(player);
@@ -348,16 +407,15 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(0));
+            writer.Write((byte)WorldPacketType.WorldLoadOrExit);
             writer.Write(true);
-
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             //MonklandSteamManager.instance.SendPacket(packet, (CSteamID)managerID), EP2PSend.k_EP2PSendReliable);
             MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
             if (isManager)
             {
-                foreach(ulong pl in ingamePlayers)
+                foreach (ulong pl in ingamePlayers)
                 {
                     if (pl != playerID)
                         SyncCycle((CSteamID)pl);
@@ -370,7 +428,7 @@ namespace Monkland.SteamManagement
         {
             if (ingamePlayers.Contains(playerID))
                 ingamePlayers.Remove(playerID);
-            MonklandSteamManager.Log("[World] Sending game end packet: " + ingamePlayers.Count + " players ingame");
+            MonklandSteamManager.Log($"[World] Sending game end packet: {ingamePlayers.Count} players ingame");
             roomDict.Clear();
             roomDict.Add(playerID, new List<string>());
             gameRunning = false;
@@ -378,7 +436,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(0));
+            writer.Write((byte)WorldPacketType.WorldLoadOrExit);
             writer.Write(false);
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
@@ -392,7 +450,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(1));
+            writer.Write((byte)WorldPacketType.RainSync);
             writer.Write(cycleLength);
             writer.Write(timer);
 
@@ -407,7 +465,7 @@ namespace Monkland.SteamManagement
             BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
 
             //Write message type
-            writer.Write(Convert.ToByte(1));
+            writer.Write((byte)WorldPacketType.RainSync);
             writer.Write(cycleLength);
             writer.Write(timer);
 
@@ -416,7 +474,7 @@ namespace Monkland.SteamManagement
             MonklandSteamManager.instance.SendPacketToAll(packet, true, EP2PSend.k_EP2PSendReliable);
         }
 
-        #endregion
+        #endregion Outgoing Packets
 
         #region Incoming Packets
 
@@ -425,22 +483,25 @@ namespace Monkland.SteamManagement
             if (reader.ReadBoolean())
             {
                 if (!ingamePlayers.Contains(sent.m_SteamID))
-                    ingamePlayers.Add(sent.m_SteamID);
+                { ingamePlayers.Add(sent.m_SteamID); }
+
                 if (!roomDict.ContainsKey(sent.m_SteamID))
-                    roomDict.Add(sent.m_SteamID, new List<string>());
-                MonklandSteamManager.Log("[World] Incomming game start packet: " + ingamePlayers.Count + " players ingame");
+                { roomDict.Add(sent.m_SteamID, new List<string>()); }
+
+                MonklandSteamManager.Log($"[World] Incomming game start packet: {ingamePlayers.Count} players ingame");
+
                 if (isManager && gameRunning)
-                {
-                    SyncCycle(sent);
-                }
+                { SyncCycle(sent); }
             }
             else
             {
                 if (ingamePlayers.Contains(sent.m_SteamID))
-                    ingamePlayers.Remove(sent.m_SteamID);
+                { ingamePlayers.Remove(sent.m_SteamID); }
+
                 if (roomDict.ContainsKey(sent.m_SteamID))
-                    roomDict.Remove(sent.m_SteamID);
-                MonklandSteamManager.Log("[World] Incomming game end packet: " + ingamePlayers.Count + " players ingame");
+                { roomDict.Remove(sent.m_SteamID); }
+
+                MonklandSteamManager.Log($"[World] Incomming game end packet: {ingamePlayers.Count} players ingame");
             }
         }
 
@@ -448,11 +509,13 @@ namespace Monkland.SteamManagement
         {
             if (sent.m_SteamID == playerID)
                 return;
+
             string roomName = reader.ReadString();
             if (!roomDict.ContainsKey(sent.m_SteamID))
                 roomDict.Add(sent.m_SteamID, new List<string>());
             if (roomDict[sent.m_SteamID].Contains(roomName))
                 roomDict[sent.m_SteamID].Remove(roomName);
+
             MonklandSteamManager.Log("[World] Incomming room deactivate: " + roomName);
             CheckForCommonRooms();
         }
@@ -461,11 +524,13 @@ namespace Monkland.SteamManagement
         {
             if (sent.m_SteamID == playerID)
                 return;
+
             string roomName = reader.ReadString();
             if (!roomDict.ContainsKey(sent.m_SteamID))
                 roomDict.Add(sent.m_SteamID, new List<string>());
             if (!roomDict[sent.m_SteamID].Contains(roomName))
                 roomDict[sent.m_SteamID].Add(roomName);
+
             MonklandSteamManager.Log("[World] Incomming room activate: " + roomName);
             CheckForCommonRooms();
         }
@@ -474,16 +539,14 @@ namespace Monkland.SteamManagement
         {
             this.cycleLength = reader.ReadInt32();
             this.timer = reader.ReadInt32();
-            MonklandSteamManager.Log("[World] Incomming rain packet: " + this.cycleLength+", "+this.timer);
-            if (patch_RainWorldGame.mainGame != null && patch_RainWorldGame.mainGame.overWorld != null && patch_RainWorldGame.mainGame.overWorld.activeWorld != null)
+            MonklandSteamManager.Log($"[World] Incomming rain packet: {this.cycleLength}, {this.timer}");
+            if (RainWorldGameHK.mainGame != null && RainWorldGameHK.mainGame.overWorld != null && RainWorldGameHK.mainGame.overWorld.activeWorld != null)
             {
-                patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
-                patch_RainWorldGame.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
+                RainWorldGameHK.mainGame.overWorld.activeWorld.rainCycle.cycleLength = this.cycleLength;
+                RainWorldGameHK.mainGame.overWorld.activeWorld.rainCycle.timer = this.timer;
             }
         }
 
-
-        #endregion
+        #endregion Incoming Packets
     }
-    
 }

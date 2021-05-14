@@ -1,38 +1,44 @@
-﻿using System;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Steamworks;
-using UnityEngine;
+﻿using Monkland.Hooks;
 using Monkland.UI;
-using Monkland.Patches;
-using Menu;
+using Steamworks;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using UnityEngine;
 
-namespace Monkland.SteamManagement {
-    class MonklandSteamManager : MonoBehaviour {
-
+namespace Monkland.SteamManagement
+{
+    internal class MonklandSteamManager : MonoBehaviour
+    {
         public static MonklandSteamManager instance;
         public static CSteamID lobbyID;
         public static LobbyInfo lobbyInfo = null;//Used for info about the current lobby
 
         //Used for info about a lobby that you are creating
         public static int lobbyType = 0;//0 = Public, 1 = Friends, 2 = Private
+
         public static int lobbyMax = 10;
         public static bool debugAllowed = false;
         public static bool spearsHit = true;
         //public static bool otherStart = false;
 
-
         //Used for lobbies that you might want to join
         public static bool searching = false;
+
         public static bool joining = false;
         public static List<LobbyInfo> lobbies = new List<LobbyInfo>();
 
         public static bool DEBUG = false;
         public static Color bodyColor = new Color(1f, 1f, 1f);
         public static Color eyeColor = new Color(0.004f, 0.004f, 0.004f);
+        public static GameMode gameMode;
+
+        public enum GameMode
+        {
+            BattleRoyale,
+            Campaign
+        }
 
         public static void Log(object message)
         {
@@ -56,13 +62,15 @@ namespace Monkland.SteamManagement {
 
         public static bool isInGame = false;
 
-        public static void CreateManager() {
+        public static void CreateManager()
+        {
             GameObject gObject = new GameObject("MonkManager");
             gObject.AddComponent<MonklandSteamManager>();
             DontDestroyOnLoad(gObject);
         }
 
-        public void Awake() {
+        public void Awake()
+        {
             instance = this;
 
             RegisterCallbacks();
@@ -80,7 +88,8 @@ namespace Monkland.SteamManagement {
             registerHandlersCallback();
         }
 
-        public void Update() {
+        public void Update()
+        {
             if (lobbyInfo != null && lobbyInfo.owner.m_SteamID != 0 && !lobbyInfo.debugAllowed)
                 DEBUG = false;
             if (lobbyMax > 250)
@@ -89,9 +98,13 @@ namespace Monkland.SteamManagement {
             }
             ReadPackets();
             UpdateManagers();
+
+            // Select GameMode
+            gameMode = GameMode.BattleRoyale;
         }
 
-        public void CreateLobby() {
+        public void CreateLobby()
+        {
             if (lobbyType == 0)
             {
                 SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, lobbyMax);
@@ -107,9 +120,10 @@ namespace Monkland.SteamManagement {
             joining = true;
         }
 
-        public void LeaveLobby() {
+        public void LeaveLobby()
+        {
             if (lobbyID.m_SteamID != 0)
-                SteamMatchmaking.LeaveLobby(lobbyID);
+            { SteamMatchmaking.LeaveLobby(lobbyID); }
             foreach (ulong player in otherPlayers)
             {
                 foreach (PacketChannel channel in allChannels)
@@ -136,8 +150,10 @@ namespace Monkland.SteamManagement {
             lobbies.Clear();
         }
 
-        public void OnGameExit() {
-            if (monklandUI != null) {
+        public void OnGameExit()
+        {
+            if (monklandUI != null)
+            {
                 monklandUI.ClearSprites();
                 monklandUI = null;
             }
@@ -149,13 +165,10 @@ namespace Monkland.SteamManagement {
         public void JoinLobby(CSteamID lobby)
         {
             {
-                patch_ProcessManager patchPM = ((patch_ProcessManager)Patches.patch_Rainworld.mainRW.processManager);
-                if (patchPM.currentMainLoop is SteamMultiplayerMenu)
+                if (RainWorldHK.mainRW.processManager.currentMainLoop is SteamMultiplayerMenu)
                 {
                     if (lobbyID.m_SteamID != 0)
-                    {
-                        LeaveLobby();
-                    }
+                    { LeaveLobby(); }
                 }
             }
             joining = true;
@@ -177,7 +190,8 @@ namespace Monkland.SteamManagement {
         public Callback<P2PSessionRequest_t> p2pRequest;
         public Callback<P2PSessionConnectFail_t> p2pConnectFail;
 
-        public void RegisterCallbacks() {
+        public void RegisterCallbacks()
+        {
             lobbyCreated = Callback<LobbyCreated_t>.Create(LobbyCreated);
             lobbyUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
             lobbyChatMessage = Callback<LobbyChatMsg_t>.Create(LobbyChatMsg);
@@ -190,7 +204,8 @@ namespace Monkland.SteamManagement {
             p2pConnectFail = Callback<P2PSessionConnectFail_t>.Create(P2PConnectionFail);
         }
 
-        public void LobbyCreated(LobbyCreated_t result) {
+        public void LobbyCreated(LobbyCreated_t result)
+        {
             SteamMatchmaking.JoinLobby((CSteamID)result.m_ulSteamIDLobby);
             lobbyID = (CSteamID)result.m_ulSteamIDLobby;
             lobbyInfo = new LobbyInfo((CSteamID)result.m_ulSteamIDLobby);
@@ -207,13 +222,17 @@ namespace Monkland.SteamManagement {
             //lobbyInfo.otherStart = otherStart;
             lobbyInfo.memberLimit = lobbyMax;
             lobbyInfo.memberNum = 1;
-            SteamMatchmaking.SetLobbyData((CSteamID)result.m_ulSteamIDLobby, "Version", MonklandUI.VERSION);
-            lobbyInfo.version = MonklandUI.VERSION;
+            SteamMatchmaking.SetLobbyData((CSteamID)result.m_ulSteamIDLobby, "Version", Monkland.VERSION);
+            lobbyInfo.version = Monkland.VERSION;
         }
-        public void LobbyChatUpdated(LobbyChatUpdate_t update) {
-            try {
+
+        public void LobbyChatUpdated(LobbyChatUpdate_t update)
+        {
+            try
+            {
                 EChatMemberStateChange change = (EChatMemberStateChange)update.m_rgfChatMemberStateChange;
-                if (change == EChatMemberStateChange.k_EChatMemberStateChangeEntered) {
+                if (change == EChatMemberStateChange.k_EChatMemberStateChangeEntered)
+                {
                     MultiplayerChat.AddChat(string.Format("User {0} joined the game!", SteamFriends.GetFriendPersonaName(new CSteamID(update.m_ulSteamIDUserChanged))));
                     Log(string.Format("User {0} joined the game!", SteamFriends.GetFriendPersonaName(new CSteamID(update.m_ulSteamIDUserChanged))));
 
@@ -221,54 +240,53 @@ namespace Monkland.SteamManagement {
                     {
                         PlayerJoinedManagers(update.m_ulSteamIDUserChanged);
                         connectedPlayers.Add(update.m_ulSteamIDUserChanged);
-
                     }
-                    if (update.m_ulSteamIDUserChanged != SteamUser.GetSteamID().m_SteamID) {
+                    if (update.m_ulSteamIDUserChanged != SteamUser.GetSteamID().m_SteamID)
+                    {
                         otherPlayers.Add(update.m_ulSteamIDUserChanged);
                     }
-
-
                 }
-                else if (change == EChatMemberStateChange.k_EChatMemberStateChangeLeft || change == EChatMemberStateChange.k_EChatMemberStateChangeKicked || change == EChatMemberStateChange.k_EChatMemberStateChangeDisconnected) {
+                else if (change == EChatMemberStateChange.k_EChatMemberStateChangeLeft || change == EChatMemberStateChange.k_EChatMemberStateChangeKicked || change == EChatMemberStateChange.k_EChatMemberStateChangeDisconnected)
+                {
                     MultiplayerChat.AddChat(string.Format("User {0} left the game!", SteamFriends.GetFriendPersonaName(new CSteamID(update.m_ulSteamIDUserChanged))));
                     Log(string.Format("User {0} left the game!", SteamFriends.GetFriendPersonaName(new CSteamID(update.m_ulSteamIDUserChanged))));
                     PlayerLeftManagers(update.m_ulSteamIDUserChanged);
                     connectedPlayers.Remove(update.m_ulSteamIDUserChanged);
                     MultiplayerPlayerList.RemovePlayerLabel(update.m_ulSteamIDUserChanged);
-                    if (update.m_ulSteamIDUserChanged != SteamUser.GetSteamID().m_SteamID) {
+                    if (update.m_ulSteamIDUserChanged != SteamUser.GetSteamID().m_SteamID)
+                    {
                         otherPlayers.Remove(update.m_ulSteamIDUserChanged);
                     }
                     if (update.m_ulSteamIDUserChanged == NetworkGameManager.managerID)
                     {
-                        patch_ProcessManager patchPM = ((patch_ProcessManager)Patches.patch_Rainworld.mainRW.processManager);
+                        ProcessManager pm = RainWorldHK.mainRW.processManager;
                         //if ((patchPM.currentMainLoop is MultiplayerSleepAndDeathScreen) || (patchPM.currentMainLoop is SteamMultiplayerMenu)
-                        if (patchPM.musicPlayer != null)
+                        if (pm.musicPlayer != null)
                         {
-                            patchPM.musicPlayer.FadeOutAllSongs(5f);
-                            patchPM.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
+                            pm.musicPlayer.FadeOutAllSongs(5f);
+                            pm.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
                         }
-                        if (patchPM.currentMainLoop is RainWorldGame)
-                        {
-                            (patchPM.currentMainLoop as RainWorldGame).ExitToMenu();
-                        }
+                        if (pm.currentMainLoop is RainWorldGame)
+                        { (pm.currentMainLoop as RainWorldGame).ExitToMenu(); }
                         else
-                        {
-                            patchPM.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-                        }
+                        { pm.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu); }
                         if (monklandUI != null)
                         {
                             monklandUI.ClearSprites();
                             monklandUI = null;
                         }
                         this.OnGameExit();
-                    } 
+                    }
                 }
-            } catch (System.Exception e) {
+            }
+            catch (System.Exception e)
+            {
                 Debug.LogError(e);
             }
         }
-        public void LobbyChatMsg(LobbyChatMsg_t message) {
 
+        public void LobbyChatMsg(LobbyChatMsg_t message)
+        {
         }
 
         public void LobbySearchFinished(LobbyMatchList_t pLobbyMatchList)
@@ -288,53 +306,45 @@ namespace Monkland.SteamManagement {
             }
             searching = false;
             {
-                patch_ProcessManager patchPM = ((patch_ProcessManager)Patches.patch_Rainworld.mainRW.processManager);
-                if ((patchPM.currentMainLoop is LobbyFinderMenu))
-                {
-                    (patchPM.currentMainLoop as LobbyFinderMenu).searchFinished(numberOfLobbies);
-                }
+                if (RainWorldHK.mainRW.processManager.currentMainLoop is LobbyFinderMenu lfm)
+                { lfm.SearchFinished(numberOfLobbies); }
             }
         }
 
-        public void LobbyKicked(LobbyKicked_t kickResult) {
+        public void LobbyKicked(LobbyKicked_t kickResult)
+        {
             lobbyID = new CSteamID(0);
             lobbyInfo = new LobbyInfo(lobbyID);
-            patch_ProcessManager patchPM = ((patch_ProcessManager)Patches.patch_Rainworld.mainRW.processManager);
-            if (patchPM.musicPlayer != null)
+            if (RainWorldHK.mainRW.processManager.musicPlayer != null)
             {
-                patchPM.musicPlayer.FadeOutAllSongs(5f);
-                patchPM.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
+                RainWorldHK.mainRW.processManager.musicPlayer.FadeOutAllSongs(5f);
+                RainWorldHK.mainRW.processManager.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
             }
-            patchPM.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+            RainWorldHK.mainRW.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
             Log("Kicked from Lobby!");
             OnGameExit();
             joining = false;
         }
 
-        public void LobbyJoinRequested(GameLobbyJoinRequested_t request) {//Shift-Tab Menu
+        public void LobbyJoinRequested(GameLobbyJoinRequested_t request)
+        {//Shift-Tab Menu
             {
-                patch_ProcessManager patchPM = ((patch_ProcessManager)Patches.patch_Rainworld.mainRW.processManager);
-                if (patchPM.currentMainLoop is SteamMultiplayerMenu) {
-                    if (lobbyID.m_SteamID != 0) {
-                        LeaveLobby();
-                    }
-                }
-                patchPM.ImmediateSwitchCustom(new SteamMultiplayerMenu(patchPM));
+                if (RainWorldHK.mainRW.processManager.currentMainLoop is SteamMultiplayerMenu)
+                { if (lobbyID.m_SteamID != 0) { LeaveLobby(); } }
+                ProcessManagerHK.ImmediateSwitchCustom(RainWorldHK.mainRW.processManager, new SteamMultiplayerMenu(RainWorldHK.mainRW.processManager));
             }
             joining = true;
             SteamMatchmaking.JoinLobby(request.m_steamIDLobby);
         }
 
-        public void LobbyEntered(LobbyEnter_t enterLobby) {
+        public void LobbyEntered(LobbyEnter_t enterLobby)
+        {
             connectedPlayers.Clear();
             otherPlayers.Clear();
             ResetManagers();
             {
-                patch_ProcessManager patchPM = ((patch_ProcessManager)Patches.patch_Rainworld.mainRW.processManager);
-                if (!(patchPM.currentMainLoop is SteamMultiplayerMenu))
-                {
-                    patchPM.ImmediateSwitchCustom(new SteamMultiplayerMenu(patchPM));
-                }
+                if (!(RainWorldHK.mainRW.processManager.currentMainLoop is SteamMultiplayerMenu))
+                { ProcessManagerHK.ImmediateSwitchCustom(RainWorldHK.mainRW.processManager, new SteamMultiplayerMenu(RainWorldHK.mainRW.processManager)); }
             }
 
             joining = false;
@@ -342,10 +352,11 @@ namespace Monkland.SteamManagement {
             int playerCount = SteamMatchmaking.GetNumLobbyMembers((CSteamID)enterLobby.m_ulSteamIDLobby);
             MultiplayerChat.AddChat("Entered Lobby!");
 
-
             //Send packets to all players, to establish P2P connections with them
-            if (playerCount > 1) {
-                for (int i = 0; i < playerCount; i++) {
+            if (playerCount > 1)
+            {
+                for (int i = 0; i < playerCount; i++)
+                {
                     CSteamID lobbyMember = SteamMatchmaking.GetLobbyMemberByIndex(lobbyID, i);
                     SteamNetworking.SendP2PPacket(lobbyMember, new byte[] { 255 }, 1, EP2PSend.k_EP2PSendReliable, 0);
                     SteamNetworking.SendP2PPacket(lobbyMember, new byte[] { 255 }, 1, EP2PSend.k_EP2PSendReliable, 1);
@@ -376,22 +387,23 @@ namespace Monkland.SteamManagement {
                 PlayerJoinedManagers(SteamUser.GetSteamID().m_SteamID);
             }
 
-
             MultiplayerChat.AddChat("This game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
             isInGame = true;
             Log("Entered Lobby! \nThis game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
         }
 
-        public void P2PRequest(P2PSessionRequest_t request) {
+        public void P2PRequest(P2PSessionRequest_t request)
+        {
             if (connectedPlayers.Contains(request.m_steamIDRemote.m_SteamID))
                 SteamNetworking.AcceptP2PSessionWithUser(request.m_steamIDRemote);
         }
-        public void P2PConnectionFail(P2PSessionConnectFail_t failResult) {
+
+        public void P2PConnectionFail(P2PSessionConnectFail_t failResult)
+        {
             Debug.LogError("P2P Error:" + ((EP2PSessionError)failResult.m_eP2PSessionError));
         }
 
-
-        #endregion
+        #endregion Callbacks
 
         #region Channels
 
@@ -399,19 +411,22 @@ namespace Monkland.SteamManagement {
 
         public List<PacketChannel> allChannels = new List<PacketChannel>();
 
-        public void ReadPackets(bool forceRead = false) {
-            foreach (PacketChannel pc in allChannels) {
+        public void ReadPackets(bool forceRead = false)
+        {
+            foreach (PacketChannel pc in allChannels)
+            {
                 pc.ReadPackets(forceRead);
             }
         }
 
-        public void ClearAllPackets() {
+        public void ClearAllPackets()
+        {
             foreach (PacketChannel p in allChannels)
                 p.Clear();
         }
 
-        public class PacketChannel {
-
+        public class PacketChannel
+        {
             //The name of this channel
             public string channelName = "CHANNEL";
 
@@ -421,7 +436,8 @@ namespace Monkland.SteamManagement {
             //The steam manager
             public MonklandSteamManager manager;
 
-            public PacketChannel(string name, int channelIndex, MonklandSteamManager manager, int packetsPerUpdate = 20, int maxPackets = 100, bool priorityBased = false, bool ordered = false, bool scrapOldOrdered = false) {
+            public PacketChannel(string name, int channelIndex, MonklandSteamManager manager, int packetsPerUpdate = 20, int maxPackets = 100, bool priorityBased = false, bool ordered = false, bool scrapOldOrdered = false)
+            {
                 this.channelName = name;
                 this.channelIndex = channelIndex;
                 this.manager = manager;
@@ -437,58 +453,64 @@ namespace Monkland.SteamManagement {
             #region Packet Management
 
             public uint currentID;
+
             //The ID of the past packet, from each player. Keep things in order!
             public Dictionary<ulong, uint> lastPacketID;
+
             //True if this channel should sort packets based on priority
             public bool isPriorityBased = false;
+
             //True if this channel's packets are ordered
             public bool isOrdered = false;
+
             //True if the channel's old ordered packets should be scrapped
             public bool scrapOld = false;
+
             public bool requireGameState = true;
 
             //The amount of packets we can process per update
             public int packetsPerUpdate = 20;
 
             //The max amount of packets the channel is allowed to store at once
-            private int maxPackets = 100;
+            private readonly int maxPackets = 100;
 
             //No-priority packet
-            private Queue<DataPacket> queuedPackets = new Queue<DataPacket>();
+            private readonly Queue<DataPacket> queuedPackets = new Queue<DataPacket>();
 
             //Priority packets
-            private Dictionary<byte, Queue<DataPacket>> priorityQueues = new Dictionary<byte, Queue<DataPacket>>();
+            private readonly Dictionary<byte, Queue<DataPacket>> priorityQueues = new Dictionary<byte, Queue<DataPacket>>();
 
             public bool isForceWait = false;
             public ulong replyValue = 0;
 
             //Reads packets from steam
-            public void ReadPackets(bool forceRead = false) {
-
-                if (forceRead == false && requireGameState) {
-                    if (patch_RainWorldGame.mainGame == null || patch_RainWorldGame.mainGame.Players.Count == 0) {
+            public void ReadPackets(bool forceRead = false)
+            {
+                if (forceRead == false && requireGameState)
+                {
+                    if (RainWorldGameHK.mainGame == null || RainWorldGameHK.mainGame.Players.Count == 0)
+                    {
                         return;
                     }
                 }
 
-                //Size of the packet
-                uint size = 0;
                 //The number of packets we have left to process
                 int packetsLeft = packetsPerUpdate;
                 //The data in the packet
                 byte[] packetData;
-                //The user who sent the packet
-                CSteamID sentUser;
-                BinaryReader reader;
+
+                // BinaryReader reader; // unused
 
                 //Read all packets to the queues
-                while (SteamNetworking.IsP2PPacketAvailable(out size, channelIndex)) {
-
-                    try {
+                while (SteamNetworking.IsP2PPacketAvailable(out uint size, channelIndex))
+                {
+                    try
+                    {
                         //Initialize array for packet
-                        packetData = new byte[size];
+                        packetData = new byte[size]; //size == Size of the packet
                         //Read the packet from steam's network
-                        SteamNetworking.ReadP2PPacket(packetData, size, out size, out sentUser, channelIndex);
+                        SteamNetworking.ReadP2PPacket(packetData, size, out size, out CSteamID sentUser, channelIndex);
+                        //sentUser == The user who sent the packet
 
                         if (size == 1)
                             continue;
@@ -502,29 +524,37 @@ namespace Monkland.SteamManagement {
 
                         newPacket.data = packetData;
 
-                        if (isPriorityBased) {
-                            if (!priorityQueues.ContainsKey(newPacket.priority)) {
+                        if (isPriorityBased)
+                        {
+                            if (!priorityQueues.ContainsKey(newPacket.priority))
+                            {
                                 Log("Creating queue for priority " + newPacket.priority);
                                 priorityQueues[newPacket.priority] = new Queue<DataPacket>();
                             }
                             priorityQueues[newPacket.priority].Enqueue(newPacket);
-                        } else {
+                        }
+                        else
+                        {
                             queuedPackets.Enqueue(newPacket);
                         }
-                    } catch (System.Exception e) {
+                    }
+                    catch (System.Exception e)
+                    {
                         Debug.LogError(e);
                     }
                 }
 
                 //Discard old packets, then process as many as we can.
-                if (isPriorityBased) {
-
+                if (isPriorityBased)
+                {
                     int skipCount = 0;
                     int ditchedCount = 0;
                     //Loop through all priorities in order
-                    for (byte priorityI = 0; packetsLeft > 0 && priorityI < byte.MaxValue; priorityI++) {
+                    for (byte priorityI = 0; packetsLeft > 0 && priorityI < byte.MaxValue; priorityI++)
+                    {
                         //If there's no packets of this priority, skip
-                        if (!priorityQueues.ContainsKey(priorityI)) {
+                        if (!priorityQueues.ContainsKey(priorityI))
+                        {
                             skipCount++;
                             continue;
                         }
@@ -533,21 +563,24 @@ namespace Monkland.SteamManagement {
                         Queue<DataPacket> packetQueue = priorityQueues[priorityI];
 
                         //Throws out packets if there's too many. This could be bad. Let's try to avoid this.
-                        while (packetQueue.Count > maxPackets) {
+                        while (packetQueue.Count > maxPackets)
+                        {
                             packetQueue.Dequeue();
                             ditchedCount++;
                         }
 
                         //Finally, process as many packets as we can from this priority level.
-                        while (packetsLeft > 0 && packetQueue.Count > 0) {
-
+                        while (packetsLeft > 0 && packetQueue.Count > 0)
+                        {
                             DataPacket getPacket = packetQueue.Dequeue();
 
-                            try {
+                            try
+                            {
                                 if (!ProcessPacket(getPacket))
                                     packetsLeft--;
-
-                            } catch (System.Exception e) {
+                            }
+                            catch (System.Exception e)
+                            {
                                 StringBuilder sb = new StringBuilder();
                                 for (int j = 0; j < getPacket.data.Length; j++)
                                     sb.Append(getPacket.data[j] + " " + ((getPacket.readCount == j) ? "|" : ""));
@@ -558,48 +591,60 @@ namespace Monkland.SteamManagement {
                             }
                         }
                     }
-
-                } else {
+                }
+                else
+                {
                     //Throws out packets if there's too many. This could be bad. Let's try to avoid this.
                     while (queuedPackets.Count > maxPackets)
                         queuedPackets.Dequeue();
 
                     //Process as many packets as we can from this priority level.
-                    while (packetsLeft > 0 && queuedPackets.Count > 0) {
+                    while (packetsLeft > 0 && queuedPackets.Count > 0)
+                    {
                         DataPacket getPacket = queuedPackets.Dequeue();
-                        try {
+                        try
+                        {
                             if (!ProcessPacket(getPacket))
                                 packetsLeft--;
-                        } catch (System.Exception e) {
-
+                        }
+                        catch (System.Exception e)
+                        {
                             StringBuilder sb = new StringBuilder();
                             for (int i = 0; i < getPacket.data.Length; i++)
                                 sb.Append(getPacket.data[i] + "" + ((getPacket.readCount == i) ? "|" : ""));
 
                             Debug.LogError("Packet data was " + sb.ToString() + " in channel " + channelName);
+                            Debug.LogError($"Packet Type {getPacket.data[2]}, ObjectType {(AbstractCreature.AbstractObjectType)getPacket.data[5]}");
                             Debug.LogError(e);
                             packetsLeft--;
                         }
                     }
                 }
-
             }
 
-            public void Clear() {
+            public void Clear()
+            {
                 queuedPackets.Clear();
                 foreach (Queue<DataPacket> packs in priorityQueues.Values)
+                {
                     packs.Clear();
+                }
                 priorityQueues.Clear();
             }
 
-            public bool ProcessPacket(DataPacket packet) {
-                try {
+            public bool ProcessPacket(DataPacket packet)
+            {
+                try
+                {
                     processedPackets++;
                     //If packets are ordered
-                    if (isOrdered) {
-                        //If the last packet we got has a higher ID than this one, then we're 
+                    if (isOrdered)
+                    {
+                        //If the last packet we got has a higher ID than this one, then we're
                         if (lastPacketID.ContainsKey(packet.sentPlayer.m_SteamID) && lastPacketID[packet.sentPlayer.m_SteamID] > packet.packetID)
+                        {
                             return true;
+                        }
                         lastPacketID[packet.sentPlayer.m_SteamID] = packet.packetID;
                     }
 
@@ -607,13 +652,18 @@ namespace Monkland.SteamManagement {
 
                     byte forcewaitData = br.ReadByte();
 
-                    if (forcewaitData == 1) {
+                    if (forcewaitData == 1)
+                    {
                         RecievedForcewaitPacket(br, packet.sentPlayer);
                         return true;
-                    } else if (forcewaitData == 2) {
+                    }
+                    else if (forcewaitData == 2)
+                    {
                         RecieveForcewaitReply(br, packet.sentPlayer);
                         return true;
-                    } else {
+                    }
+                    else
+                    {
                         /*if (DEBUG && this.channelIndex != 2)
                         {
                             StringBuilder sb = new StringBuilder();
@@ -624,7 +674,9 @@ namespace Monkland.SteamManagement {
                         handlers[packet.handlerID](br, packet.sentPlayer);
                     }
                     return false;
-                } catch (System.Exception e) {
+                }
+                catch (System.Exception e)
+                {
                     StringBuilder sb = new StringBuilder();
                     for (int j = 0; j < packet.data.Length; j++)
                         sb.Append(packet.data[j] + " " + ((packet.readCount == j) ? "|" : ""));
@@ -634,20 +686,24 @@ namespace Monkland.SteamManagement {
 
                     return false;
                 }
-
             }
 
-            public void SendPacketToAll(DataPacket packet, bool othersOnly = false, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay) {
-                if (othersOnly) {
+            public void SendPacketToAll(DataPacket packet, bool othersOnly = false, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay)
+            {
+                if (othersOnly)
+                {
                     foreach (CSteamID id in otherPlayers)
                         SendPacket(packet, id, sendType);
-                } else {
+                }
+                else
+                {
                     foreach (CSteamID id in connectedPlayers)
                         SendPacket(packet, id, sendType);
                 }
             }
-            public void SendPacket(DataPacket packet, CSteamID user, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay) {
 
+            public void SendPacket(DataPacket packet, CSteamID user, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay)
+            {
                 if (DEBUG)
                 {
                     StringBuilder sb = new StringBuilder();
@@ -658,17 +714,20 @@ namespace Monkland.SteamManagement {
                     //Log(Environment.StackTrace);
                 }
 
-                if (user.m_SteamID == NetworkGameManager.playerID) {
+                if (user.m_SteamID == NetworkGameManager.playerID)
+                {
                     //Process packet immediately if we sent it to ourself.
                     ProcessPacket(packet);
-                } else {
+                }
+                else
+                {
                     //Send it off to another player
                     SteamNetworking.SendP2PPacket(user, packet.data, (uint)packet.data.Length, sendType, channelIndex);
                 }
             }
 
-            public ulong SendForcewaitPacket(ulong id, CSteamID user) {
-
+            public ulong SendForcewaitPacket(ulong id, CSteamID user)
+            {
                 //Tag this to be waiting
                 isForceWait = true;
                 //Send packet
@@ -684,7 +743,8 @@ namespace Monkland.SteamManagement {
                 System.DateTime startTime = System.DateTime.Now;
 
                 //As long as we're supposed to wait
-                while (isForceWait) {
+                while (isForceWait)
+                {
                     //Read all packets
                     ReadPackets(true);
                     //Sleep for 10 ms
@@ -697,7 +757,9 @@ namespace Monkland.SteamManagement {
 
                 return replyValue;
             }
-            public void SendForcewaitReply(ulong response, CSteamID user) {
+
+            public void SendForcewaitReply(ulong response, CSteamID user)
+            {
                 MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(channelIndex, 0);
                 packet.priority = 0;
                 BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet, 2);
@@ -706,65 +768,76 @@ namespace Monkland.SteamManagement {
                 MonklandSteamManager.instance.SendPacket(packet, user, EP2PSend.k_EP2PSendReliable);
             }
 
-            public void RecieveForcewaitReply(BinaryReader reader, CSteamID sender) {
+            public void RecieveForcewaitReply(BinaryReader reader, CSteamID sender)
+            {
                 isForceWait = false;
                 replyValue = reader.ReadUInt64();
             }
-            public void RecievedForcewaitPacket(BinaryReader reader, CSteamID sender) {
+
+            public void RecievedForcewaitPacket(BinaryReader reader, CSteamID sender)
+            {
                 int id = reader.ReadInt32();
 
-                switch (id) {
+                switch (id)
+                {
                     case 0:
-                        SendForcewaitReply((ulong)patch_RainWorldGame.mainGame.Players.Count, sender);
+                        SendForcewaitReply((ulong)RainWorldGameHK.mainGame.Players.Count, sender);
                         return;
                 }
             }
 
-            public uint GetNewID() {
+            public uint GetNewID()
+            {
                 return currentID++;
             }
 
-            #endregion
+            #endregion Packet Management
 
             #region Handlers
 
             public List<PacketHandler> handlers = new List<PacketHandler>();
 
-            public byte RegisterHandler(PacketHandler handler) {
-                if (handlers.Count == 255) {
+            public byte RegisterHandler(PacketHandler handler)
+            {
+                if (handlers.Count == 255)
+                {
                     throw new Exception("Already registered max number of handlers in channel " + channelName);
                 }
                 handlers.Add(handler);
                 return (byte)(handlers.Count - 1);
             }
 
-            #endregion
+            #endregion Handlers
 
             #region Debug Info
 
             private int processedPackets;
 
-            public int GetPacketCount() {
-                if (isPriorityBased) {
+            public int GetPacketCount()
+            {
+                if (isPriorityBased)
+                {
                     int i = 0;
                     for (byte b = 0; b < byte.MaxValue; b++)
                         if (priorityQueues.ContainsKey(b))
                             i += priorityQueues[b].Count;
                     return i;
-                } else {
+                }
+                else
+                {
                     return queuedPackets.Count;
                 }
             }
 
-            public int GetProcessedPacketsCount() {
+            public int GetProcessedPacketsCount()
+            {
                 return processedPackets;
             }
 
-            #endregion
-
+            #endregion Debug Info
         }
 
-        #endregion
+        #endregion Channels
 
         #region Packet Handler
 
@@ -778,9 +851,10 @@ namespace Monkland.SteamManagement {
         public BinaryWriter packetWriter;
         public BinaryReader packetReader;
 
-        private Dictionary<int, byte[]> writeBuffers = new Dictionary<int, byte[]>();
+        private readonly Dictionary<int, byte[]> writeBuffers = new Dictionary<int, byte[]>();
 
-        public void InitializePacketTools() {
+        public void InitializePacketTools()
+        {
             //Create buffers
             outStream = new MemoryStream(new byte[1100], true);
             inStream = new MemoryStream(new byte[1100], true);
@@ -792,7 +866,8 @@ namespace Monkland.SteamManagement {
             //Create channels
         }
 
-        private void RegisterDefaultChannels() {
+        private void RegisterDefaultChannels()
+        {
             allChannels.Add(
                 new PacketChannel(
                     "Default Channel", //Used by Game Manager
@@ -800,7 +875,8 @@ namespace Monkland.SteamManagement {
                     this, //Monkland Steam Manager
                     40, //Packets per update
                     200 //Max packets
-                ) {
+                )
+                {
                     requireGameState = false
                 }
             );
@@ -811,7 +887,8 @@ namespace Monkland.SteamManagement {
                     this, //Monkland Steam Manager
                     40, //Packets per update
                     200 //Max packets
-                ) {
+                )
+                {
                     requireGameState = false
                 }
             );
@@ -822,18 +899,21 @@ namespace Monkland.SteamManagement {
                     this, //Monkland Steam Manager
                     120, //Packets per update
                     600 //Max packets
-                ) {
+                )
+                {
                     requireGameState = false
                 }
             );
-
         }
-        private void RegisterDefaultHandlers() {
+
+        private void RegisterDefaultHandlers()
+        {
             foreach (NetworkManager nm in netManagersList)
                 nm.RegisterHandlers();
         }
 
-        public byte RegisterHandler(int channel, PacketHandler handler) {
+        public byte RegisterHandler(int channel, PacketHandler handler)
+        {
             return allChannels[channel].RegisterHandler(handler);
         }
 
@@ -841,7 +921,8 @@ namespace Monkland.SteamManagement {
         /// Resets the binarywriter used to create packets, and returns it so that we can write a new one.
         /// </summary>
         /// <returns></returns>
-        public BinaryWriter GetWriterForPacket(DataPacket packet, byte forceData = 0) {
+        public BinaryWriter GetWriterForPacket(DataPacket packet, byte forceData = 0)
+        {
             packetWriter.Seek(0, SeekOrigin.Begin);
 
             packet.Write(packetWriter);
@@ -854,7 +935,8 @@ namespace Monkland.SteamManagement {
         /// Resets the binaryreader used to read packets, and returns it so that we can write a new one.
         /// </summary>
         /// <returns></returns>
-        public BinaryReader GetReaderForPacket(DataPacket packet, byte[] data) {
+        public BinaryReader GetReaderForPacket(DataPacket packet, byte[] data)
+        {
             packetReader.BaseStream.Seek(0, SeekOrigin.Begin);
             packetReader.BaseStream.Write(data, 0, data.Length);
             packetReader.BaseStream.Seek(0, SeekOrigin.Begin);
@@ -864,10 +946,13 @@ namespace Monkland.SteamManagement {
         }
 
         //Gets a new packet with all the values set based on the channel's settings.
-        public DataPacket GetNewPacket(int channel) {
+        public DataPacket GetNewPacket(int channel)
+        {
             return GetNewPacket(channel, 0);
         }
-        public DataPacket GetNewPacket(int channel, byte handlerID) {
+
+        public DataPacket GetNewPacket(int channel, byte handlerID)
+        {
             DataPacket newPacket = new DataPacket(channel, (CSteamID)NetworkGameManager.playerID);
             PacketChannel packetChannel = allChannels[channel];
 
@@ -881,7 +966,8 @@ namespace Monkland.SteamManagement {
         }
 
         //Fills out the packet with the data from the BinaryWriter
-        public void FinalizeWriterToPacket(BinaryWriter writer, DataPacket packet) {
+        public void FinalizeWriterToPacket(BinaryWriter writer, DataPacket packet)
+        {
             //Get the size of the packet
             int size = (int)writer.BaseStream.Position;
             //Get a buffer to write the data to
@@ -894,28 +980,35 @@ namespace Monkland.SteamManagement {
             packet.data = buffer;
         }
 
-        public void SendPacket(DataPacket toSend, CSteamID targetPlayer, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay) {
+        public void SendPacket(DataPacket toSend, CSteamID targetPlayer, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay)
+        {
             allChannels[toSend.channel].SendPacket(toSend, targetPlayer, sendType);
         }
-        public void SendPacketToAll(DataPacket toSend, bool otherOnly = false, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay) {
+
+        public void SendPacketToAll(DataPacket toSend, bool otherOnly = false, EP2PSend sendType = EP2PSend.k_EP2PSendUnreliableNoDelay)
+        {
             allChannels[toSend.channel].SendPacketToAll(toSend, otherOnly, sendType);
         }
 
-        public byte[] GetWriteBufferOfSize(int size) {
-            if (!writeBuffers.ContainsKey(size)) {
+        public byte[] GetWriteBufferOfSize(int size)
+        {
+            if (!writeBuffers.ContainsKey(size))
+            {
                 writeBuffers[size] = new byte[size];
             }
             return writeBuffers[size];
         }
-        public void ClearPacketBuffers() {
+
+        public void ClearPacketBuffers()
+        {
             writeBuffers.Clear();
         }
 
         /// <summary>
         /// The struct used to store packet data so it's easier to keep track of
         /// </summary>
-        public class DataPacket {
-
+        public class DataPacket
+        {
             //The ID of the function used to parse this packet
             public byte handlerID;
 
@@ -948,7 +1041,8 @@ namespace Monkland.SteamManagement {
 
             public int HeapIndex { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-            public DataPacket(int channel, CSteamID fromPlayer) {
+            public DataPacket(int channel, CSteamID fromPlayer)
+            {
                 handlerID = 0;
                 isOrderedPacket = false;
                 scrapOldPackets = false;
@@ -961,28 +1055,33 @@ namespace Monkland.SteamManagement {
             }
 
             //Writes the properties for the packet to the buffer
-            public void Write(BinaryWriter writer) {
+            public void Write(BinaryWriter writer)
+            {
                 writer.Write(handlerID);
 
-                if (isOrderedPacket) {
+                if (isOrderedPacket)
+                {
                     writer.Write(packetID);
                 }
 
-                if (isPriority) {
+                if (isPriority)
+                {
                     writer.Write(priority);
                 }
             }
 
             //Reads the properties for the packet from the buffer
-            public void Read(BinaryReader reader) {
-
+            public void Read(BinaryReader reader)
+            {
                 handlerID = reader.ReadByte();
 
-                if (isOrderedPacket) {
+                if (isOrderedPacket)
+                {
                     packetID = reader.ReadUInt32();
                 }
 
-                if (isPriority) {
+                if (isPriority)
+                {
                     priority = reader.ReadByte();
                 }
 
@@ -990,41 +1089,47 @@ namespace Monkland.SteamManagement {
             }
         }
 
-
-        #endregion
+        #endregion Packet Handler
 
         #region NetworkManagers
 
         public static NetworkGameManager GameManager;
         public static NetworkWorldManager WorldManager;
         public static NetworkEntityManager EntityManager;
+        public static NetworkGraspStickManager GraspStickManager;
 
         public static Dictionary<string, NetworkManager> netManagers = new Dictionary<string, NetworkManager>();
-        private static List<NetworkManager> netManagersList = new List<NetworkManager>();
+        private static readonly List<NetworkManager> netManagersList = new List<NetworkManager>();
         public GenericCallback registerManagersCallback = delegate () { };
 
-        public void RegisterDefaultNetworkManagers() {
+        public void RegisterDefaultNetworkManagers()
+        {
             GameManager = new NetworkGameManager();
             WorldManager = new NetworkWorldManager();
             EntityManager = new NetworkEntityManager();
+            GraspStickManager = new NetworkGraspStickManager();
 
             RegisterNetworkManager("Game", GameManager);
             RegisterNetworkManager("World", WorldManager);
             RegisterNetworkManager("Entity", EntityManager);
+            RegisterNetworkManager("GraspStick", GraspStickManager);
         }
 
-        public int RegisterNetworkManager(string name, NetworkManager manager) {
+        public int RegisterNetworkManager(string name, NetworkManager manager)
+        {
             netManagersList.Add(manager);
             netManagers[name] = manager;
             return netManagersList.Count - 1;
         }
 
-        public void UpdateManagers() {
+        public void UpdateManagers()
+        {
             foreach (NetworkManager nm in netManagersList)
                 nm.Update();
         }
 
-        public void ResetManagers() {
+        public void ResetManagers()
+        {
             foreach (NetworkManager nm in netManagersList)
                 nm.Reset();
         }
@@ -1041,15 +1146,16 @@ namespace Monkland.SteamManagement {
                 nm.PlayerLeft(steamID);
         }
 
-
-        #endregion
+        #endregion NetworkManagers
 
         public class LobbyInfo
         {
             public bool debugAllowed = false;
             public bool spearsHit = false;
+
             //public bool otherStart = false;
-            public string version = MonklandUI.VERSION;
+            public string version;
+
             public int memberLimit = 10;
             public int memberNum = 10;
             public CSteamID owner;
@@ -1061,7 +1167,7 @@ namespace Monkland.SteamManagement {
                 this.debugAllowed = false;
                 this.spearsHit = false;
                 //this.otherStart = true;
-                this.version = MonklandUI.VERSION;
+                this.version = Monkland.VERSION;
                 this.memberLimit = 10;
                 this.memberNum = 10;
                 this.owner = new CSteamID(0);
@@ -1071,26 +1177,22 @@ namespace Monkland.SteamManagement {
             {
                 bool success = true;
                 if (lobbyID.m_SteamID == 0)
-                    return false;
+                { return false; }
                 this.ID = lobbyID;
                 string ownerData = SteamMatchmaking.GetLobbyData(lobbyID, MANAGER_ID);
-                if (ownerData == "")
-                {
-                    success = false;
-                }
+                if (string.IsNullOrEmpty(ownerData))
+                { success = false; }
                 else
-                {
-                    this.owner = new CSteamID(ulong.Parse(ownerData));
-                }
+                { this.owner = new CSteamID(ulong.Parse(ownerData)); }
                 if (owner.m_SteamID == 0)
-                    success = false;
+                { success = false; }
                 this.debugAllowed = (SteamMatchmaking.GetLobbyData(lobbyID, "AllowDebug") == "True");
                 this.spearsHit = (SteamMatchmaking.GetLobbyData(lobbyID, "SpearsHit") == "True");
                 //this.otherStart = (SteamMatchmaking.GetLobbyData(lobbyID, "OtherStart") == "True");
                 this.version = SteamMatchmaking.GetLobbyData(lobbyID, "Version");
-                if (this.version == "")
+                if (string.IsNullOrEmpty(this.version))
                 {
-                    this.version = "0.2.8";
+                    this.version = Monkland.VERSION;
                     success = false;
                 }
                 this.memberLimit = SteamMatchmaking.GetLobbyMemberLimit(lobbyID);

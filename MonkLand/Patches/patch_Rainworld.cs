@@ -5,23 +5,28 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Monkland.Patches {
-    [MonoMod.MonoModPatch( "global::RainWorld" )]
-    class patch_Rainworld : RainWorld {
-
+namespace Monkland.Patches
+{
+    [MonoMod.MonoModPatch("global::RainWorld")]
+    class patch_Rainworld : RainWorld
+    {
         public static RainWorld mainRW;
 
         public extern void orig_Start();
-        public void Start() {
+        public void Start()
+        {
             mainRW = this;
-            try {
-                if( MonklandSteamManager.instance == null ) {
+            try
+            {
+                if (MonklandSteamManager.instance == null)
+                {
                     MonklandSteamManager.CreateManager();
                 }
-            } catch( System.Exception e ) {
-                Debug.Log( e );
             }
-
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
 
             orig_Start();
             if (MonklandSteamManager.DEBUG)
@@ -35,6 +40,5 @@ namespace Monkland.Patches {
                 setup.devToolsActive = false;
             }
         }
-
     }
 }

@@ -1,35 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Menu;
-using UnityEngine;
-using RWCustom;
-using System.IO;
+﻿using Menu;
+using Monkland.Hooks;
 using Monkland.SteamManagement;
-using Monkland.Patches;
-using Steamworks;
 using Monkland.UI;
-using System.Runtime.CompilerServices;
+using RWCustom;
+using Steamworks;
+using UnityEngine;
 
-namespace Monkland {
-    class LobbyFinderMenu: Menu.Menu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
+namespace Monkland
+{
+    internal class LobbyFinderMenu : Menu.Menu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
-
-        public SimpleButton backButton;
-        public SimpleButton startLobbyButton;
-        public HorizontalSlider bodyRed;
-        public HorizontalSlider bodyGreen;
-        public HorizontalSlider bodyBlue;
-        public HorizontalSlider eyesRed;
-        public HorizontalSlider eyesGreen;
-        public HorizontalSlider eyesBlue;
+        public SimpleButton backButton, startLobbyButton;
+        public HorizontalSlider bodyRed, bodyGreen, bodyBlue, eyesRed, eyesGreen, eyesBlue;
         public CheckBox debugCheckBox;
-        public FLabel settingsLabel;
-        public FLabel bodyLabel;
-        public FLabel eyesLabel;
-        public RoundedRect colorBox;
-        public RoundedRect lobbyFinderBox;
+        public FLabel settingsLabel, bodyLabel, eyesLabel;
+        public RoundedRect colorBox, lobbyFinderBox;
         public SelectOneButton[] modeButtons = new SelectOneButton[2];
         public SelectOneButton[] slugcatButtons = new SelectOneButton[3];
 
@@ -37,34 +22,23 @@ namespace Monkland {
         public SelectOneButton[] privacyButtons = new SelectOneButton[3];
         public HorizontalSlider maxPlayersSlider;
         public FLabel maxPlayersLabel;
-        public CheckBox spearsHitBox;
-        public CheckBox debugAllowBox;
+        public CheckBox spearsHitBox, debugAllowBox;
 
         public bool hosting = true;
         public float lobbynum = 0;
         public SimpleButton refreshButton;
 
-        public FLabel namesLabel;
-        public FLabel versionsLabel;
-        public FLabel playersLabel;
-        public FLabel maxLabel;
-        public FLabel myVersion;
-        public FLabel[] lobbynames;
-        public FLabel[] lobbyVersions;
-        public FLabel[] lobbyPlayerCounts;
-        public FLabel[] lobbyPlayerMaxs;
+        public FLabel namesLabel, versionsLabel, playersLabel, maxLabel; // myVersion; //myVersion is not being used???
+        public FLabel[] lobbynames, lobbyVersions, lobbyPlayerCounts, lobbyPlayerMaxs;
         public SimpleButton[] joinButtons;
 
-        private FSprite slugcat;
-        private FSprite eyes;
-        private FSprite darkSprite;
-        private FSprite blackFadeSprite;
-        private float blackFade;
-        private float lastBlackFade;
+        private readonly FSprite slugcat, eyes, darkSprite, blackFadeSprite;
+        private float blackFade, lastBlackFade;
 
-        public LobbyFinderMenu(ProcessManager manager) : base( manager, ProcessManager.ProcessID.MainMenu ) {
-
+        public LobbyFinderMenu(ProcessManager manager) : base(manager, ProcessManager.ProcessID.MainMenu)
+        {
             #region UI ELEMENTS SIZE DEFINITION
+
             float resOffset = (1366 - manager.rainWorld.screenSize.x) / 2; // shift everything to the right depending on the resolution. 1/2 of the diff with the max resolution.
 
             float screenWidth = manager.rainWorld.screenSize.x;
@@ -85,7 +59,7 @@ namespace Monkland {
             float panelPositionY = controlButtonSpaceHeight; // constant
 
             float lobbyFinderHeight = screenHeight - (controlButtonSpaceHeight + (panelGutter) + 50); // leaving a space for top and bottom control buttons
-            float lobbyFinderWidth = (screenWidth - (multiplayerSettingsWidth + panelGutter * 3))/1.5f; // depends on resolution
+            float lobbyFinderWidth = (screenWidth - (multiplayerSettingsWidth + panelGutter * 3)) / 1.5f; // depends on resolution
             float lobbyFinderPositionX = resOffset + panelGutter;
             float lobbyFinderPositionY = panelPositionY;
 
@@ -95,18 +69,19 @@ namespace Monkland {
             float lobbyCreatorSliderWidth = lobbyCreatorWidth - 115;
             float lobbyCreatorPositionX = resOffset + panelGutter * 2 + lobbyFinderWidth;
             float lobbyCreatorPositionY = panelPositionY;
-            float lobbyCreatorSliderPositionX = lobbyCreatorPositionX+10;
-            #endregion
+            float lobbyCreatorSliderPositionX = lobbyCreatorPositionX + 10;
+
+            #endregion UI ELEMENTS SIZE DEFINITION
 
             this.lobbynum = 0;
             hosting = true;
             this.blackFade = 1f;
             this.lastBlackFade = 1f;
-            this.pages.Add( new Page( this, null, "main", 0 ) );
+            this.pages.Add(new Page(this, null, "main", 0));
             //this.scene = new InteractiveMenuScene( this, this.pages[0], MenuScene.SceneID.Landscape_SU );
             //this.pages[0].subObjects.Add( this.scene );
-            this.darkSprite = new FSprite( "pixel", true );
-            this.darkSprite.color = new Color( 0f, 0f, 0f );
+            this.darkSprite = new FSprite("pixel", true);
+            this.darkSprite.color = new Color(0f, 0f, 0f);
             this.darkSprite.anchorX = 0f;
             this.darkSprite.anchorY = 0f;
             this.darkSprite.scaleX = screenWidth;
@@ -114,14 +89,14 @@ namespace Monkland {
             this.darkSprite.x = screenWidth / 2f;
             this.darkSprite.y = screenHeight / 2f;
             this.darkSprite.alpha = 0.85f;
-            this.pages[0].Container.AddChild( this.darkSprite );
-            this.blackFadeSprite = new FSprite( "Futile_White", true );
+            this.pages[0].Container.AddChild(this.darkSprite);
+            this.blackFadeSprite = new FSprite("Futile_White", true);
             this.blackFadeSprite.scaleX = 87.5f;
             this.blackFadeSprite.scaleY = 50f;
             this.blackFadeSprite.x = screenWidth / 2f;
             this.blackFadeSprite.y = screenHeight / 2f;
-            this.blackFadeSprite.color = new Color( 0f, 0f, 0f );
-            Futile.stage.AddChild( this.blackFadeSprite );
+            this.blackFadeSprite.color = new Color(0f, 0f, 0f);
+            Futile.stage.AddChild(this.blackFadeSprite);
 
             //Multiplayer Settings Box
             colorBox = new RoundedRect(this, this.pages[0], new Vector2(resOffset + multiplayerSettingsPositionX, panelPositionY), new Vector2(multiplayerSettingsWidth, panelHeight), false);
@@ -129,48 +104,47 @@ namespace Monkland {
 
             //Settings Label
             settingsLabel = new FLabel("font", "Multiplayer Settings");
-            settingsLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 60));
+            settingsLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 60.01f));
             Futile.stage.AddChild(this.settingsLabel);
 
             //Body Color Label
             bodyLabel = new FLabel("font", "Body Color");
-            bodyLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 90));
+            bodyLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 90.01f));
             Futile.stage.AddChild(this.bodyLabel);
 
             //Red Slider
-            bodyRed = new HorizontalSlider(this, this.pages[0], "Red", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 130), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.BodyRed, false);
+            bodyRed = new HorizontalSlider(this, this.pages[0], "Red", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 130), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
             bodyRed.floatValue = MonklandSteamManager.bodyColor.r;
             bodyRed.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyRed);
             //Green Slider
-            bodyGreen = new HorizontalSlider(this, this.pages[0], "Green", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 170), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.BodyGreen, false);
+            bodyGreen = new HorizontalSlider(this, this.pages[0], "Green", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 170), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
             bodyGreen.floatValue = MonklandSteamManager.bodyColor.g;
             bodyGreen.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyGreen);
             //Blue Slider
-            bodyBlue = new HorizontalSlider(this, this.pages[0], "Blue", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 210), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.BodyBlue, false);
+            bodyBlue = new HorizontalSlider(this, this.pages[0], "Blue", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 210), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
             bodyBlue.floatValue = MonklandSteamManager.bodyColor.b;
             bodyBlue.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyBlue);
 
             //Eye Color Label
             eyesLabel = new FLabel("font", "Eye Color");
-            eyesLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70, screenHeight - 240));
+            eyesLabel.SetPosition(new Vector2(multiplayerSettingsPositionX + 70.01f, screenHeight - 240.01f));
             Futile.stage.AddChild(this.eyesLabel);
 
             //Red Slider
-            eyesRed = new HorizontalSlider(this, this.pages[0], "Red ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 280), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.EyesRed, false);
+            eyesRed = new HorizontalSlider(this, this.pages[0], "Red ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 280), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
             eyesRed.floatValue = MonklandSteamManager.eyeColor.r;
             this.pages[0].subObjects.Add(this.eyesRed);
             //Green Slider
-            eyesGreen = new HorizontalSlider(this, this.pages[0], "Green ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 320), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.EyesGreen, false);
+            eyesGreen = new HorizontalSlider(this, this.pages[0], "Green ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 320), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
             eyesGreen.floatValue = MonklandSteamManager.eyeColor.g;
             this.pages[0].subObjects.Add(this.eyesGreen);
             //Blue Slider
-            eyesBlue = new HorizontalSlider(this, this.pages[0], "Blue ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 360), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)patch_Slider.SliderID.EyesBlue, false);
+            eyesBlue = new HorizontalSlider(this, this.pages[0], "Blue ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 360), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
             eyesBlue.floatValue = MonklandSteamManager.eyeColor.b;
             this.pages[0].subObjects.Add(this.eyesBlue);
-
 
             //Slugcat Eyes Sprite
             eyes = new FSprite("FoodCircleB", true);
@@ -202,7 +176,7 @@ namespace Monkland {
             this.pages[0].subObjects.Add(this.slugcatButtons[2]);
 
             //Debug Mode checkbox
-            this.debugCheckBox = new CheckBox(this, this.pages[0], this, new Vector2(resOffset + multiplayerSettingsSliderPositionX+120, screenHeight - 400), 120f, "Debug Mode", "DEBUG");
+            this.debugCheckBox = new CheckBox(this, this.pages[0], this, new Vector2(resOffset + multiplayerSettingsSliderPositionX + 120, screenHeight - 400), 120f, "Debug Mode", "DEBUG");
             this.pages[0].subObjects.Add(this.debugCheckBox);
 
             //Back button
@@ -219,19 +193,19 @@ namespace Monkland {
 
             //Lobby browser Labels:
             this.namesLabel = new FLabel("font", "CREATED BY");
-            this.namesLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + (lobbyFinderWidth / 10), screenHeight - 75));
+            this.namesLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + (lobbyFinderWidth / 10), screenHeight - 75.01f));
             Futile.stage.AddChild(this.namesLabel);
 
             this.versionsLabel = new FLabel("font", "VERSION");
-            this.versionsLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + 1.8f * (lobbyFinderWidth / 5), screenHeight - 75));
+            this.versionsLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + 1.8f * (lobbyFinderWidth / 5), screenHeight - 75.01f));
             Futile.stage.AddChild(this.versionsLabel);
 
             this.playersLabel = new FLabel("font", "PLAYERS");
-            this.playersLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + 2.9f * (lobbyFinderWidth / 5), screenHeight - 75));
+            this.playersLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + 2.9f * (lobbyFinderWidth / 5), screenHeight - 75.01f));
             Futile.stage.AddChild(this.playersLabel);
 
             this.maxLabel = new FLabel("font", "MAX");
-            this.maxLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + 4 * (lobbyFinderWidth / 6), screenHeight - 75));
+            this.maxLabel.SetPosition(new Vector2(lobbyFinderPositionX + 60.01f - resOffset + 4 * (lobbyFinderWidth / 6), screenHeight - 75.01f));
             Futile.stage.AddChild(this.maxLabel);
 
             //Join buttons
@@ -259,15 +233,15 @@ namespace Monkland {
                 this.lobbyPlayerMaxs[i].SetPosition(new Vector2(lobbyFinderPositionX + 60 - resOffset + 4 * (lobbyFinderWidth / 6), screenHeight - 100f - (buttonheight * i)));
                 Futile.stage.AddChild(this.lobbyPlayerMaxs[i]);
 
-                this.joinButtons[i] = new SimpleButton(this, this.pages[0], "Join", "JOIN"+i, new Vector2(lobbyFinderPositionX + lobbyFinderWidth - 75f, screenHeight - 110f - (buttonheight * i)), new Vector2(60f, buttonheight-10));
+                this.joinButtons[i] = new SimpleButton(this, this.pages[0], "Join", "JOIN" + i, new Vector2(lobbyFinderPositionX + lobbyFinderWidth - 75f, screenHeight - 110f - (buttonheight * i)), new Vector2(60f, buttonheight - 10));
                 this.pages[0].subObjects.Add(this.joinButtons[i]);
             }
 
             //Host or Join Buttons
             this.modeButtons = new SelectOneButton[2];
-            this.modeButtons[1] = new SelectOneButton(this, this.pages[0], base.Translate("JOIN"), "Mode", new Vector2(resOffset+15, screenHeight - 50f), new Vector2(110f, 30f), this.modeButtons, 1);
+            this.modeButtons[1] = new SelectOneButton(this, this.pages[0], base.Translate("JOIN"), "Mode", new Vector2(resOffset + 15, screenHeight - 50f), new Vector2(110f, 30f), this.modeButtons, 1);
             this.pages[0].subObjects.Add(this.modeButtons[1]);
-            this.modeButtons[0] = new SelectOneButton(this, this.pages[0], base.Translate("HOST"), "Mode", new Vector2(resOffset+140, screenHeight - 50f), new Vector2(110f, 30f), this.modeButtons, 0);
+            this.modeButtons[0] = new SelectOneButton(this, this.pages[0], base.Translate("HOST"), "Mode", new Vector2(resOffset + 140, screenHeight - 50f), new Vector2(110f, 30f), this.modeButtons, 0);
             this.pages[0].subObjects.Add(this.modeButtons[0]);
 
             //Lobby Creator Box
@@ -276,7 +250,7 @@ namespace Monkland {
 
             //Lobby Creator Label
             creatorLabel = new FLabel("font", "Lobby Settings");
-            creatorLabel.SetPosition(new Vector2(lobbyCreatorPositionX + 60 - resOffset, screenHeight - 60));
+            creatorLabel.SetPosition(new Vector2(lobbyCreatorPositionX + 60.01f - resOffset, screenHeight - 60.01f));
             Futile.stage.AddChild(this.creatorLabel);
 
             //Lobby Type Buttons
@@ -285,18 +259,18 @@ namespace Monkland {
             this.pages[0].subObjects.Add(this.privacyButtons[0]);
             this.privacyButtons[1] = new SelectOneButton(this, this.pages[0], base.Translate("FRIENDS"), "LobbyType", new Vector2(lobbyCreatorSliderPositionX + privacyButtonWidth + 15, screenHeight - 130f), new Vector2(privacyButtonWidth, 30f), this.slugcatButtons, 1);
             this.pages[0].subObjects.Add(this.privacyButtons[1]);
-            this.privacyButtons[2] = new SelectOneButton(this, this.pages[0], base.Translate("PRIVATE"), "LobbyType", new Vector2(lobbyCreatorSliderPositionX + 2*privacyButtonWidth + 30, screenHeight - 130f), new Vector2(privacyButtonWidth, 30f), this.slugcatButtons, 2);
+            this.privacyButtons[2] = new SelectOneButton(this, this.pages[0], base.Translate("PRIVATE"), "LobbyType", new Vector2(lobbyCreatorSliderPositionX + 2 * privacyButtonWidth + 30, screenHeight - 130f), new Vector2(privacyButtonWidth, 30f), this.slugcatButtons, 2);
             this.pages[0].subObjects.Add(this.privacyButtons[2]);
 
             //Players Slider
-            maxPlayersSlider = new HorizontalSlider(this, this.pages[0], "", new Vector2(lobbyCreatorSliderPositionX, screenHeight - 170), new Vector2(lobbyCreatorSliderWidth + 70, 30), (Slider.SliderID)patch_Slider.SliderID.MaxPlayers, false);
-            maxPlayersSlider.floatValue = 10f/100f;
+            maxPlayersSlider = new HorizontalSlider(this, this.pages[0], "", new Vector2(lobbyCreatorSliderPositionX, screenHeight - 170), new Vector2(lobbyCreatorSliderWidth + 70, 30), (Slider.SliderID)(-1), false);
+            maxPlayersSlider.floatValue = 10f / 100f;
             maxPlayersSlider.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.maxPlayersSlider);
 
             //Max Players Label
             maxPlayersLabel = new FLabel("font", "Max Players: 10");
-            maxPlayersLabel.SetPosition(new Vector2(lobbyCreatorSliderPositionX+(lobbyCreatorWidth/2)-20-resOffset, screenHeight - 200));
+            maxPlayersLabel.SetPosition(new Vector2(lobbyCreatorSliderPositionX + (lobbyCreatorWidth / 2) - 20.01f - resOffset, screenHeight - 200.01f));
             Futile.stage.AddChild(this.maxPlayersLabel);
 
             //Spears checkbox
@@ -395,80 +369,59 @@ namespace Monkland {
             this.debugAllowBox.nextSelectable[3] = this.startLobbyButton;
             this.debugAllowBox.nextSelectable[2] = this.eyesRed;
 
-
             //Some Nice Music :)
             if (manager.musicPlayer != null)
             {
                 manager.musicPlayer.MenuRequestsSong("NA_05 - Sparkles", 1.2f, 10f);
             }
+
+            //Fix Label pixelperfect
+            foreach (MenuObject o in this.pages[0].subObjects)
+            { if (o is MenuLabel l) { l.pos += new Vector2(0.01f, 0.01f); } }
         }
 
-        protected override void Init() {
+        public override void Init()
+        {
             base.Init();
         }
 
         public override void SliderSetValue(Slider slider, float f)
         {
-            if (slider.ID == (Slider.SliderID)patch_Slider.SliderID.MaxPlayers)
+            if (slider.ID == (Slider.SliderID)(-1))
             {
-                int newmax = (int)(f * 100f);
-                if (newmax < 3)
+                if (slider == this.maxPlayersSlider)
                 {
-                    newmax = 2;
+                    int newmax = (int)(f * 100f);
+                    if (newmax < 3) { newmax = 2; }
+                    if (maxPlayersLabel != null) { maxPlayersLabel.text = $"Max Players: {newmax}"; }
+                    MonklandSteamManager.lobbyMax = newmax;
+                    return;
                 }
-                if (maxPlayersLabel!=null)
-                    maxPlayersLabel.text = "Max Players: " + newmax;
-                MonklandSteamManager.lobbyMax = newmax;
+                f = Mathf.Clamp(f, 0.004f, 1.000f);
+                if (slider == this.bodyRed) { MonklandSteamManager.bodyColor = new Color(f, MonklandSteamManager.bodyColor.g, MonklandSteamManager.bodyColor.b); }
+                if (slider == this.bodyGreen) { MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.bodyColor.r, f, MonklandSteamManager.bodyColor.b); }
+                if (slider == this.bodyBlue) { MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.bodyColor.r, MonklandSteamManager.bodyColor.g, f); }
+                if (slider == this.eyesRed) { MonklandSteamManager.eyeColor = new Color(f, MonklandSteamManager.eyeColor.g, MonklandSteamManager.eyeColor.b); }
+                if (slider == this.eyesGreen) { MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.eyeColor.r, f, MonklandSteamManager.eyeColor.b); }
+                if (slider == this.eyesBlue) { MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.eyeColor.r, MonklandSteamManager.eyeColor.g, f); }
                 return;
             }
-            if (f < 0.004f)
-            {
-                f = 0.004f;
-            }
-            switch (slider.ID)
-            {
-                    case ((Slider.SliderID)patch_Slider.SliderID.BodyRed):
-                        MonklandSteamManager.bodyColor = new Color(f, MonklandSteamManager.bodyColor.g, MonklandSteamManager.bodyColor.b);
-                        return;
-                    case ((Slider.SliderID)patch_Slider.SliderID.BodyGreen):
-                        MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.bodyColor.r, f, MonklandSteamManager.bodyColor.b);
-                        return;
-                    case ((Slider.SliderID)patch_Slider.SliderID.BodyBlue):
-                        MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.bodyColor.r, MonklandSteamManager.bodyColor.g, f);
-                        return;
-                    case ((Slider.SliderID)patch_Slider.SliderID.EyesRed):
-                        MonklandSteamManager.eyeColor = new Color(f, MonklandSteamManager.eyeColor.g, MonklandSteamManager.eyeColor.b);
-                        return;
-                    case ((Slider.SliderID)patch_Slider.SliderID.EyesGreen):
-                        MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.eyeColor.r, f, MonklandSteamManager.eyeColor.b);
-                        return;
-                    case ((Slider.SliderID)patch_Slider.SliderID.EyesBlue):
-                        MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.eyeColor.r, MonklandSteamManager.eyeColor.g, f);
-                        return;
-            }
+            base.SliderSetValue(slider, f);
         }
 
         public override float ValueOfSlider(Slider slider)
         {
-            switch (slider.ID)
+            if (slider.ID == (Slider.SliderID)(-1))
             {
-                case ((Slider.SliderID)patch_Slider.SliderID.BodyRed):
-                    return MonklandSteamManager.bodyColor.r;
-                case ((Slider.SliderID)patch_Slider.SliderID.BodyGreen):
-                    return MonklandSteamManager.bodyColor.g;
-                case ((Slider.SliderID)patch_Slider.SliderID.BodyBlue):
-                    return MonklandSteamManager.bodyColor.b;
-                case ((Slider.SliderID)patch_Slider.SliderID.EyesRed):
-                    return MonklandSteamManager.eyeColor.r;
-                case ((Slider.SliderID)patch_Slider.SliderID.EyesGreen):
-                    return MonklandSteamManager.eyeColor.g;
-                case ((Slider.SliderID)patch_Slider.SliderID.EyesBlue):
-                    return MonklandSteamManager.eyeColor.b;
-                case ((Slider.SliderID)patch_Slider.SliderID.MaxPlayers):
-                    return (float)MonklandSteamManager.lobbyMax / 100f;
-
+                if (slider == this.bodyRed) { return MonklandSteamManager.bodyColor.r; }
+                if (slider == this.bodyGreen) { return MonklandSteamManager.bodyColor.g; }
+                if (slider == this.bodyBlue) { return MonklandSteamManager.bodyColor.b; }
+                if (slider == this.eyesRed) { return MonklandSteamManager.eyeColor.r; }
+                if (slider == this.eyesGreen) { return MonklandSteamManager.eyeColor.g; }
+                if (slider == this.eyesBlue) { return MonklandSteamManager.eyeColor.b; }
+                if (slider == this.maxPlayersSlider) { return (float)MonklandSteamManager.lobbyMax / 100f; }
             }
-            return 0f;
+            return base.ValueOfSlider(slider);
         }
 
         public int GetCurrentlySelectedOfSeries(string series)
@@ -476,16 +429,11 @@ namespace Monkland {
             switch (series)
             {
                 case "Mode":
-                    if (hosting)
-                    {
-                        return 0;
-                    }
-                    else
-                    {
-                        return 1;
-                    }
+                    if (hosting) { return 0; }
+                    else { return 1; }
                 case "Slugcat":
                     return this.manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat;
+
                 case "LobbyType":
                     return MonklandSteamManager.lobbyType;
             }
@@ -499,9 +447,11 @@ namespace Monkland {
                 case "Mode":
                     hosting = (to == 0);
                     break;
+
                 case "Slugcat":
                     this.manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = to;
                     break;
+
                 case "LobbyType":
                     MonklandSteamManager.lobbyType = to;
                     break;
@@ -515,8 +465,10 @@ namespace Monkland {
             {
                 case "DEBUG":
                     return MonklandSteamManager.DEBUG;
+
                 case "SPEARSHIT":
                     return MonklandSteamManager.spearsHit;
+
                 case "ALLOWDEBUG":
                     return MonklandSteamManager.debugAllowed;
             }
@@ -531,21 +483,21 @@ namespace Monkland {
                 case "DEBUG":
                     MonklandSteamManager.DEBUG = c;
                     break;
+
                 case "SPEARSHIT":
                     MonklandSteamManager.spearsHit = c;
                     break;
+
                 case "ALLOWDEBUG":
                     MonklandSteamManager.debugAllowed = c;
                     break;
             }
         }
 
-        public void searchFinished(int numOfLobbies)
+        public void SearchFinished(int numOfLobbies)
         {
             if (numOfLobbies > this.joinButtons.Length)
-            {
-                numOfLobbies = this.joinButtons.Length;
-            }
+            { numOfLobbies = this.joinButtons.Length; }
             this.lobbynum = numOfLobbies;
             for (int i = 0; i < this.joinButtons.Length; i++)
             {
@@ -553,15 +505,11 @@ namespace Monkland {
                 {
                     this.lobbynames[i].text = SteamFriends.GetFriendPersonaName(MonklandSteamManager.lobbies[i].owner);
                     this.lobbyVersions[i].text = MonklandSteamManager.lobbies[i].version;
-                    if (MonklandSteamManager.lobbies[i].version != MonklandUI.VERSION)
-                    {
-                        this.lobbyVersions[i].color = new Color(1f, 0f, 0f);
-                    }
+                    if (MonklandSteamManager.lobbies[i].version != Monkland.VERSION)
+                    { this.lobbyVersions[i].color = new Color(1f, 0f, 0f); }
                     else
-                    {
-                        this.lobbyVersions[i].color = new Color(0f, 1f, 0f);
-                    }
-                    this.lobbyPlayerCounts[i].text = ""+MonklandSteamManager.lobbies[i].memberNum;
+                    { this.lobbyVersions[i].color = new Color(0f, 1f, 0f); }
+                    this.lobbyPlayerCounts[i].text = "" + MonklandSteamManager.lobbies[i].memberNum;
                     this.lobbyPlayerMaxs[i].text = "" + MonklandSteamManager.lobbies[i].memberLimit;
                 }
                 else
@@ -575,14 +523,14 @@ namespace Monkland {
             }
         }
 
-        public override void Update() {
+        public override void Update()
+        {
             this.lastBlackFade = this.blackFade;
             float num = 0f;
-            if (this.blackFade < num) {
-                this.blackFade = Custom.LerpAndTick(this.blackFade, num, 0.05f, 0.06666667f);
-            } else {
-                this.blackFade = Custom.LerpAndTick(this.blackFade, num, 0.05f, 0.125f);
-            }
+            if (this.blackFade < num)
+            { this.blackFade = Custom.LerpAndTick(this.blackFade, num, 0.05f, 0.06666667f); }
+            else
+            { this.blackFade = Custom.LerpAndTick(this.blackFade, num, 0.05f, 0.125f); }
             slugcat.color = MonklandSteamManager.bodyColor;
             //Debug.Log("Color: " + MonklandSteamManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].r + ", " + MonklandSteamManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].g + ", " + MonklandSteamManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)].b);
             eyes.color = MonklandSteamManager.eyeColor;
@@ -596,19 +544,19 @@ namespace Monkland {
             this.modeButtons[0].buttonBehav.greyedOut = MonklandSteamManager.joining;
             this.modeButtons[1].buttonBehav.greyedOut = MonklandSteamManager.joining;
             this.refreshButton.buttonBehav.greyedOut = hosting || MonklandSteamManager.joining || MonklandSteamManager.searching;
-            for(int i = 0; i < joinButtons.Length; i++)
-            {
-                joinButtons[i].buttonBehav.greyedOut = hosting || MonklandSteamManager.joining || MonklandSteamManager.searching || i >= lobbynum;
-            }
+            for (int i = 0; i < joinButtons.Length; i++)
+            { joinButtons[i].buttonBehav.greyedOut = hosting || MonklandSteamManager.joining || MonklandSteamManager.searching || i >= lobbynum; }
             base.Update();
         }
 
-        public override void GrafUpdate(float timeStacker) {
-            base.GrafUpdate( timeStacker );
-            this.blackFadeSprite.alpha = Mathf.Lerp( this.lastBlackFade, this.blackFade, timeStacker );
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            this.blackFadeSprite.alpha = Mathf.Lerp(this.lastBlackFade, this.blackFade, timeStacker);
         }
 
-        public override void ShutDownProcess() {
+        public override void ShutDownProcess()
+        {
             base.ShutDownProcess();
             this.darkSprite.RemoveFromContainer();
             this.eyes.RemoveFromContainer();
@@ -631,35 +579,34 @@ namespace Monkland {
             }
         }
 
-        public override void Singal(MenuObject sender, string message) {
-            if (message == "EXIT") {
-                if (manager.musicPlayer != null) { 
+        public override void Singal(MenuObject sender, string message)
+        {
+            if (message == "EXIT")
+            {
+                if (manager.musicPlayer != null)
+                {
                     manager.musicPlayer.FadeOutAllSongs(5f);
                     this.manager.musicPlayer.MenuRequestsSong("RW_8 - Sundown", 1.4f, 2f);
                 }
-                manager.RequestMainProcessSwitch( ProcessManager.ProcessID.MainMenu );
+                manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
                 //MonklandSteamManager.instance.OnGameExit();
                 //Steamworks.SteamMatchmaking.LeaveLobby( SteamManagement.MonklandSteamManager.lobbyID );
             }
             else if (message == "STARTLOBBY")
             {
                 base.PlaySound(SoundID.MENU_Switch_Page_In);
-                ((patch_ProcessManager)this.manager).ImmediateSwitchCustom(new SteamMultiplayerMenu(this.manager, true));//opens lobby finder menu menu
+                ProcessManagerHK.ImmediateSwitchCustom(this.manager, new SteamMultiplayerMenu(this.manager, true)); //opens lobby finder menu menu
             }
             else if (message.Contains("JOIN"))
             {
                 int lobby = int.Parse(message.Substring(4));
-                if (lobby < MonklandSteamManager.lobbies.Count && !MonklandSteamManager.joining && !MonklandSteamManager.searching && MonklandSteamManager.lobbies[lobby].version == MonklandUI.VERSION)
-                {
-                    MonklandSteamManager.instance.JoinLobby(MonklandSteamManager.lobbies[lobby].ID);
-                }
+                if (lobby < MonklandSteamManager.lobbies.Count && !MonklandSteamManager.joining && !MonklandSteamManager.searching && MonklandSteamManager.lobbies[lobby].version == Monkland.VERSION)
+                { MonklandSteamManager.instance.JoinLobby(MonklandSteamManager.lobbies[lobby].ID); }
             }
             else if (message.Contains("REFRESH"))
             {
                 if (!MonklandSteamManager.searching && !MonklandSteamManager.joining)
-                {
-                    MonklandSteamManager.instance.FindLobbies();
-                }
+                { MonklandSteamManager.instance.FindLobbies(); }
             }
         }
     }

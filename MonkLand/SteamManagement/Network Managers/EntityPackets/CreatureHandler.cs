@@ -1,37 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Monkland.Hooks.Entities;
 using System.IO;
-using RWCustom;
-using Monkland.Patches;
-using System.Drawing.Printing;
 
 namespace Monkland.SteamManagement
 {
-    class CreatureHandler
+    internal class CreatureHandler
     {
 
-        public static Creature Read(Creature creature, ref BinaryReader reader)
+        public static void Write(Creature creature, ref BinaryWriter writer)
         {
-            creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
-            creature = PhysicalObjectHandler.Read(creature, ref reader);
+            //writer.Write(creature.blind);
+            writer.Write(creature.dead);
+            IntVector2NHandler.Write(creature.enteringShortCut, ref writer);
+            WorldCoordinateHandler.Write(creature.lastCoord, ref writer);
+            writer.Write(creature.leechedOut);
+            writer.Write(creature.newToRoomInvinsibility);
+            WorldCoordinateHandler.Write(creature.NPCTransportationDestination, ref writer);
+            writer.Write(creature.shortcutDelay);
+            /*for(int i = 0; i < creature.grasps.Length; i++)
+            {
+                GraspHandler.Write(creature.grasps[i], ref writer);
+            }*/
+        }
+
+        public static void Read(Creature creature, ref BinaryReader reader)
+        {
             //creature.blind = reader.ReadInt32();
-            (creature as Patches.patch_Player).Sync(reader.ReadBoolean());
+            CreatureHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();
             creature.newToRoomInvinsibility = reader.ReadInt32();
             creature.NPCTransportationDestination = WorldCoordinateHandler.Read(ref reader);
             creature.shortcutDelay = reader.ReadInt32();
-            return creature;
         }
 
+        /*
         public static Player Read(Player creature, ref BinaryReader reader)
         {
             creature.abstractPhysicalObject = AbstractCreatureHandler.Read(creature.abstractCreature, ref reader);
-            creature = PhysicalObjectHandler.Read(creature, ref reader);
+            creature = PhysicalObjectHandler.Read(creature, ref reader) as Player;
             //creature.blind = reader.ReadInt32();
-            (creature as Patches.patch_Player).Sync(reader.ReadBoolean());
+            PlayerHK.Sync(creature, reader.ReadBoolean());
             creature.enteringShortCut = IntVector2NHandler.Read(ref reader);
             creature.lastCoord = WorldCoordinateHandler.Read(ref reader);
             creature.leechedOut = reader.ReadBoolean();
@@ -64,25 +73,8 @@ namespace Monkland.SteamManagement
                     }
                 }
             }*/
-            return creature;
-        }
+        //return creature;
+        //}
 
-        public static void Write(Creature creature, ref BinaryWriter writer)
-        {
-            AbstractCreatureHandler.Write(creature.abstractCreature, ref writer);
-            PhysicalObjectHandler.Write(creature, ref writer);
-            //writer.Write(creature.blind);
-            writer.Write(creature.dead);
-            IntVector2NHandler.Write(creature.enteringShortCut, ref writer);
-            WorldCoordinateHandler.Write(creature.lastCoord, ref writer);
-            writer.Write(creature.leechedOut);
-            writer.Write(creature.newToRoomInvinsibility);
-            WorldCoordinateHandler.Write(creature.NPCTransportationDestination, ref writer);
-            writer.Write(creature.shortcutDelay);
-            /*for(int i = 0; i < creature.grasps.Length; i++)
-            {
-                GraspHandler.Write(creature.grasps[i], ref writer);
-            }*/
-        }
     }
 }

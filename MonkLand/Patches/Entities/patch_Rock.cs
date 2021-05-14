@@ -49,7 +49,7 @@ namespace Monkland.Patches
                     networkLife = 60;
                     for (int i = 0; i < this.grabbedBy.Count; i++)
                     {
-                        if(grabbedBy[i] != null)
+                        if (grabbedBy[i] != null)
                         {
                             grabbedBy[i].Release();
                             i--;

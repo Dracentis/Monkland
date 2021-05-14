@@ -22,6 +22,5 @@ namespace Monkland.Patches
         {
             this.contactPoint = contactPoint;
         }
-
     }
 }
