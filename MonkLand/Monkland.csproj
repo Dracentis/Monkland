@@ -33,39 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>Resources\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>Resources\Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
-    <Reference Include="GoKit">
-      <HintPath>Resources\GoKit.dll</HintPath>
-    </Reference>
-    <Reference Include="HOOKS-Assembly-CSharp">
-      <HintPath>Resources\HOOKS-Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Security">
-      <HintPath>Resources\Mono.Security.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod">
-      <HintPath>Resources\MonoMod.exe</HintPath>
-    </Reference>
-    <Reference Include="MonoMod.RuntimeDetour">
-      <HintPath>Resources\MonoMod.RuntimeDetour.dll</HintPath>
-    </Reference>
-    <Reference Include="Partiality">
-      <HintPath>Resources\Partiality.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>Resources\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Resources\UnityEngine.UI.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 
@@ -95,6 +62,45 @@
     <None Include="Patches\patch_ProcessManager.cs" />
     <None Include="Patches\patch_Rainworld.cs" />
     <None Include="Patches\patch_RainWorldGame.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>Resources\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>Resources\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="GoKit">
+      <HintPath>Resources\GoKit.dll</HintPath>
+    </Reference>
+    <Reference Include="HOOKS-Assembly-CSharp">
+      <HintPath>Resources\HOOKS-Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Security">
+      <HintPath>Resources\Mono.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>Resources\MonoMod.RuntimeDetour.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>Resources\MonoMod.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="Partiality">
+      <HintPath>Resources\Partiality.dll</HintPath>
+    </Reference>
+    <Reference Include="PublicityStunt">
+      <HintPath>Resources\PublicityStunt.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>Resources\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Resources\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="YamlDotNet">
+      <HintPath>Resources\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
