@@ -83,23 +83,14 @@
     <Reference Include="MonoMod.RuntimeDetour">
       <HintPath>Resources\MonoMod.RuntimeDetour.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod.Utils">
-      <HintPath>Resources\MonoMod.Utils.dll</HintPath>
-    </Reference>
     <Reference Include="Partiality">
       <HintPath>Resources\Partiality.dll</HintPath>
-    </Reference>
-    <Reference Include="PublicityStunt">
-      <HintPath>Resources\PublicityStunt.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>Resources\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>Resources\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="YamlDotNet">
-      <HintPath>Resources\YamlDotNet.dll</HintPath>
     </Reference>
   </ItemGroup>
 

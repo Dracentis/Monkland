@@ -164,8 +164,8 @@ namespace Monkland.UI
                     catch (Exception e)
                     {
                         // Throw exception
-                        //Debug.LogException(e);
-                       // Debug.Log($"Error when trying to add label for Player " + e);
+                       Debug.LogException(e);
+                       Debug.Log($"Error when trying to add label for Player " + e);
                     }
                 }
             }
