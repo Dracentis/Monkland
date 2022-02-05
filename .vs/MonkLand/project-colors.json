@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "ee4cadcf-3659-4b9b-b3fb-12d6f8bb8816": {
+      "ProjectGuid": "ee4cadcf-3659-4b9b-b3fb-12d6f8bb8816",
+      "DisplayName": "Monkland",
+      "ColorIndex": 0
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    },
+    "52613318-d8c5-470c-ad3d-4d45f04bb573": {
+      "ProjectGuid": "52613318-d8c5-470c-ad3d-4d45f04bb573",
+      "DisplayName": "Monkland",
+      "ColorIndex": 1
+    }
+  },
+  "NextColorIndex": 2
+}
