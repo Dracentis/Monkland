@@ -31,14 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>References\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp.refstub">
       <HintPath>References\Assembly-CSharp.refstub.dll</HintPath>
     </Reference>
     <Reference Include="HOOKS-Assembly-CSharp">
       <HintPath>References\HOOKS-Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod">
-      <HintPath>References\MonoMod.exe</HintPath>
     </Reference>
     <Reference Include="Partiality">
       <HintPath>References\Partiality.dll</HintPath>
@@ -57,8 +57,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hooks\ProcessManagerHK.cs" />
+    <Compile Include="Hooks\RainWorldGameHK.cs" />
+    <Compile Include="Hooks\RainWorldHK.cs" />
+    <Compile Include="Hooks\Menus\MainMenuHK.cs" />
+    <Compile Include="Menus\MultiplayerChat.cs" />
+    <Compile Include="Menus\MultiplayerDisplayMenu.cs" />
+    <Compile Include="Menus\MultiplayerPlayerList.cs" />
+    <Compile Include="Menus\MultiplayerSleepAndDeathScreen.cs" />
+    <Compile Include="Menus\RainMeterMultiplayer.cs" />
+    <Compile Include="Menus\SteamMultiplayerMenu.cs" />
     <Compile Include="Monkland.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SteamManagement\MonklandSteamManager.cs" />
+    <Compile Include="Menus\LobbyFinderMenu.cs" />
+    <Compile Include="SteamManagement\NetworkGameManager.cs" />
+    <Compile Include="SteamManagement\NetworkManager.cs" />
+    <Compile Include="SteamManagement\NetworkPlayerManager.cs" />
+    <Compile Include="SteamManagement\NetworkWorldManager.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

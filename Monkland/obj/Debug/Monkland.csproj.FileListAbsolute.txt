@@ -2,7 +2,6 @@ C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\Monkland.dll
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\Monkland.pdb
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\Assembly-CSharp.refstub.dll
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\HOOKS-Assembly-CSharp.dll
-C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\MonoMod.exe
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\Partiality.dll
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\UnityEngine.dll
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\UnityEngine.UI.dll
@@ -11,3 +10,4 @@ C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\obj\Debug\Monkland.csproj.CoreCo
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\obj\Debug\Monkland.csproj.CopyComplete
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\obj\Debug\Monkland.dll
 C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\obj\Debug\Monkland.pdb
+C:\Users\kaedo\Local\07_Repos\Monkland\Monkland\bin\Debug\Assembly-CSharp-firstpass.dll
