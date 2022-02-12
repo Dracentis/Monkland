@@ -57,10 +57,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hooks\PlayerGraphicsHK.cs" />
     <Compile Include="Hooks\ProcessManagerHK.cs" />
     <Compile Include="Hooks\RainWorldGameHK.cs" />
     <Compile Include="Hooks\RainWorldHK.cs" />
     <Compile Include="Hooks\Menus\MainMenuHK.cs" />
+    <Compile Include="Hooks\SaveStateHK.cs" />
     <Compile Include="Menus\MultiplayerChat.cs" />
     <Compile Include="Menus\MultiplayerDisplayMenu.cs" />
     <Compile Include="Menus\MultiplayerPlayerList.cs" />

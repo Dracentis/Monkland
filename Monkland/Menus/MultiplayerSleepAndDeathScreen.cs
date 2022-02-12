@@ -62,12 +62,6 @@ namespace Monkland.Menus
             }
             else if (message == "READYUP")
             {
-                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.MessageType.BodyColorR);
-                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.MessageType.BodyColorG);
-                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.MessageType.BodyColorB);
-                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.MessageType.EyeColorR);
-                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.MessageType.EyeColorG);
-                MonklandSteamManager.GameManager.SendColor(NetworkGameManager.MessageType.EyeColorB);
                 MonklandSteamManager.GameManager.ToggleReady();
             }
             else if (message == "CONTINUE")

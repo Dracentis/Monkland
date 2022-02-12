@@ -10,7 +10,7 @@ namespace Monkland
 {
     public class Monkland : PartialityMod
     {
-        public const string VERSION = "0.4.0"; // Version number
+        public const string VERSION = "0.5.1"; // Version number
         public const bool DEVELOPMENT = true; // Is this build for development
         public static Monkland instance; // For future Config Machine support
 
@@ -29,6 +29,9 @@ namespace Monkland
             RainWorldHK.ApplyHook();
             RainWorldGameHK.ApplyHook();
             ProcessManagerHK.ApplyHook();
+            SaveStateHK.ApplyHook();
+
+            PlayerGraphicsHK.ApplyHook();
 
             #region User Interface
             MainMenuHK.ApplyHook();

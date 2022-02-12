@@ -30,6 +30,7 @@ namespace Monkland.SteamManagement
 
         public static Color bodyColor = new Color(1f, 1f, 1f);
         public static Color eyeColor = new Color(0.004f, 0.004f, 0.004f);
+        public static string lastShelter = "";
 
         public static void Log(object message, bool visible = false)
         {
