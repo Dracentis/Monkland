@@ -105,9 +105,9 @@ namespace Monkland.SteamManagement
 
         public enum MessageType
         {
-            StartGame,
-            ManagerUpdate,
-            StatusUpdate
+            StartGame,// Packet sent by manager to start the game
+            ManagerUpdate, // Packet sent by manager to update the next shelter location
+            StatusUpdate // Packet sent by players to update there status and color
         }
 
         public override void Update()
@@ -142,6 +142,7 @@ namespace Monkland.SteamManagement
 
         public void QueueStart()
         {
+            // Called when manager presses start game or continue button
             if (!isManager)
             {
                 return;
@@ -160,7 +161,7 @@ namespace Monkland.SteamManagement
             IsReady = true;
             IsAlive = false;
             IsInGame = false;
-
+            hostShelter = "";
             SendStatusUpdate();
         }
 
@@ -301,8 +302,11 @@ namespace Monkland.SteamManagement
 
             //Write message type
             writer.Write((byte)MessageType.StartGame);
-            
-            //writer.Write((string)hostShelter);
+
+            if (hostShelter == "")
+                MineForSaveData();
+
+            writer.Write((string)hostShelter);
 
             MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
             MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
@@ -359,6 +363,9 @@ namespace Monkland.SteamManagement
         {
             if ((ulong)sent != managerID)
                 return;
+
+            hostShelter = reader.ReadString();
+            MonklandSteamManager.Log("STARTING GAME!  - Shelter:" + hostShelter);
 
             readiedPlayers.Clear();
             RainWorldHK.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);

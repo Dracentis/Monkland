@@ -37,7 +37,6 @@ namespace Monkland.SteamManagement
             if (Monkland.DEVELOPMENT)
             {
                 Debug.Log("[MONKLAND] " + message.ToString());
-                Debug.LogError("[MONKLAND] " + message.ToString());
             }
         }
 
@@ -94,7 +93,6 @@ namespace Monkland.SteamManagement
                 SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePrivate, lobbyMax); // Create a private lobby
             }
             joining = true;
-            Log("Created lobby!", true);
         }
 
         public void LeaveLobby()
@@ -296,7 +294,6 @@ namespace Monkland.SteamManagement
             isInLobby = true;
             lobbyID = (CSteamID)enterLobby.m_ulSteamIDLobby;
             int playerCount = SteamMatchmaking.GetNumLobbyMembers((CSteamID)enterLobby.m_ulSteamIDLobby);
-            MultiplayerChat.AddChat("Entered Lobby!");
 
             //Send packets to all players, to establish P2P connections with them
             if (playerCount > 1)
@@ -333,8 +330,9 @@ namespace Monkland.SteamManagement
                 PlayerJoinedManagers(SteamUser.GetSteamID().m_SteamID);
             }
 
+            MultiplayerChat.AddChat("Entered Lobby!");
             MultiplayerChat.AddChat("This game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
-            Log("Entered Lobby! \nThis game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
+            Log("Entered Lobby! - This game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
         }
 
         public void P2PRequest(P2PSessionRequest_t request)

@@ -16,21 +16,20 @@ namespace Monkland.Hooks.Menus
         {
             orig(self, manager, showRegionSpecificBkg);
 
-            // Move the button on the main menu to make room for the multiplayer button
             SimpleButton singleplayerButton = null;
+
+            // Move the buttons on the main menu to make room for the multiplayer button
             for (int i = 0; i < self.pages[0].subObjects.Count; i++)
             {
                 if (self.pages[0].subObjects[i] is SimpleButton button)
                 {
-                    if (button.signalText == "SINGLE PLAYER") { singleplayerButton = button; }
-                    else { button.pos.y -= 40f; }
+                    if (button.signalText != "SINGLE PLAYER") { button.pos.y -= 40f; }
+                    else { singleplayerButton = button; }
                 }
             }
             // Add multiplayer button below singleplayer button
-            if (singleplayerButton != null)
-            {
-                self.pages[0].subObjects.Add(new SimpleButton(self, self.pages[0], "MULTIPLAYER", "COOP", new Vector2(singleplayerButton.pos.x, singleplayerButton.pos.y - 40f), singleplayerButton.size));
-            }
+            int index = self.pages[0].subObjects.IndexOf(singleplayerButton) + 1;
+            self.pages[0].subObjects.Insert(index, new SimpleButton(self, self.pages[0], "MULTIPLAYER", "COOP", new Vector2(singleplayerButton.pos.x, singleplayerButton.pos.y - 40f), singleplayerButton.size));
         }
 
         private static void SingalHK(On.Menu.MainMenu.orig_Singal orig, MainMenu self, MenuObject sender, string message)
