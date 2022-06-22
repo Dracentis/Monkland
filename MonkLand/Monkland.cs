@@ -24,7 +24,6 @@ namespace Monkland
         public override void OnEnable()
         {
             base.OnEnable();
-            // Hooking is done here
 
             RainWorldHK.ApplyHook();
             RainWorldGameHK.ApplyHook();

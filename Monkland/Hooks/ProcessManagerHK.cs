@@ -53,7 +53,7 @@ namespace Monkland.Hooks
 
         private static void SwitchMainProcessHK(On.ProcessManager.orig_SwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
-            if (!MonklandSteamManager.isInLobby)
+            if (!MonklandSteamworks.isInLobby)
             {
                 orig(self, ID);
                 return;

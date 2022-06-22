@@ -16,13 +16,13 @@ namespace Monkland.Hooks
         {
             orig(self, sLeaser, rCam, palette);
             Color body;
-            if (!MonklandSteamManager.isInLobby)
+            if (!MonklandSteamworks.isInLobby)
             {
                 body = PlayerGraphics.SlugcatColor(self.player.playerState.slugcatCharacter);
             }
             else
             {
-                body = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)];
+                body = MonklandSteamworks.gameManager.playerColors[MonklandSteamworks.connectedPlayers.IndexOf(MonklandSteamworks.playerID)];
             }
             Color eyes = palette.blackColor;
             if (self.malnourished > 0f)
@@ -38,11 +38,11 @@ namespace Monkland.Hooks
             }
             for (int i = 0; i < 12; i++) // Hardcoded sLeaser.sprites.Length to prevent ignoring sprite adding mods
             { sLeaser.sprites[i].color = body; }
-            if (MonklandSteamManager.isInLobby)
+            if (MonklandSteamworks.isInLobby)
             {
-                sLeaser.sprites[11].color = Color.Lerp(MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)], Color.white, 0.3f);
-                sLeaser.sprites[10].color = MonklandSteamManager.GameManager.playerColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)];
-                sLeaser.sprites[9].color = MonklandSteamManager.GameManager.playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(NetworkGameManager.playerID)];
+                sLeaser.sprites[11].color = Color.Lerp(MonklandSteamworks.gameManager.playerColors[MonklandSteamworks.connectedPlayers.IndexOf(MonklandSteamworks.playerID)], Color.white, 0.3f);
+                sLeaser.sprites[10].color = MonklandSteamworks.gameManager.playerColors[MonklandSteamworks.connectedPlayers.IndexOf(MonklandSteamworks.playerID)];
+                sLeaser.sprites[9].color = MonklandSteamworks.gameManager.playerEyeColors[MonklandSteamworks.connectedPlayers.IndexOf(MonklandSteamworks.playerID)];
             }
             else
             {

@@ -6,28 +6,8 @@ using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    internal class NetworkWorldManager : NetworkManager
+    internal class WorldManager : NetworkManager
     {
-        private static ulong playerID
-        {
-            get
-            {
-                return NetworkGameManager.playerID;
-            }
-        }
-
-        private static ulong managerID
-        {
-            get
-            {
-                return NetworkGameManager.managerID;
-            }
-        }
-
-        private static bool isManager { get { return playerID == managerID; } }
-
-        public byte WorldHandler = 0;
-
         private enum WorldPacketType
         {
             NullPacket
@@ -35,12 +15,7 @@ namespace Monkland.SteamManagement
 
         #region Packet Handler
 
-        public override void RegisterHandlers()
-        {
-            WorldHandler = MonklandSteamManager.instance.RegisterHandler(WORLD_CHANNEL, HandlePackets);
-        }
-
-        public void HandlePackets(BinaryReader br, CSteamID sentPlayer)
+        public override void HandlePackets(BinaryReader br, CSteamID sentPlayer)
         {
             WorldPacketType messageType = (WorldPacketType)br.ReadByte();
             switch (messageType)// up to 256 message types

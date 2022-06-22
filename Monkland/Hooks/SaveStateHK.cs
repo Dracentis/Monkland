@@ -15,10 +15,10 @@ namespace Monkland.Hooks
 
 		public static void LoadGameHK(On.SaveState.orig_LoadGame orig, SaveState self, string str, RainWorldGame game)
 		{
-			if (MonklandSteamManager.isInLobby)
+			if (MonklandSteamworks.isInLobby)
 			{
-				self.denPosition = NetworkGameManager.hostShelter;
 				orig(self, "", game);
+				self.denPosition = MonklandSteamworks.gameManager.hostShelter;
 				return;
             }
 			orig(self, str, game);

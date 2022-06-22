@@ -9,15 +9,8 @@ using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    internal class NetworkGameManager : NetworkManager
+    internal class GameManager : NetworkManager
     {
-        public static ulong playerID;
-
-        public static ulong managerID;
-        public static bool isManager { get { return playerID == managerID; } }
-
-        public byte GameHandler = 0;
-
         public HashSet<ulong> readiedPlayers = new HashSet<ulong>(); // Set of players who are ready for the next cycle
         public HashSet<ulong> inGamePlayers = new HashSet<ulong>(); // Set of players who are still in-game
         public HashSet<ulong> alivePlayers = new HashSet<ulong>(); // Set of players who are alive and in-game
@@ -27,8 +20,27 @@ namespace Monkland.SteamManagement
         public int updateDelay = -1;
         public int startDelay = -1;
 
-        public static string hostShelter = "";
-        public const string DEFAULT_SHELTER = "SU_S01";
+        // Host game data
+        public string hostShelter = "";
+        public int hostSlugcat = 0;
+        public int hostCycleNum = 0;
+        public int hostFood = 0;
+        public int hostKarma = 0;
+        public int hostKarmaCap = 0;
+        public bool hostHasGlow = false;
+        public bool hostHasMark = false;
+        public bool hostKarmaReinforced = false;
+        public bool hostRedsExtraCycles = false;
+        public string DEFAULT_SHELTER = "SU_S01";
+
+        // Persistent game data
+        public Color bodyColor = new Color(1f, 1f, 1f);
+        public Color eyeColor = new Color(0.004f, 0.004f, 0.004f);
+        public string lastShelter = "";
+        public int lastFood = 0;
+        public int lastKarma = 0;
+        public bool lastHasGlow = false;
+        public bool lastKarmaReinforced = false;
 
         public bool IsReady
         {
@@ -105,14 +117,13 @@ namespace Monkland.SteamManagement
 
         public enum MessageType
         {
-            StartGame,// Packet sent by manager to start the game
-            ManagerUpdate, // Packet sent by manager to update the next shelter location
+            GameUpdate, // Packet sent by manager to update the next shelter location
             StatusUpdate // Packet sent by players to update there status and color
         }
 
         public override void Update()
         {
-            if (!MonklandSteamManager.isInLobby)
+            if (!MonklandSteamworks.isInLobby)
             {
                 updateDelay = -1;
                 startDelay = -1;
@@ -124,7 +135,7 @@ namespace Monkland.SteamManagement
             else if (updateDelay == 0)
             {
                 if (isManager)
-                    SendManagerUpdate();
+                    SendGameUpdate(false);
                 SendStatusUpdate();
                 updateDelay = -1;
             }
@@ -135,7 +146,7 @@ namespace Monkland.SteamManagement
             }
             else if (startDelay == 0)
             {
-                SendStartGame();
+                SendGameUpdate(true);
                 startDelay = -1;
             }
         }
@@ -178,6 +189,7 @@ namespace Monkland.SteamManagement
             do
             {
                 int slugcat = RainWorldHK.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat;
+                hostSlugcat = slugcat;
                 if (!RainWorldHK.rainWorld.progression.IsThereASavedGame(slugcat))
                 {
                     break;
@@ -185,6 +197,14 @@ namespace Monkland.SteamManagement
                 if (RainWorldHK.rainWorld.progression.currentSaveState != null && RainWorldHK.rainWorld.progression.currentSaveState.saveStateNumber == slugcat)
                 {
                     hostShelter = RainWorldHK.rainWorld.progression.currentSaveState.denPosition;
+                    hostKarmaCap = RainWorldHK.rainWorld.progression.currentSaveState.deathPersistentSaveData.karmaCap;
+                    hostKarma = RainWorldHK.rainWorld.progression.currentSaveState.deathPersistentSaveData.karma;
+                    hostKarmaReinforced = RainWorldHK.rainWorld.progression.currentSaveState.deathPersistentSaveData.reinforcedKarma;
+                    hostCycleNum = RainWorldHK.rainWorld.progression.currentSaveState.cycleNumber;
+                    hostHasGlow = RainWorldHK.rainWorld.progression.currentSaveState.theGlow;
+                    hostHasMark = RainWorldHK.rainWorld.progression.currentSaveState.deathPersistentSaveData.theMark;
+                    hostRedsExtraCycles = RainWorldHK.rainWorld.progression.currentSaveState.redExtraCycles;
+                    hostFood = RainWorldHK.rainWorld.progression.currentSaveState.food;
                     break;
                 }
                 if (!File.Exists(RainWorldHK.rainWorld.progression.saveFilePath))
@@ -203,6 +223,14 @@ namespace Monkland.SteamManagement
                     {
                         List<SaveStateMiner.Target> targets = new List<SaveStateMiner.Target>();
                         targets.Add(new SaveStateMiner.Target(">DENPOS", "<svB>", "<svA>", 20));
+                        targets.Add(new SaveStateMiner.Target(">CYCLENUM", "<svB>", "<svA>", 50));
+                        targets.Add(new SaveStateMiner.Target(">FOOD", "<svB>", "<svA>", 20));
+                        targets.Add(new SaveStateMiner.Target(">HASTHEGLOW", null, "<svA>", 20));
+                        targets.Add(new SaveStateMiner.Target(">REINFORCEDKARMA", "<dpB>", "<dpA>", 20));
+                        targets.Add(new SaveStateMiner.Target(">KARMA", "<dpB>", "<dpA>", 20));
+                        targets.Add(new SaveStateMiner.Target(">KARMACAP", "<dpB>", "<dpA>", 20));
+                        targets.Add(new SaveStateMiner.Target(">HASTHEMARK", null, "<dpA>", 20));
+                        targets.Add(new SaveStateMiner.Target(">REDEXTRACYCLES", null, "<svA>", 20));
                         List<SaveStateMiner.Result> results = SaveStateMiner.Mine(RainWorldHK.rainWorld, array[1], targets);
                         for (int j = 0; j < results.Count; j++)
                         {
@@ -212,6 +240,58 @@ namespace Monkland.SteamManagement
                                 case ">DENPOS":
                                     hostShelter = results[j].data;
                                     j = results.Count;
+                                    break;
+                                case ">CYCLENUM":
+                                    try
+                                    {
+                                        hostCycleNum = int.Parse(results[j].data);
+                                    }
+                                    catch
+                                    {
+                                        Debug.Log("failed to assign cycle num. Data: " + results[j].data);
+                                    }
+                                    break;
+                                case ">FOOD":
+                                    try
+                                    {
+                                        hostFood = int.Parse(results[j].data);
+                                    }
+                                    catch
+                                    {
+                                        Debug.Log("failed to assign food. Data: " + results[j].data);
+                                    }
+                                    break;
+                                case ">HASTHEGLOW":
+                                    hostHasGlow = true;
+                                    break;
+                                case ">REINFORCEDKARMA":
+                                    hostKarmaReinforced = (results[j].data == "1");
+                                    break;
+                                case ">KARMA":
+                                    try
+                                    {
+                                        hostKarma = int.Parse(results[j].data);
+                                    }
+                                    catch
+                                    {
+                                        Debug.Log("failed to assign karma. Data: " + results[j].data);
+                                    }
+                                    break;
+                                case ">KARMACAP":
+                                    try
+                                    {
+                                        hostKarmaCap = int.Parse(results[j].data);
+                                    }
+                                    catch
+                                    {
+                                        Debug.Log("failed to assign karma cap. Data: " + results[j].data);
+                                    }
+                                    break;
+                                case ">HASTHEMARK":
+                                    hostHasMark = true;
+                                    break;
+                                case ">REDEXTRACYCLES":
+                                    hostRedsExtraCycles = true;
                                     break;
                             }
                         }
@@ -224,8 +304,6 @@ namespace Monkland.SteamManagement
 
         public override void Reset()
         {
-            playerID = SteamUser.GetSteamID().m_SteamID;
-            managerID = 0;
             readiedPlayers.Clear();
             playerColors.Clear();
             playerEyeColors.Clear();
@@ -239,8 +317,8 @@ namespace Monkland.SteamManagement
             if (steamID == playerID)
             {
                 // Use last colors
-                playerColors.Add(MonklandSteamManager.bodyColor);
-                playerEyeColors.Add(MonklandSteamManager.eyeColor);
+                playerColors.Add(bodyColor);
+                playerEyeColors.Add(eyeColor);
             }
             else
             {
@@ -253,8 +331,8 @@ namespace Monkland.SteamManagement
 
         public override void PlayerLeft(ulong steamID)
         {
-            playerColors.RemoveAt(MonklandSteamManager.connectedPlayers.IndexOf(steamID));
-            playerEyeColors.RemoveAt(MonklandSteamManager.connectedPlayers.IndexOf(steamID));
+            playerColors.RemoveAt(MonklandSteamworks.connectedPlayers.IndexOf(steamID));
+            playerEyeColors.RemoveAt(MonklandSteamworks.connectedPlayers.IndexOf(steamID));
             readiedPlayers.Remove(steamID);
             inGamePlayers.Remove(steamID);
             alivePlayers.Remove(steamID);
@@ -262,27 +340,18 @@ namespace Monkland.SteamManagement
 
         #region Packet Handler
 
-        public override void RegisterHandlers()
-        {
-            GameHandler = MonklandSteamManager.instance.RegisterHandler(GAME_CHANNEL, HandlePackets);
-        }
-
-        public void HandlePackets(BinaryReader br, CSteamID sentPlayer)
+        public override void HandlePackets(BinaryReader br, CSteamID sentPlayer)
         {
             byte messageType = br.ReadByte();
             switch ((MessageType)messageType)
             {
                 // Start game packet from manager
-                case MessageType.StartGame:
-                    ReadStartGame(br, sentPlayer);
+                case MessageType.GameUpdate:
+                    ReadGameUpdate(br, sentPlayer);
                     return;
                 // Status update packet
                 case MessageType.StatusUpdate:
                     ReadStatusUpdate(br, sentPlayer);
-                    return;
-                // Game update packet from manager
-                case MessageType.ManagerUpdate:
-                    ReadManagerUpdate(br, sentPlayer);
                     return;
             }
         }
@@ -291,84 +360,88 @@ namespace Monkland.SteamManagement
 
         #region Outgoing Packets
 
-        public void SendStartGame()
+        public void SendGameUpdate(bool startGame)
         {
             if (!isManager)
                 return;
 
-            readiedPlayers.Clear();
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(GAME_CHANNEL, GameHandler);
-            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+            if (startGame)
+                readiedPlayers.Clear();
 
-            //Write message type
-            writer.Write((byte)MessageType.StartGame);
+            MonklandSteamworks.DataPacket packet = MonklandSteamworks.instance.GetNewPacket(channel, handler);
+            BinaryWriter writer = MonklandSteamworks.instance.GetWriterForPacket(packet);
+
+            // Write message type
+            writer.Write((byte)MessageType.GameUpdate);
 
             if (hostShelter == "")
                 MineForSaveData();
 
+            writer.Write((bool)startGame);
             writer.Write((string)hostShelter);
+            writer.Write((int)hostSlugcat);
+            writer.Write((int)hostCycleNum);
+            writer.Write((int)hostFood);
+            writer.Write((int)hostKarma);
+            writer.Write((int)hostKarmaCap);
+            writer.Write((bool)hostHasGlow);
+            writer.Write((bool)hostHasMark);
+            writer.Write((bool)hostKarmaReinforced);
+            writer.Write((bool)hostRedsExtraCycles);
 
-            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-            MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
+            MonklandSteamworks.instance.FinalizeWriterToPacket(writer, packet);
+            MonklandSteamworks.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
         }
-
 
         public void SendStatusUpdate()
         {
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(GAME_CHANNEL, GameHandler);
-            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
+            MonklandSteamworks.DataPacket packet = MonklandSteamworks.instance.GetNewPacket(channel, handler);
+            BinaryWriter writer = MonklandSteamworks.instance.GetWriterForPacket(packet);
 
             //Write message type
             writer.Write((byte)MessageType.StatusUpdate);
 
-            writer.Write(this.IsReady);
-            writer.Write(this.IsInGame);
-            writer.Write(this.IsAlive);
-            writer.Write(Convert.ToByte((int)(playerColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].r * 255f)));
-            writer.Write(Convert.ToByte((int)(playerColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].g * 255f)));
-            writer.Write(Convert.ToByte((int)(playerColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].b * 255f)));
-            writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].r * 255f)));
-            writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].g * 255f)));
-            writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(playerID)].b * 255f)));
+            writer.Write(IsReady);
+            writer.Write(IsInGame);
+            writer.Write(IsAlive);
+            writer.Write(Convert.ToByte((int)(playerColors[MonklandSteamworks.connectedPlayers.IndexOf(playerID)].r * 255f)));
+            writer.Write(Convert.ToByte((int)(playerColors[MonklandSteamworks.connectedPlayers.IndexOf(playerID)].g * 255f)));
+            writer.Write(Convert.ToByte((int)(playerColors[MonklandSteamworks.connectedPlayers.IndexOf(playerID)].b * 255f)));
+            writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamworks.connectedPlayers.IndexOf(playerID)].r * 255f)));
+            writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamworks.connectedPlayers.IndexOf(playerID)].g * 255f)));
+            writer.Write(Convert.ToByte((int)(playerEyeColors[MonklandSteamworks.connectedPlayers.IndexOf(playerID)].b * 255f)));
 
-            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-            MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
-        }
-
-        public void SendManagerUpdate()
-        {
-            if (!isManager)
-                return;
-
-            MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(GAME_CHANNEL, GameHandler);
-            BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet);
-
-            // Write message type
-            writer.Write((byte)MessageType.ManagerUpdate);
-
-            if (hostShelter == "")
-                MineForSaveData();
-
-            writer.Write((string)hostShelter);
-
-            MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-            MonklandSteamManager.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
+            MonklandSteamworks.instance.FinalizeWriterToPacket(writer, packet);
+            MonklandSteamworks.instance.SendPacketToAll(packet, false, EP2PSend.k_EP2PSendReliable);
         }
 
         #endregion Outgoing Packets
 
         #region Incoming Packets
 
-        public void ReadStartGame(BinaryReader reader, CSteamID sent)
+        public void ReadGameUpdate(BinaryReader reader, CSteamID sent)
         {
             if ((ulong)sent != managerID)
                 return;
 
+            bool startGame = reader.ReadBoolean();
             hostShelter = reader.ReadString();
-            MonklandSteamManager.Log("STARTING GAME!  - Shelter:" + hostShelter);
+            hostSlugcat = reader.ReadInt32();
+            hostCycleNum = reader.ReadInt32();
+            hostFood = reader.ReadInt32();
+            hostKarma = reader.ReadInt32();
+            hostKarmaCap = reader.ReadInt32();
+            hostHasGlow = reader.ReadBoolean();
+            hostHasMark = reader.ReadBoolean();
+            hostKarmaReinforced = reader.ReadBoolean();
+            hostRedsExtraCycles = reader.ReadBoolean();
 
-            readiedPlayers.Clear();
-            RainWorldHK.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+            if (startGame)
+            {
+                MonklandSteamworks.Log("STARTING GAME! - Shelter:" + hostShelter);
+                readiedPlayers.Clear();
+                RainWorldHK.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+            }
         }
 
         public void ReadStatusUpdate(BinaryReader reader, CSteamID sent)
@@ -376,12 +449,12 @@ namespace Monkland.SteamManagement
             bool isReady = reader.ReadBoolean();
             bool isInGame = reader.ReadBoolean();
             bool isAlive = reader.ReadBoolean();
-            playerColors[MonklandSteamManager.connectedPlayers.IndexOf(sent.m_SteamID)] =
+            playerColors[MonklandSteamworks.connectedPlayers.IndexOf(sent.m_SteamID)] =
                         new Color(
                             ((float)reader.ReadByte()) / 255f,
                             ((float)reader.ReadByte()) / 255f,
                             ((float)reader.ReadByte()) / 255f);
-            playerEyeColors[MonklandSteamManager.connectedPlayers.IndexOf(sent.m_SteamID)] =
+            playerEyeColors[MonklandSteamworks.connectedPlayers.IndexOf(sent.m_SteamID)] =
                         new Color(
                             ((float)reader.ReadByte()) / 255f,
                             ((float)reader.ReadByte()) / 255f,
@@ -430,13 +503,6 @@ namespace Monkland.SteamManagement
                     alivePlayers.Remove(sent.m_SteamID);
                 }
             }
-        }
-
-        public void ReadManagerUpdate(BinaryReader reader, CSteamID sent)
-        {
-            if ((ulong) sent != managerID)
-                return;
-            hostShelter = reader.ReadString();
         }
 
         #endregion Incoming Packets

@@ -9,15 +9,18 @@ using UnityEngine;
 
 namespace Monkland.SteamManagement
 {
-    internal class MonklandSteamManager : MonoBehaviour
+    internal class MonklandSteamworks : MonoBehaviour
     {
-        public static MonklandSteamManager instance;
-        public const ulong appID = 312520;
+        public static MonklandSteamworks instance;
+        public const ulong APPID = 312520;
         public static CSteamID lobbyID = new CSteamID(0); // Current lobby id
         public static LobbyInfo lobbyInfo = new LobbyInfo(lobbyID); // Current lobby info
         public static bool isInLobby = false; // Is currently in a lobby
         public static List<ulong> connectedPlayers = new List<ulong>(); // List of all players
         public static List<ulong> otherPlayers = new List<ulong>(); // List of all players excluding this player
+        public static ulong playerID;
+        public static ulong managerID;
+        public static bool isManager { get { return playerID == managerID; } }
 
         // New lobby parameters
         public static int lobbyType = 0; // 0 = Public, 1 = Friends, 2 = Private
@@ -28,9 +31,6 @@ namespace Monkland.SteamManagement
         public static bool joining = false; // Is joining a lobby
         public static List<LobbyInfo> lobbies = new List<LobbyInfo>(); // Lobby list
 
-        public static Color bodyColor = new Color(1f, 1f, 1f);
-        public static Color eyeColor = new Color(0.004f, 0.004f, 0.004f);
-        public static string lastShelter = "";
 
         public static void Log(object message, bool visible = false)
         {
@@ -44,7 +44,7 @@ namespace Monkland.SteamManagement
         {
             // Create the instance of MonklandSteamManager for this session
             GameObject gObject = new GameObject("MonklandSteamManagerObject");
-            gObject.AddComponent<MonklandSteamManager>();
+            gObject.AddComponent<MonklandSteamworks>();
             DontDestroyOnLoad(gObject);
         }
 
@@ -58,7 +58,7 @@ namespace Monkland.SteamManagement
 
         public void Start()
         {
-            Log("START!");
+            Log("Monkland v" + Monkland.VERSION + " Loaded!");
             createChannelsCallback += RegisterDefaultChannels;
             registerManagersCallback += RegisterDefaultNetworkManagers;
             registerHandlersCallback += RegisterDefaultHandlers;
@@ -225,7 +225,7 @@ namespace Monkland.SteamManagement
                     {
                         otherPlayers.Remove(update.m_ulSteamIDUserChanged);
                     }
-                    if (update.m_ulSteamIDUserChanged == NetworkGameManager.managerID)
+                    if (update.m_ulSteamIDUserChanged == managerID)
                     {
                         // Host left the lobby exit to multiplayer menu
                         Log("Host left the Lobby!", true);
@@ -315,13 +315,13 @@ namespace Monkland.SteamManagement
             }
 
             //Set up network data
-            NetworkGameManager.managerID = ulong.Parse(SteamMatchmaking.GetLobbyData(lobbyID, "ManagerID"));
-            NetworkGameManager.playerID = SteamUser.GetSteamID().m_SteamID;
-            if (NetworkGameManager.managerID != NetworkGameManager.playerID)
+            managerID = ulong.Parse(SteamMatchmaking.GetLobbyData(lobbyID, "ManagerID"));
+            playerID = SteamUser.GetSteamID().m_SteamID;
+            if (isManager)
             {
                 lobbyInfo = new LobbyInfo((CSteamID)enterLobby.m_ulSteamIDLobby);
                 lobbyInfo.UpdateLobbyInfo((CSteamID)enterLobby.m_ulSteamIDLobby);
-                lobbyInfo.owner = new CSteamID(NetworkGameManager.managerID);
+                lobbyInfo.owner = new CSteamID(managerID);
             }
 
             if (!connectedPlayers.Contains(SteamUser.GetSteamID().m_SteamID))
@@ -331,8 +331,8 @@ namespace Monkland.SteamManagement
             }
 
             MultiplayerChat.AddChat("Entered Lobby!");
-            MultiplayerChat.AddChat("This game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
-            Log("Entered Lobby! - This game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)NetworkGameManager.managerID));
+            MultiplayerChat.AddChat("This game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)managerID));
+            Log("Entered Lobby! - This game's manager is " + SteamFriends.GetFriendPersonaName((CSteamID)managerID));
         }
 
         public void P2PRequest(P2PSessionRequest_t request)
@@ -377,9 +377,9 @@ namespace Monkland.SteamManagement
             public int channelIndex = 0;
 
             //The steam manager
-            public MonklandSteamManager manager;
+            public MonklandSteamworks manager;
 
-            public PacketChannel(string name, int channelIndex, MonklandSteamManager manager, int packetsPerUpdate = 20, int maxPackets = 100, bool priorityBased = false, bool ordered = false, bool scrapOldOrdered = false)
+            public PacketChannel(string name, int channelIndex, MonklandSteamworks manager, int packetsPerUpdate = 20, int maxPackets = 100, bool priorityBased = false, bool ordered = false, bool scrapOldOrdered = false)
             {
                 this.channelName = name;
                 this.channelIndex = channelIndex;
@@ -657,7 +657,7 @@ namespace Monkland.SteamManagement
                     //Log(Environment.StackTrace);
                 }
 
-                if (user.m_SteamID == NetworkGameManager.playerID)
+                if (user.m_SteamID == playerID)
                 {
                     //Process packet immediately if we sent it to ourself.
                     ProcessPacket(packet);
@@ -675,12 +675,12 @@ namespace Monkland.SteamManagement
                 isForceWait = true;
                 //Send packet
                 {
-                    MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(channelIndex, 0);
+                    MonklandSteamworks.DataPacket packet = MonklandSteamworks.instance.GetNewPacket(channelIndex, 0);
                     packet.priority = 0;
-                    BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet, 1);
+                    BinaryWriter writer = MonklandSteamworks.instance.GetWriterForPacket(packet, 1);
                     writer.Write(id);
-                    MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-                    MonklandSteamManager.instance.SendPacket(packet, user, EP2PSend.k_EP2PSendReliable);
+                    MonklandSteamworks.instance.FinalizeWriterToPacket(writer, packet);
+                    MonklandSteamworks.instance.SendPacket(packet, user, EP2PSend.k_EP2PSendReliable);
                 }
 
                 System.DateTime startTime = System.DateTime.Now;
@@ -703,12 +703,12 @@ namespace Monkland.SteamManagement
 
             public void SendForcewaitReply(ulong response, CSteamID user)
             {
-                MonklandSteamManager.DataPacket packet = MonklandSteamManager.instance.GetNewPacket(channelIndex, 0);
+                MonklandSteamworks.DataPacket packet = MonklandSteamworks.instance.GetNewPacket(channelIndex, 0);
                 packet.priority = 0;
-                BinaryWriter writer = MonklandSteamManager.instance.GetWriterForPacket(packet, 2);
+                BinaryWriter writer = MonklandSteamworks.instance.GetWriterForPacket(packet, 2);
                 writer.Write(response);
-                MonklandSteamManager.instance.FinalizeWriterToPacket(writer, packet);
-                MonklandSteamManager.instance.SendPacket(packet, user, EP2PSend.k_EP2PSendReliable);
+                MonklandSteamworks.instance.FinalizeWriterToPacket(writer, packet);
+                MonklandSteamworks.instance.SendPacket(packet, user, EP2PSend.k_EP2PSendReliable);
             }
 
             public void RecieveForcewaitReply(BinaryReader reader, CSteamID sender)
@@ -896,7 +896,7 @@ namespace Monkland.SteamManagement
 
         public DataPacket GetNewPacket(int channel, byte handlerID)
         {
-            DataPacket newPacket = new DataPacket(channel, (CSteamID)NetworkGameManager.playerID);
+            DataPacket newPacket = new DataPacket(channel, (CSteamID)playerID);
             PacketChannel packetChannel = allChannels[channel];
 
             newPacket.handlerID = handlerID;
@@ -1036,9 +1036,9 @@ namespace Monkland.SteamManagement
 
         #region NetworkManagers
 
-        public static NetworkGameManager GameManager;
-        public static NetworkWorldManager WorldManager;
-        public static NetworkPlayerManager PlayerManager;
+        public static GameManager gameManager;
+        public static WorldManager worldManager;
+        public static PlayerManager playerManager;
 
         public static Dictionary<string, NetworkManager> netManagers = new Dictionary<string, NetworkManager>();
         private static readonly List<NetworkManager> netManagersList = new List<NetworkManager>();
@@ -1046,13 +1046,13 @@ namespace Monkland.SteamManagement
 
         public void RegisterDefaultNetworkManagers()
         {
-            GameManager = new NetworkGameManager();
-            WorldManager = new NetworkWorldManager();
-            PlayerManager = new NetworkPlayerManager();
+            gameManager = new GameManager();
+            worldManager = new WorldManager();
+            playerManager = new PlayerManager();
 
-            RegisterNetworkManager("Game", GameManager);
-            RegisterNetworkManager("World", WorldManager);
-            RegisterNetworkManager("Player", PlayerManager);
+            RegisterNetworkManager("Game", gameManager);
+            RegisterNetworkManager("World", worldManager);
+            RegisterNetworkManager("Player", playerManager);
         }
 
         public int RegisterNetworkManager(string name, NetworkManager manager)
@@ -1122,7 +1122,7 @@ namespace Monkland.SteamManagement
                 this.version = SteamMatchmaking.GetLobbyData(lobbyID, "Version");
                 if (string.IsNullOrEmpty(this.version))
                 {
-                    this.version = Monkland.VERSION;
+                    this.version = "UNAVAILABLE";
                     success = false;
                 }
                 this.memberLimit = SteamMatchmaking.GetLobbyMemberLimit(lobbyID);

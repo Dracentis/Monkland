@@ -111,17 +111,17 @@ namespace Monkland.Menus
 
             //Red Slider
             bodyRed = new HorizontalSlider(this, this.pages[0], "Red", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 130), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
-            bodyRed.floatValue = MonklandSteamManager.bodyColor.r;
+            bodyRed.floatValue = MonklandSteamworks.gameManager.bodyColor.r;
             bodyRed.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyRed);
             //Green Slider
             bodyGreen = new HorizontalSlider(this, this.pages[0], "Green", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 170), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
-            bodyGreen.floatValue = MonklandSteamManager.bodyColor.g;
+            bodyGreen.floatValue = MonklandSteamworks.gameManager.bodyColor.g;
             bodyGreen.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyGreen);
             //Blue Slider
             bodyBlue = new HorizontalSlider(this, this.pages[0], "Blue", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 210), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
-            bodyBlue.floatValue = MonklandSteamManager.bodyColor.b;
+            bodyBlue.floatValue = MonklandSteamworks.gameManager.bodyColor.b;
             bodyBlue.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.bodyBlue);
 
@@ -132,15 +132,15 @@ namespace Monkland.Menus
 
             //Red Slider
             eyesRed = new HorizontalSlider(this, this.pages[0], "Red ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 280), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
-            eyesRed.floatValue = MonklandSteamManager.eyeColor.r;
+            eyesRed.floatValue = MonklandSteamworks.gameManager.eyeColor.r;
             this.pages[0].subObjects.Add(this.eyesRed);
             //Green Slider
             eyesGreen = new HorizontalSlider(this, this.pages[0], "Green ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 320), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
-            eyesGreen.floatValue = MonklandSteamManager.eyeColor.g;
+            eyesGreen.floatValue = MonklandSteamworks.gameManager.eyeColor.g;
             this.pages[0].subObjects.Add(this.eyesGreen);
             //Blue Slider
             eyesBlue = new HorizontalSlider(this, this.pages[0], "Blue ", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 360), new Vector2(multiplayerSettingsSliderWidth, 30), (Slider.SliderID)(-1), false);
-            eyesBlue.floatValue = MonklandSteamManager.eyeColor.b;
+            eyesBlue.floatValue = MonklandSteamworks.gameManager.eyeColor.b;
             this.pages[0].subObjects.Add(this.eyesBlue);
 
             //Slugcat Eyes Sprite
@@ -367,16 +367,16 @@ namespace Monkland.Menus
                     int newmax = (int)(f * 100f);
                     if (newmax < 3) { newmax = 2; }
                     if (maxPlayersLabel != null) { maxPlayersLabel.text = $"Max Players: {newmax}"; }
-                    MonklandSteamManager.lobbyMax = newmax;
+                    MonklandSteamworks.lobbyMax = newmax;
                     return;
                 }
                 f = Mathf.Clamp(f, 0.004f, 1.000f);
-                if (slider == this.bodyRed) { MonklandSteamManager.bodyColor = new Color(f, MonklandSteamManager.bodyColor.g, MonklandSteamManager.bodyColor.b); }
-                if (slider == this.bodyGreen) { MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.bodyColor.r, f, MonklandSteamManager.bodyColor.b); }
-                if (slider == this.bodyBlue) { MonklandSteamManager.bodyColor = new Color(MonklandSteamManager.bodyColor.r, MonklandSteamManager.bodyColor.g, f); }
-                if (slider == this.eyesRed) { MonklandSteamManager.eyeColor = new Color(f, MonklandSteamManager.eyeColor.g, MonklandSteamManager.eyeColor.b); }
-                if (slider == this.eyesGreen) { MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.eyeColor.r, f, MonklandSteamManager.eyeColor.b); }
-                if (slider == this.eyesBlue) { MonklandSteamManager.eyeColor = new Color(MonklandSteamManager.eyeColor.r, MonklandSteamManager.eyeColor.g, f); }
+                if (slider == this.bodyRed) { MonklandSteamworks.gameManager.bodyColor = new Color(f, MonklandSteamworks.gameManager.bodyColor.g, MonklandSteamworks.gameManager.bodyColor.b); }
+                if (slider == this.bodyGreen) { MonklandSteamworks.gameManager.bodyColor = new Color(MonklandSteamworks.gameManager.bodyColor.r, f, MonklandSteamworks.gameManager.bodyColor.b); }
+                if (slider == this.bodyBlue) { MonklandSteamworks.gameManager.bodyColor = new Color(MonklandSteamworks.gameManager.bodyColor.r, MonklandSteamworks.gameManager.bodyColor.g, f); }
+                if (slider == this.eyesRed) { MonklandSteamworks.gameManager.eyeColor = new Color(f, MonklandSteamworks.gameManager.eyeColor.g, MonklandSteamworks.gameManager.eyeColor.b); }
+                if (slider == this.eyesGreen) { MonklandSteamworks.gameManager.eyeColor = new Color(MonklandSteamworks.gameManager.eyeColor.r, f, MonklandSteamworks.gameManager.eyeColor.b); }
+                if (slider == this.eyesBlue) { MonklandSteamworks.gameManager.eyeColor = new Color(MonklandSteamworks.gameManager.eyeColor.r, MonklandSteamworks.gameManager.eyeColor.g, f); }
                 return;
             }
             base.SliderSetValue(slider, f);
@@ -386,13 +386,13 @@ namespace Monkland.Menus
         {
             if (slider.ID == (Slider.SliderID)(-1))
             {
-                if (slider == this.bodyRed) { return MonklandSteamManager.bodyColor.r; }
-                if (slider == this.bodyGreen) { return MonklandSteamManager.bodyColor.g; }
-                if (slider == this.bodyBlue) { return MonklandSteamManager.bodyColor.b; }
-                if (slider == this.eyesRed) { return MonklandSteamManager.eyeColor.r; }
-                if (slider == this.eyesGreen) { return MonklandSteamManager.eyeColor.g; }
-                if (slider == this.eyesBlue) { return MonklandSteamManager.eyeColor.b; }
-                if (slider == this.maxPlayersSlider) { return (float)MonklandSteamManager.lobbyMax / 100f; }
+                if (slider == this.bodyRed) { return MonklandSteamworks.gameManager.bodyColor.r; }
+                if (slider == this.bodyGreen) { return MonklandSteamworks.gameManager.bodyColor.g; }
+                if (slider == this.bodyBlue) { return MonklandSteamworks.gameManager.bodyColor.b; }
+                if (slider == this.eyesRed) { return MonklandSteamworks.gameManager.eyeColor.r; }
+                if (slider == this.eyesGreen) { return MonklandSteamworks.gameManager.eyeColor.g; }
+                if (slider == this.eyesBlue) { return MonklandSteamworks.gameManager.eyeColor.b; }
+                if (slider == this.maxPlayersSlider) { return (float)MonklandSteamworks.lobbyMax / 100f; }
             }
             return base.ValueOfSlider(slider);
         }
@@ -408,7 +408,7 @@ namespace Monkland.Menus
                     return this.manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat;
 
                 case "LobbyType":
-                    return MonklandSteamManager.lobbyType;
+                    return MonklandSteamworks.lobbyType;
             }
             return -1;
         }
@@ -426,7 +426,7 @@ namespace Monkland.Menus
                     break;
 
                 case "LobbyType":
-                    MonklandSteamManager.lobbyType = to;
+                    MonklandSteamworks.lobbyType = to;
                     break;
             }
         }
@@ -463,14 +463,14 @@ namespace Monkland.Menus
             {
                 if (i < lobbynum)
                 {
-                    this.lobbynames[i].text = SteamFriends.GetFriendPersonaName(MonklandSteamManager.lobbies[i].owner);
-                    this.lobbyVersions[i].text = MonklandSteamManager.lobbies[i].version;
-                    if (MonklandSteamManager.lobbies[i].version != Monkland.VERSION)
+                    this.lobbynames[i].text = SteamFriends.GetFriendPersonaName(MonklandSteamworks.lobbies[i].owner);
+                    this.lobbyVersions[i].text = MonklandSteamworks.lobbies[i].version;
+                    if (MonklandSteamworks.lobbies[i].version != Monkland.VERSION)
                     { this.lobbyVersions[i].color = new Color(1f, 0f, 0f); }
                     else
                     { this.lobbyVersions[i].color = new Color(0f, 1f, 0f); }
-                    this.lobbyPlayerCounts[i].text = "" + MonklandSteamManager.lobbies[i].memberNum;
-                    this.lobbyPlayerMaxs[i].text = "" + MonklandSteamManager.lobbies[i].memberLimit;
+                    this.lobbyPlayerCounts[i].text = "" + MonklandSteamworks.lobbies[i].memberNum;
+                    this.lobbyPlayerMaxs[i].text = "" + MonklandSteamworks.lobbies[i].memberLimit;
                 }
                 else
                 {
@@ -491,18 +491,18 @@ namespace Monkland.Menus
             { this.blackFade = Custom.LerpAndTick(this.blackFade, num, 0.05f, 0.06666667f); }
             else
             { this.blackFade = Custom.LerpAndTick(this.blackFade, num, 0.05f, 0.125f); }
-            slugcat.color = MonklandSteamManager.bodyColor;
-            eyes.color = MonklandSteamManager.eyeColor;
+            slugcat.color = MonklandSteamworks.gameManager.bodyColor;
+            eyes.color = MonklandSteamworks.gameManager.eyeColor;
             this.startLobbyButton.buttonBehav.greyedOut = !hosting;
             this.privacyButtons[0].buttonBehav.greyedOut = !hosting;
             this.privacyButtons[1].buttonBehav.greyedOut = !hosting;
             this.privacyButtons[2].buttonBehav.greyedOut = !hosting;
             this.maxPlayersSlider.buttonBehav.greyedOut = !hosting;
-            this.modeButtons[0].buttonBehav.greyedOut = MonklandSteamManager.joining;
-            this.modeButtons[1].buttonBehav.greyedOut = MonklandSteamManager.joining;
-            this.refreshButton.buttonBehav.greyedOut = hosting || MonklandSteamManager.joining || MonklandSteamManager.searching;
+            this.modeButtons[0].buttonBehav.greyedOut = MonklandSteamworks.joining;
+            this.modeButtons[1].buttonBehav.greyedOut = MonklandSteamworks.joining;
+            this.refreshButton.buttonBehav.greyedOut = hosting || MonklandSteamworks.joining || MonklandSteamworks.searching;
             for (int i = 0; i < joinButtons.Length; i++)
-            { joinButtons[i].buttonBehav.greyedOut = hosting || MonklandSteamManager.joining || MonklandSteamManager.searching || i >= lobbynum; }
+            { joinButtons[i].buttonBehav.greyedOut = hosting || MonklandSteamworks.joining || MonklandSteamworks.searching || i >= lobbynum; }
             base.Update();
         }
 
@@ -555,13 +555,13 @@ namespace Monkland.Menus
             else if (message.Contains("JOIN"))
             {
                 int lobby = int.Parse(message.Substring(4));
-                if (lobby < MonklandSteamManager.lobbies.Count && !MonklandSteamManager.joining && !MonklandSteamManager.searching && MonklandSteamManager.lobbies[lobby].version == Monkland.VERSION)
-                { MonklandSteamManager.instance.JoinLobby(MonklandSteamManager.lobbies[lobby].ID); }
+                if (lobby < MonklandSteamworks.lobbies.Count && !MonklandSteamworks.joining && !MonklandSteamworks.searching && MonklandSteamworks.lobbies[lobby].version == Monkland.VERSION)
+                { MonklandSteamworks.instance.JoinLobby(MonklandSteamworks.lobbies[lobby].ID); }
             }
             else if (message.Contains("REFRESH"))
             {
-                if (!MonklandSteamManager.searching && !MonklandSteamManager.joining)
-                { MonklandSteamManager.instance.FindLobbies(); }
+                if (!MonklandSteamworks.searching && !MonklandSteamworks.joining)
+                { MonklandSteamworks.instance.FindLobbies(); }
             }
         }
     }

@@ -1,13 +1,30 @@
-﻿using UnityEngine;
+﻿using Steamworks;
+using System.IO;
 
 namespace Monkland.SteamManagement
 {
     internal class NetworkManager
     {
+        protected ulong playerID
+        {
+            get
+            {
+                return MonklandSteamworks.playerID;
+            }
+        }
 
-        public const int GAME_CHANNEL = 0;
-        public const int WORLD_CHANNEL = 1;
-        public const int PLAYER_CHANNEL = 2;
+        protected ulong managerID
+        {
+            get
+            {
+                return MonklandSteamworks.managerID;
+            }
+        }
+
+        protected bool isManager { get { return playerID == managerID; } }
+
+        protected byte handler = 0;
+        protected int channel = 0;
 
         public virtual void Reset()
         {
@@ -17,8 +34,13 @@ namespace Monkland.SteamManagement
         {
         }
 
-        public virtual void RegisterHandlers()
+        public void RegisterHandlers()
         {
+            handler = MonklandSteamworks.instance.RegisterHandler(channel, HandlePackets);
+        }
+
+        public virtual void HandlePackets(BinaryReader br, CSteamID sentPlayer)
+        { 
         }
 
         public virtual void PlayerJoined(ulong steamID)
@@ -31,7 +53,7 @@ namespace Monkland.SteamManagement
 
         public void Log(string message)
         {
-            MonklandSteamManager.Log(message);
+            MonklandSteamworks.Log(message);
         }
     }
 }

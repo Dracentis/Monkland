@@ -36,7 +36,7 @@ namespace Monkland.Menus
         {
             base.Update();
 
-            foreach (ulong s in MonklandSteamManager.connectedPlayers)
+            foreach (ulong s in MonklandSteamworks.connectedPlayers)
             {
                 if (playerHash.Contains(s))
                     continue;
@@ -87,7 +87,7 @@ namespace Monkland.Menus
                         targetAlpha = 1;
                     }
 
-                    item.label.color = MonklandSteamManager.GameManager.readiedPlayers.Contains(kvp.Key) ? Color.green : Color.red;
+                    item.label.color = MonklandSteamworks.gameManager.readiedPlayers.Contains(kvp.Key) ? Color.green : Color.red;
                     item.label.alpha = targetAlpha;
 
                     i++;

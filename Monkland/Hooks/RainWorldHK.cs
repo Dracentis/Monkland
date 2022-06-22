@@ -17,9 +17,9 @@ namespace Monkland.Hooks
         private static void StartHK(On.RainWorld.orig_Start orig, RainWorld self)
         {
             rainWorld = self;
-            if (MonklandSteamManager.instance == null)
+            if (MonklandSteamworks.instance == null)
             {
-                MonklandSteamManager.CreateManagerGameObject();
+                MonklandSteamworks.CreateManagerGameObject();
             }
 
             orig(self);
