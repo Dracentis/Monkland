@@ -10,7 +10,7 @@ namespace Monkland
 {
     public class Monkland : PartialityMod
     {
-        public static readonly string VERSION = typeof(Monkland).Assembly.GetName().Version.ToString().Substring(0, typeof(Monkland).Assembly.GetName().Version.ToString().Length-2); // Version number
+        public static readonly string VERSION = typeof(Monkland).Assembly.GetName().Version.ToString();// .Substring(0, typeof(Monkland).Assembly.GetName().Version.ToString().Length-2); // Version number
         public const bool DEVELOPMENT = true; // Is this build for development
         public static Monkland instance; // For future Config Machine support
 
