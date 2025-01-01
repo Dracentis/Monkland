@@ -194,7 +194,7 @@ namespace Monkland {
 
             //Slugcat Buttons
             this.slugcatButtons = new SelectOneButton[3];
-            this.slugcatButtons[0] = new SelectOneButton(this, this.pages[0], base.Translate("SURVIOR"), "Slugcat", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 445f), new Vector2(110f, 30f), this.slugcatButtons, 0);
+            this.slugcatButtons[0] = new SelectOneButton(this, this.pages[0], base.Translate("SURVIVOR"), "Slugcat", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 445f), new Vector2(110f, 30f), this.slugcatButtons, 0);
             this.pages[0].subObjects.Add(this.slugcatButtons[0]);
             this.slugcatButtons[1] = new SelectOneButton(this, this.pages[0], base.Translate("MONK"), "Slugcat", new Vector2(resOffset + multiplayerSettingsSliderPositionX, screenHeight - 490f), new Vector2(110f, 30f), this.slugcatButtons, 1);
             this.pages[0].subObjects.Add(this.slugcatButtons[1]);
